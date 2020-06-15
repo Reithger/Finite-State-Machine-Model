@@ -38,8 +38,8 @@ public class windows {
 	 *  - The 'U' Structure is the Product of n+1 copies of the Plant
 	 */
 	
-	public static final String ADA_WORKING_FOLDER = "C:\\Users\\Reithger\\Documents\\TestGraph\\";
-	public static final String ADA_CONFIG_FILE_PATH = "C:\\Users\\Reithger\\eclipse-workspace\\Finite State Machine Model\\src\\assets\\config\\config.properties";
+	public static final String ADA_WORKING_FOLDER = "C:\\Users\\Borinor\\Documents\\testGraph\\";
+	public static final String ADA_CONFIG_FILE_PATH = "C:\\Users\\Borinor\\git\\Finite-State-Machine-Model\\src\\assets\\config\\config.properties";
 	
 	@Test
 	public void test() {
