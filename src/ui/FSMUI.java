@@ -15,19 +15,8 @@ public class FSMUI {
 	private final static int WINDOW_HEIGHT = 800;
 	private final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
 	private final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
-	private final static int CODE_START_OPTIONS = 50;
-	private final static String[] OPTIONS_HEADERS = new String[] {"Edit", "Option 2", "Option 3"};
+	private final static int CODE_START_OPTIONS_HEADER = 100;
 	private final static int HEADER_EDIT = 0;
-	private final static String[][] OPTIONS_LABELS = new String[][]{
-		{"Option 1", "Option 2", "Option 3"},
-		{"Option 1", "Option 2", "Option 3"},
-		{"Option 1", "Option 2", "Option 3"},
-		};
-	private final static String[][] OPTIONS_TYPES = new String[][] {
-		{"S", "D", "T",},
-		{},
-		{},
-	};
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -64,6 +53,7 @@ public class FSMUI {
 		frame.reservePanel("Home", "optionSpace", optionSpace);
 		frame.reservePanel("Home", "imageSpace", imageSpace);
 		updateOptionsPanel();
+		updateOptionHeader();
 		currentOptionHeader = this.HEADER_EDIT;
 	}
 	
@@ -113,69 +103,19 @@ public class FSMUI {
 		return p;
 	}
 	
+	private void updateImageHeader() {
+		
+	}
+	
 	private void allotImage(String path) {
 		images.add(path);
 		updateImageHeader();
 	}
 	
-	private void updateImageHeader() {
+	private void updateActiveOptionPage() {
 		
 	}
-	
-	/**
-	 * Program needs to be able to add states/transitions, select existing ones, intuitive interface from
-	 * generic function to mass produce different iterations.
-	 * 
-	 * @param labels
-	 * @param types
-	 * @param x
-	 * @param y
-	 * @param width
-	 * @param height
-	 * @return
-	 */
-	
-	private ElementPanel generateOptionsPanel(int x, int y, int width, int height) {
-		ElementPanel p = new ElementPanel(x, y, width, height) {
-			public void keyBehaviour(char code) {
-				
-			}
-			
-			public void clickBehaviour(int code, int x, int y) {
-				
-			}
-		};
-		addFraming(p);
-		return p;
-	}
-	
-	private void updateOptionsPanel() {
-		String[] options = OPTIONS_LABELS[currentOptionHeader];
-		String[] types = OPTIONS_TYPES[currentOptionHeader];
-		ElementPanel p = optionSpace;
-		int startY = WINDOW_HEIGHT / 20;
-		for(int i = 0; i < options.length; i++) {
-			p.addText("option_text_" + i, 10, WINDOW_WIDTH / 2 / 3 / 2, startY, WINDOW_WIDTH / 2 / 3, WINDOW_HEIGHT / 20, options[i], OPTIONS_FONT, true, true, true);
-			p.addLine("option_line_" + i, 5, WINDOW_WIDTH / 2 / 20, startY + WINDOW_HEIGHT / 40, WINDOW_WIDTH / 2 * 19 / 20, startY + WINDOW_HEIGHT / 40, 3, Color.black);
-			int num = 0;
-			switch(types[i]) {
-				case "T":
-					num = num > 3 ? num : 3;
-				case "D":
-					num = num > 2 ? num : 2;
-				case "S":
-					num = num > 1 ? num : 1;
-					for(int j = 0; j < num; j++) {
-						int posX = WINDOW_WIDTH / 2 / 3 + WINDOW_WIDTH / 3 / 8 * (j + 1);
-						p.addRectangle("option_rect_" + i + "_" + j, 5, posX, startY, WINDOW_WIDTH / 3 / (10), WINDOW_HEIGHT / 30, true, Color.gray);
-						p.addTextEntry("option_entry_" + i + "_" + j, 10, posX, startY, WINDOW_WIDTH / 3 / (10), WINDOW_HEIGHT / 30, CODE_START_OPTIONS + i * num + j, "test", OPTIONS_FONT, true, true, true);
-					}
-					break;
-			}
-			startY += WINDOW_HEIGHT / 18;
-		}
-	}
-	
+
 	private ElementPanel generateOptionHeader(int x, int y, int width, int height) {
 		ElementPanel p = new ElementPanel(x, y, width, height) {
 			public void keyBehaviour(char code) {
@@ -183,11 +123,31 @@ public class FSMUI {
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
-				
+				int cod = code - CODE_START_OPTIONS_HEADER;
+				System.out.println(code + " " + cod);
+				if(cod < OPTIONS_HEADERS.length && cod >= 0) {
+					currentOptionHeader = cod;
+					updateOptionsPanel();
+					updateOptionHeader();
+				}
 			}
 		};
-		addFraming(p);
+		//addFraming(p);
 		return p;
+	}
+	
+	private void updateOptionHeader() {
+		ElementPanel p = optionHeader;
+		p.removeElementPrefixed("header");
+		for(int i = 0 ; i < OPTIONS_HEADERS.length; i++) {
+			int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
+			int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
+			int wid = WINDOW_WIDTH / 2 / 6;
+			int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
+			p.addRectangle("header_rect_" + i, 10, posX, posY, wid, hei, true, i == currentOptionHeader ? Color.green : Color.gray);
+			p.addButton("header_butt_" + i, 10, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i, true);
+			p.addText("header_text_" + i, 15, posX, posY, wid, hei, OPTIONS_HEADERS[i], OPTIONS_FONT, true, true, true);
+		}
 	}
 	
 	private void addFraming(ElementPanel p) {
