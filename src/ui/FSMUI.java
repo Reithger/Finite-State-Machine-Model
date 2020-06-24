@@ -55,6 +55,8 @@ public class FSMUI {
 		updateOptionHeader();
 	}
 	
+	//-- Support  ---------------------------------------------
+	
 	private void createElementPanels() {
 		optionHeader = generateOptionHeader(0, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)));
 		imageHeader = generateImageHeader(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)));
@@ -77,6 +79,13 @@ public class FSMUI {
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
+
+	private void allotImage(String path) {
+		images.add(path);
+		updateImageHeader();
+	}
+
+	//-- Generate ElementPanels  ------------------------------
 	
 	/**
 	 * Able to navigate the image: zoom in/out, move around, etc.
@@ -152,6 +161,8 @@ public class FSMUI {
 		return p;
 	}
 
+	//-- Update ElementPanels  --------------------------------
+	
 	private void updateOptionHeader() {
 		ElementPanel p = optionHeader;
 		p.removeElementPrefixed("header");
@@ -178,10 +189,7 @@ public class FSMUI {
 		OPTION_PAGES[currentOptionHeader].drawPage();
 	}
 
-	private void allotImage(String path) {
-		images.add(path);
-		updateImageHeader();
-	}
+	//-- Composite  -------------------------------------------
 
 	private void addFraming(ElementPanel p) {
 		int width = p.getWidth();

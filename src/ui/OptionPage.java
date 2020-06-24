@@ -17,6 +17,7 @@ public abstract class OptionPage {
 	public final static String ENTRY_TEXT_TRIPLE = "T";
 	public final static String ENTRY_TEXT_QUARTET = "Q";
 	public final static String ENTRY_CHECKMARK = "C";
+	private final static String DEFAULT_TEXT_ENTRY_CONTENTS = "tes";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 
@@ -53,26 +54,17 @@ public abstract class OptionPage {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public void drawPage() {
-		String[][] options = labels;
-		for(int i = 0; i < categories.length; i++) {
-			for(int j = 0; j < labels[i].length; j++) {
-				for(int k = 0; k < getEntryTextSize(types[i][j]); k++) {
-					String textEntryName = "option_" + categories[i] + "_" + options[i][j] + "_" + k;
-					String text = p.getElementStoredText(textEntryName);
-					System.out.println(textEntryName + " " + text);
-					contents[i][j][k] = new String(text == null ? "tes" : text);
-				}
-			}
-		}
-		System.out.println(Arrays.deepToString(contents));
+		updateTextEntryContents();
 		int startY = p.getHeight() / 20;
 		int codeStart = categories.length;
 		p.removeElementPrefixed("option");
 		for(int i = 0; i < categories.length; i++) {
+			//Category header
 			p.addText("option_header_text_" + i, 15, p.getWidth() / 3 / 3, startY, p.getHeight() * 9 / 10, p.getHeight() / 20, categories[i], OPTIONS_FONT, true, true, true);
 			p.addButton("option_header_butt_" + i, 10, p.getWidth() / 3 / 3, startY, p.getHeight() * 9 / 10, p.getHeight() / 20, i, true);
 			p.addLine("option_line_" + i, 5,  p.getWidth() / 20, startY + p.getHeight() / 40, p.getWidth() * 11 / 20, startY + p.getHeight() / 40, 3, Color.black);
 			startY += p.getHeight() / 18;
+			//If category closed, iterate codeStart to maintain distance
 			if(openCategories[i] == false) {
 				for(int j = 0; j < types[i].length; j++) {
 					codeStart += getEntryTextSize(types[i][j]);
@@ -80,22 +72,40 @@ public abstract class OptionPage {
 				continue;
 			}
 			for(int j = 0; j < labels[i].length; j++) {
-				p.addText("option_text_" + i + "_" + j, 10, p.getWidth() / 3 / 2, startY, p.getWidth() / 3, p.getHeight() / 20, options[i][j], OPTIONS_FONT, true, true, true);
+				//Label
+				p.addText("option_text_" + i + "_" + j, 10, p.getWidth() / 3 / 2, startY, p.getWidth() / 3, p.getHeight() / 20, labels[i][j], OPTIONS_FONT, true, true, true);
 				p.addLine("option_line_" + i + "_" + j, 5, p.getWidth() / 20, startY + p.getHeight() / 40, p.getWidth() * 19 / 20, startY + p.getHeight() / 40, 1, Color.black);
+				//Get number of text entries; need to make flexible for checkbox
 				int num = getEntryTextSize(types[i][j]);
 				for(int k = 0; k < num; k++) {
+					//Draws text entries and iterates to next position
 					int posX = p.getWidth() / 3 + p.getWidth() / 3 / 4 * (k + 1);
+					String star = contents[i][j][k] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[i][j][k];
 					p.addRectangle("option_rect_" + i + "_" + j + "_" + k, 5, posX, startY, p.getWidth() / 3 / (5), p.getHeight() / 30, true, Color.white, Color.gray);
-					String textEntryName = "option_" + categories[i] + "_" + options[i][j] + "_" + k;
-					String star = contents[i][j][k];
-					System.out.println(textEntryName + " " + star);
-					p.addTextEntry(textEntryName, 10, posX, startY, p.getWidth() / 3 / (5), p.getHeight() / 30, codeStart++, star == null ? "" : star, OPTIONS_FONT, true, true, true);
+					p.addTextEntry(getTextEntryName(i, j, k), 10, posX, startY, p.getWidth() / 3 / (5), p.getHeight() / 30, codeStart++, star, OPTIONS_FONT, true, true, true);
 				}
+				//Submission button
 				p.addRectangle("option_rect_" + i + "_" + j, 10, p.getWidth() - p.getWidth() / 3 / 4, startY, p.getHeight() / 30, p.getHeight() / 30, true, Color.black, Color.gray);
 				p.addButton("option_butt_" + i + "_" + j, 10, p.getWidth() - p.getWidth() / 3 / 4, startY, p.getHeight() / 30, p.getHeight() / 30, codes[i][j], true);
 				startY += p.getHeight() / 18;
 			}
 		}
+	}
+	
+	private void updateTextEntryContents() {
+		for(int i = 0; i < categories.length; i++) {
+			for(int j = 0; j < labels[i].length; j++) {
+				for(int k = 0; k < getEntryTextSize(types[i][j]); k++) {
+					String textEntryName = getTextEntryName(i, j, k);
+					String text = p.getElementStoredText(textEntryName);
+					contents[i][j][k] = new String(text == null ? DEFAULT_TEXT_ENTRY_CONTENTS : text);
+				}
+			}
+		}
+	}
+	
+	private String getTextEntryName(int i, int j, int k) {
+		return "option_" + categories[i] + "_" + labels[i][j] + "_" + k;
 	}
 
 	public void assignElementPanel(ElementPanel pIn) {

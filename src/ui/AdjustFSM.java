@@ -32,7 +32,6 @@ public class AdjustFSM extends OptionPage{
 
 	@Override
 	public void applyCode(int code) {
-		System.out.println(code);
 		if(!toggleCategory(code)) {
 			
 		}
