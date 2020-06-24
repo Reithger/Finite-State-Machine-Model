@@ -15,7 +15,7 @@ public class FSMUI {
 	private final static int WINDOW_HEIGHT = 600;
 	private final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
 	private final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
-	private final static int CODE_START_OPTIONS_HEADER = 100;
+	private final static int CODE_START_OPTIONS_HEADER = 150;
 	private final static int HEADER_EDIT = 0;
 	public final static OptionPage[] OPTION_PAGES = new OptionPage[] {
 			new AdjustFSM(0, 0, WINDOW_WIDTH/2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)),
@@ -96,12 +96,13 @@ public class FSMUI {
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
+				System.out.println(code);
 				int cod = code - CODE_START_OPTIONS_HEADER;
 				if(cod < OPTION_PAGES.length && cod >= 0) {
 					currentOptionHeader = cod;
 					updateActiveOptionPage();
-					updateOptionHeader();
 				}
+				updateOptionHeader();
 			}
 		};
 
@@ -126,7 +127,7 @@ public class FSMUI {
 	private ElementPanel generateOptionPanel(int x, int y, int width, int height) {
 		ElementPanel p = new ElementPanel(x, y, width, height) {
 			public void keyBehaviour(char code) {
-				System.out.println(code);
+				System.out.println(getFocusElement() + " " + code);
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {

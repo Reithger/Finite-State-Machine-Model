@@ -9,8 +9,8 @@ public class AdjustFSM extends OptionPage{
 	private final static String HEADER = "Head";
 	private final static String[] CATEGORIES = new String[] {"Category 1", "Category 2"};
 	private final static String[][] LABELS = new String[][] {
-		{"Option 1a", "Option 2a", "Option 3a"},
-		{"Option 1b", "Option 2b", "Option 3b"},
+		{"Option_1a", "Option 2a", "Option 3a"},
+		{"Option_1b", "Option 2b", "Option 3b"},
 	};
 	private final static String[][] TYPES = new String[][] {
 		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_DOUBLE, ENTRY_TEXT_TRIPLE,},
@@ -32,10 +32,10 @@ public class AdjustFSM extends OptionPage{
 
 	@Override
 	public void applyCode(int code) {
+		System.out.println(code);
 		if(!toggleCategory(code)) {
 			
 		}
-		System.out.println(Arrays.toString(this.getTextEntry("Option 2")));
 		drawPage();
 	}
 
