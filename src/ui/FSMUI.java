@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 
+import ui.optionpage.AdjustFSM;
+import ui.optionpage.OptionPage;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
@@ -16,6 +18,7 @@ public class FSMUI {
 	private final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
 	private final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int CODE_START_OPTIONS_HEADER = 150;
+	private final static int CODE_START_IMAGES_HEADER = 150;
 	private final static int HEADER_EDIT = 0;
 	public final static OptionPage[] OPTION_PAGES = new OptionPage[] {
 			new AdjustFSM(0, 0, WINDOW_WIDTH/2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)),
@@ -38,21 +41,19 @@ public class FSMUI {
 	private ArrayList<String> images;
 	
 	private int currentOptionHeader;
-
-	private int image_panel_count;
+	
+	private int currentImageHeader;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FSMUI() {
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
-		image_panel_count = 0;
 		currentOptionHeader = this.HEADER_EDIT;
 		images = new ArrayList<String>();
 		createElementPanels();
 		assignPanels();
 		assignOptionPages();
-		updateActiveOptionPage();
-		updateOptionHeader();
+		initializePanels();
 	}
 	
 	//-- Support  ---------------------------------------------
@@ -78,6 +79,13 @@ public class FSMUI {
 		}
 	}
 	
+	private void initializePanels() {
+		updateOptionHeader();
+		updateActiveOptionPage();
+		updateImageHeader();
+		updateImagePanel();
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
 
 	private void allotImage(String path) {
@@ -85,6 +93,11 @@ public class FSMUI {
 		updateImageHeader();
 	}
 
+	private void removeImage(String path) {
+		images.remove(path);
+		updateImageHeader();
+	}
+	
 	//-- Generate ElementPanels  ------------------------------
 	
 	/**
@@ -105,7 +118,6 @@ public class FSMUI {
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
-				System.out.println(code);
 				int cod = code - CODE_START_OPTIONS_HEADER;
 				if(cod < OPTION_PAGES.length && cod >= 0) {
 					currentOptionHeader = cod;
@@ -115,6 +127,7 @@ public class FSMUI {
 			}
 		};
 
+		p.addLine("line_5", 15, width, height, width, 0, 2, Color.BLACK);
 		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
 		return p;
 	}
@@ -126,10 +139,17 @@ public class FSMUI {
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
-				
+				int cod = code - CODE_START_IMAGES_HEADER;
+				if(cod < images.size() && cod >= 0) {
+					currentImageHeader = cod;
+					updateImagePanel();
+				}
+				updateImageHeader();
 			}
 		};
-		addFraming(p);
+
+		p.addLine("line_3", 15, 0, 0, 0, height, 2, Color.BLACK);
+		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
 		return p;
 	}
 	
@@ -178,7 +198,27 @@ public class FSMUI {
 	}
 	
 	private void updateImageHeader() {
-		
+		ElementPanel p = imageHeader;
+		p.removeElementPrefixed("header");
+		if(images.size() == 0) {
+			int posX = WINDOW_WIDTH / 2/ 2;
+			int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
+			int wid = WINDOW_WIDTH / 2 / 3;
+			int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
+			p.addRectangle("header_rect", 10, posX, posY, wid, hei, true, Color.gray);
+			p.addText("header_text", 15, posX, posY, wid, hei, "No images currently available", OPTIONS_FONT, true, true, true);
+		}
+		else {
+			for(int i = 0 ; i < images.size(); i++) {
+				int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
+				int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
+				int wid = WINDOW_WIDTH / 2 / 6;
+				int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
+				p.addRectangle("header_rect_" + i, 10, posX, posY, wid, hei, true, i == currentImageHeader ? Color.green : Color.gray);
+				p.addButton("header_butt_" + i, 10, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i, true);
+				p.addText("header_text_" + i, 15, posX, posY, wid, hei, images.get(i), OPTIONS_FONT, true, true, true);
+			}
+		}
 	}
 	
 	private void updateImagePanel() {
