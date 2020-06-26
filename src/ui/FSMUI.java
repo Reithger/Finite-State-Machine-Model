@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.AdjustFSM;
 import ui.page.optionpage.OptionPage;
+import ui.page.optionpage.OptionPageManager;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
@@ -14,17 +15,12 @@ public class FSMUI {
 
 //---  Constants   ----------------------------------------------------------------------------
 	
-	private final static int WINDOW_WIDTH = 1000;
-	private final static int WINDOW_HEIGHT = 600;
-	private final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
+	public final static int WINDOW_WIDTH = 1000;
+	public final static int WINDOW_HEIGHT = 600;
+	public final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
 	private final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int CODE_START_OPTIONS_HEADER = 150;
 	private final static int CODE_START_IMAGES_HEADER = 150;
-	private final static int HEADER_EDIT = 0;
-	public final static OptionPage[] OPTION_PAGES = new OptionPage[] {
-			new AdjustFSM(0, 0, WINDOW_WIDTH/2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)),
-			new AdjustFSM(0, 0, WINDOW_WIDTH/2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)),
-	};
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -32,6 +28,8 @@ public class FSMUI {
 	private WindowFrame frame;
 	/** ElementPanel object handling the presentation of images to the user relating to the work they are doing*/
 	private ImagePage imagePage;
+	
+	private OptionPageManager optionPageManager;
 	/** ElementPanel object handling the organization and accessing of all currently available images*/
 	private ElementPanel imageHeader;
 	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
@@ -42,6 +40,7 @@ public class FSMUI {
 	public FSMUI() {
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
 		imagePage = new ImagePage();
+		optionPageManager = new OptionPageManager();
 		createPages();
 		initializePanels();
 		allotImage("/assets/test_image.jpg");
@@ -52,9 +51,11 @@ public class FSMUI {
 	
 	private void createPages() {
 		frame.reserveWindow("Home");
-		frame.reservePanel("Home", "optionHeader", generateOptionHeader(0, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL))));
-		frame.reservePanel("Home", "imageHeader", generateImageHeader(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL))));
-		frame.reservePanel("Home", "optionSpace", OptionPage.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL), OPTION_PAGES));
+		optionHeader = generateOptionHeader(0, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)));
+		imageHeader = generateImageHeader(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)));
+		frame.reservePanel("Home", "optionHeader", optionHeader);
+		frame.reservePanel("Home", "imageHeader", imageHeader);
+		frame.reservePanel("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 		frame.reservePanel("Home", "imageSpace", imagePage.generateElementPanel(WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 	}
 	
@@ -80,17 +81,6 @@ public class FSMUI {
 	}
 	
 	//-- Generate ElementPanels  ------------------------------
-	
-	/**
-	 * Able to navigate the image: zoom in/out, move around, etc.
-	 * 
-	 * @param path
-	 * @param x
-	 * @param y
-	 * @param width
-	 * @param height
-	 * @return
-	 */
 
 	private ElementPanel generateOptionHeader(int x, int y, int width, int height) {
 		ElementPanel p = new ElementPanel(x, y, width, height) {
@@ -100,8 +90,8 @@ public class FSMUI {
 			
 			public void clickBehaviour(int code, int x, int y) {
 				int cod = code - CODE_START_OPTIONS_HEADER;
-				if(cod < OPTION_PAGES.length && cod >= 0) {
-					OptionPage.setCurrentOptionPageIndex(cod);
+				if(cod < optionPageManager.getOptionPageList().length && cod >= 0) {
+					optionPageManager.setCurrentOptionPageIndex(cod);
 					updateActiveOptionPage();
 				}
 				updateOptionHeader();
@@ -133,21 +123,20 @@ public class FSMUI {
 		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
 		return p;
 	}
-	
-	
+		
 	//-- Update ElementPanels  --------------------------------
 	
 	private void updateOptionHeader() {
 		ElementPanel p = optionHeader;
 		p.removeElementPrefixed("header");
-		for(int i = 0 ; i < OPTION_PAGES.length; i++) {
+		for(int i = 0 ; i < optionPageManager.getOptionPageList().length; i++) {
 			int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
 			int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
 			int wid = WINDOW_WIDTH / 2 / 6;
 			int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
-			p.addRectangle("header_rect_" + i, 10, posX, posY, wid, hei, true, i == OptionPage.getCurrentOptionPageIndex() ? Color.green : Color.gray);
+			p.addRectangle("header_rect_" + i, 10, posX, posY, wid, hei, true, i == optionPageManager.getCurrentOptionPageIndex() ? Color.green : Color.gray);
 			p.addButton("header_butt_" + i, 10, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i, true);
-			p.addText("header_text_" + i, 15, posX, posY, wid, hei, OPTION_PAGES[i].getHeader(), OPTIONS_FONT, true, true, true);
+			p.addText("header_text_" + i, 15, posX, posY, wid, hei, optionPageManager.getOptionPageList()[i].getHeader(), OPTIONS_FONT, true, true, true);
 		}
 	}
 
@@ -183,11 +172,13 @@ public class FSMUI {
 	}
 	
 	private void updateActiveOptionPage() {
-		OPTION_PAGES[OptionPage.getCurrentOptionPageIndex()].drawPage();
+		optionPageManager.drawPage();
+		updateOptionHeader();
 	}
 
 	private void updateImagePanel() {
 		imagePage.drawPage();
+		updateImageHeader();
 	}
 	
 }
