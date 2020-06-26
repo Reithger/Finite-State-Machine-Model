@@ -1,4 +1,4 @@
-package ui.optionpage;
+package ui.page.optionpage;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -30,7 +30,8 @@ public abstract class OptionPage {
 	private String[][][] contents;
 	/** Code system is a bit awkward: negative value makes a button not appear but be referenced, don't double up any values*/
 	private int[][] codes;
-	private ElementPanel p;
+	private static ElementPanel p;
+	private static int currentOptionPageIndex;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -161,10 +162,6 @@ public abstract class OptionPage {
 			}
 		}
 	}
-
-	public void assignElementPanel(ElementPanel pIn) {
-		p = pIn;
-	}
 	
 	public abstract void applyCode(int code);
 
@@ -174,6 +171,25 @@ public abstract class OptionPage {
 			return true;
 		}
 		return false;
+	}
+
+	public static ElementPanel generateElementPanel(int x, int y, int width, int height, OptionPage[] optionPages) {
+		p = new ElementPanel(x, y, width, height) {
+			public void keyBehaviour(char code) {
+				System.out.println(getFocusElement() + " " + code);
+			}
+			
+			public void clickBehaviour(int code, int x, int y) {
+				optionPages[getCurrentOptionPageIndex()].applyCode(code);
+			}
+		};
+		return p;
+	}
+	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
+	public static void setCurrentOptionPageIndex(int in) {
+		currentOptionPageIndex = in;
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -247,4 +263,8 @@ public abstract class OptionPage {
 		return header + "_option_" + categories[i] + "_" + labels[i][j] + "_" + k;
 	}
 
+	public static int getCurrentOptionPageIndex() {
+		return currentOptionPageIndex;
+	}
+	
 }

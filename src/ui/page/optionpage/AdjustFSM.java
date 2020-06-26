@@ -1,4 +1,4 @@
-package ui.optionpage;
+package ui.page.optionpage;
 
 import java.util.Arrays;
 
