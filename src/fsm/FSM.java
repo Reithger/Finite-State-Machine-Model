@@ -16,7 +16,7 @@ import java.util.*;
  * 
  * It is part of the fsm package.
  * 
- * @author Mac Clevinger and Graeme Zinck
+ * @author Ada Clevinger and Graeme Zinck
  */
 
 public abstract class FSM<T extends Transition> extends TransitionSystem<T> implements Observability<T>,	

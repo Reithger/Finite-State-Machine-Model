@@ -14,7 +14,7 @@ public class AdjustFSM extends OptionPage{
 	};
 	private final static String[][] TYPES = new String[][] {
 		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_EMPTY},
-		{ENTRY_TEXT_TRIPLE, ENTRY_TEXT_DOUBLE, ENTRY_TEXT_QUARTET,},
+		{ENTRY_TEXT_TRIPLE, ENTRY_CHECKBOX, ENTRY_TEXT_QUARTET,},
 	};
 	private final static int CODE_ACCESS_NUM_STATES = -5;
 	private final static int CODE_ACCESS_NUM_EVENTS = -6;
@@ -23,7 +23,7 @@ public class AdjustFSM extends OptionPage{
 	/** Make sure codes are high values to give buffer for background behaviors*/
 	private final static int[][] CODES = new int[][] {
 		{CODE_ACCESS_NUM_STATES, CODE_ACCESS_NUM_EVENTS, CODE_ACCESS_NUM_TRANS, CODE_GENERATE_FSM},
-		{103, 104, 105},
+		{103, -8, 105},
 	};
 	
 //---  Constructors   -------------------------------------------------------------------------

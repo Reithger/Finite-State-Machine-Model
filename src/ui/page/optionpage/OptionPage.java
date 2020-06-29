@@ -16,7 +16,7 @@ public abstract class OptionPage {
 	public final static String ENTRY_TEXT_DOUBLE = "D";
 	public final static String ENTRY_TEXT_TRIPLE = "T";
 	public final static String ENTRY_TEXT_QUARTET = "Q";
-	public final static String ENTRY_CHECKMARK = "C";
+	public final static String ENTRY_CHECKBOX = "C";
 	public final static String ENTRY_EMPTY = "E";
 	private final static String DEFAULT_TEXT_ENTRY_CONTENTS = "";
 	
@@ -27,6 +27,7 @@ public abstract class OptionPage {
 	private boolean[] openCategories;
 	private String[][] labels;
 	private String[][] types;
+	/** Contents can be string phrases or string representations of boolean decision making*/
 	private String[][][] contents;
 	/** Code system is a bit awkward: negative value makes a button not appear but be referenced, don't double up any values*/
 	private int[][] codes;
@@ -61,89 +62,49 @@ public abstract class OptionPage {
 		int codeStart = categories.length;
 		for(int i = 0; i < categories.length; i++) {
 			//Category header
-			int posX1 = p.getWidth() / 3 / 3;
-			int posY1 = startY;
-			String categHeaderName = header + "_option_header_text_" + i;
-			if(!p.moveElement(categHeaderName, posX1, posY1)){
-				p.addText(categHeaderName, 15, posX1, posY1, p.getHeight() * 9 / 10, p.getHeight() / 20, categories[i], OPTIONS_FONT, true, true, true);
-			}
-			String categButtonName = header + "_option_header_butt_" + i;
-			if(!p.moveElement(categButtonName, posX1, posY1)) {
-				p.addButton(categButtonName, 10, posX1, posY1, p.getHeight() * 9 / 10, p.getHeight() / 20, i, true);
-			}
-			int posX2 = p.getWidth() / 20;
-			int posY2 = startY + p.getHeight() / 40;
-			String categLineName = header + "_option_line_" + i;
-			if(!p.moveElement(categLineName, posX2, posY2)) {
-				p.addLine(categLineName, 5,  posX2, posY2, p.getWidth() * 11 / 20, startY + p.getHeight() / 40, 3, Color.black);
-			}
+			int posX = p.getWidth() / 3 / 3;
+			int posY = startY;
+			handleText(header + "_option_header_text_" + i, posX, posY, p.getHeight() * 9/10, p.getHeight() / 20, categories[i]);
+			handleButton(header + "_option_header_butt_" + i, posX, posY, p.getHeight() * 9 / 10, p.getHeight() / 20, i);
+			posX = p.getWidth() / 20;
+			posY = startY + p.getHeight() / 40;
+			handleLine(header + "_option_line_" + i, posX, posY, p.getWidth() * 11 / 20, startY + p.getHeight() / 40, 3, Color.black);
 			startY += p.getHeight() / 18;
 			//If category closed, iterate codeStart to maintain distance and move Elements away from view
 			if(openCategories[i] == false) {
 				for(int j = 0; j < types[i].length; j++) {
 					codeStart += getEntryTextSize(types[i][j]);
-					String labelTextName = header + "_option_text_" + i + "_" + j;
-					String labelLineName = header + "_option_line_" + i + "_" + j;
-					String submitRectangleName = header + "_option_rect_" + i + "_" + j;
-					String submitButtonName = header + "_option_butt_" + i + "_" + j;
-					int disX = -100;
-					int disY = -100;
-					p.moveElement(labelTextName, disX, disY);
-					p.moveElement(labelLineName, disX, disY);
-					p.moveElement(submitRectangleName, disX, disY);
-					p.moveElement(submitButtonName, disX, disY);
-					int num = getEntryTextSize(types[i][j]);
-					for(int k = 0; k < num; k++) {
-						String entryRectangleName = header + "_option_rect_" + i + "_" + j + "_" + k;
-						String entryTextEntryName = getTextEntryName(i, j, k);
-						p.moveElement(entryRectangleName, disX, disY);
-						p.moveElement(entryTextEntryName, disX, disY);
-					}
+					p.moveElementPrefixed(header + "_option_" + i + "_" + j, -100, -100);
 				}
 				continue;
 			}
 			for(int j = 0; j < labels[i].length; j++) {
 				//Label
-				int posX3 = p.getWidth() / 3 / 2;
-				int posY3 = startY;
-				String labelTextName = header + "_option_text_" + i + "_" + j;
-				if(!p.moveElement(labelTextName, posX3, posY3)){
-					p.addText(labelTextName, 10, posX3, posY3, p.getWidth() / 3, p.getHeight() / 20, labels[i][j], OPTIONS_FONT, true, true, true);
-				}
-				int posX4 = p.getWidth() / 20;
-				int posY4 = startY + p.getHeight() / 40;
-				String labelLineName = header + "_option_line_" + i + "_" + j;
-				if(!p.moveElement(labelLineName, posX4, posY4)) {
-					p.addLine(labelLineName, 5, posX4, posY4, p.getWidth() * 19 / 20, startY + p.getHeight() / 40, 1, Color.black);
-				}
-				//Get number of text entries; need to make flexible for checkbox
-				int num = getEntryTextSize(types[i][j]);
-				for(int k = 0; k < num; k++) {
-					//Draws text entries and iterates to next position
-					String star = contents[i][j][k] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[i][j][k];
-					int posX5 = p.getWidth() / 3 + p.getWidth() / 3 / 4 * (k + 1);
-					int posY5 = startY;
-					String entryRectangleName = header + "_option_rect_" + i + "_" + j + "_" + k;
-					if(!p.moveElement(entryRectangleName, posX5, posY5)) {
-						p.addRectangle(entryRectangleName, 5, posX5, posY5, p.getWidth() / 3 / (5), p.getHeight() / 30, true, Color.white, Color.gray);
-					}
-					String entryTextEntryName = getTextEntryName(i, j, k);
-					if(!p.moveElement(entryTextEntryName, posX5, posY5)) {
-						p.addTextEntry(entryTextEntryName, 10, posX5, posY5, p.getWidth() / 3 / (5), p.getHeight() / 30, codeStart++, star, OPTIONS_FONT, true, true, true);
-					}
+				handleText(header + "_option_" + i + "_" + j + "_text", p.getWidth() / 3 / 2, startY, p.getWidth() / 3, p.getHeight() / 20, labels[i][j]);
+				handleLine(header + "_option_"  + i + "_" + j + "_line", p.getWidth() / 20, startY + p.getHeight() / 40, p.getWidth() * 19 / 20, startY + p.getHeight() / 40, 1, Color.black);
+				switch(types[i][j]) {
+					case ENTRY_CHECKBOX:
+						posX = p.getWidth() / 3 + p.getWidth() / 3 / 4;
+						handleRectangle(header + "_option_"  + i + "_" + j + "_checkbox_rect", posX, startY, p.getHeight() / 30, p.getHeight() / 30, contents[i][j][0].equals("i") ? Color.white : Color.black, Color.gray);
+						handleButton(header + "_option_" + i + "_" + j + "_checkbox_button", posX, startY, p.getWidth() / 3 / (5), p.getHeight() / 30, codes[i][j]);
+						break;
+					default:
+						int num = getEntryTextSize(types[i][j]);
+						for(int k = 0; k < num; k++) {
+							//Draws text entries and iterates to next position
+							String star = contents[i][j][k] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[i][j][k];
+							posX = p.getWidth() / 3 + p.getWidth() / 3 / 4 * (k + 1);
+							posY = startY;
+							handleRectangle(header + "_option_" + i + "_" + j + "_" + k + "_rect", posX, posY, p.getWidth() / 3 / (5), p.getHeight() / 30, Color.white, Color.gray);
+							handleTextEntry(getTextEntryName(i, j, k), posX, posY, p.getWidth() / 3 / (5), p.getHeight() / 30, codeStart++, star);
+						}
 				}
 				//Submission button
-				int posX6 = p.getWidth() - p.getWidth() / 3 / 4;
-				int posY6 = startY;
+				posX = p.getWidth() - p.getWidth() / 3 / 4;
+				posY = startY;
 				if(codes[i][j] >= 0) {
-					String submitRectangleName = header + "_option_rect_" + i + "_" + j;
-					if(!p.moveElement(submitRectangleName, posX6, posY6)) {
-						p.addRectangle(submitRectangleName, 10, posX6, posY6, p.getHeight() / 30, p.getHeight() / 30, true, Color.black, Color.gray);
-					}
-					String submitButtonName = header + "_option_butt_" + i + "_" + j;
-					if(!p.moveElement(submitButtonName, posX6, posY6)) {
-						p.addButton(submitButtonName, 10, posX6, posY6, p.getHeight() / 30, p.getHeight() / 30, codes[i][j], true);
-					}
+					handleRectangle(header + "_option_" + i + "_" + j + "_rect", posX, posY, p.getHeight() / 30, p.getHeight() / 30, Color.black, Color.gray);
+					handleButton(header + "_option_"  + i + "_" + j + "_butt", posX, posY, p.getHeight() / 30, p.getHeight() / 30, codes[i][j]);
 				}
 				startY += p.getHeight() / 18;
 			}
@@ -216,16 +177,7 @@ public abstract class OptionPage {
 		}
 		return null;
 	}
-	
-	public boolean getCheckboxEntry(String label) {
-		for(int i = 0; i < labels.length; i++) {
-			for(int j = 0; j < labels[i].length; j++) {
-				
-			}
-		}
-		return false;
-	}
-	
+		
 	private int getEntryTextSize(String in) {
 		switch(in) {
 			case ENTRY_TEXT_QUARTET:
@@ -236,6 +188,8 @@ public abstract class OptionPage {
 				return 2;
 			case ENTRY_TEXT_SINGLE:
 				return 1;
+			case ENTRY_CHECKBOX:
+				return 1;
 			case ENTRY_EMPTY:
 				return 0;
 			default:
@@ -244,7 +198,39 @@ public abstract class OptionPage {
 	}
 	
 	private String getTextEntryName(int i, int j, int k) {
-		return header + "_option_" + categories[i] + "_" + labels[i][j] + "_" + k;
+		return header + "_option_"  + i + "_" + j + "_" + k + "_" + categories[i] + "_" + labels[i][j] + "_" + k;
 	}
 
+//---  Composites   ---------------------------------------------------------------------------
+
+	private void handleText(String nom, int x, int y, int wid, int hei, String phr) {
+		if(!p.moveElement(nom, x, y)){
+			p.addText(nom, 15, x, y, wid, hei, phr, OPTIONS_FONT, true, true, true);
+		}
+	}
+
+	private void handleTextEntry(String nom, int x, int y, int wid, int hei, int cod, String phr) {
+		if(!p.moveElement(nom, x, y)){
+			p.addTextEntry(nom, 15, x, y, wid, hei, cod, phr, OPTIONS_FONT, true, true, true);
+		}
+	}
+	
+	private void handleButton(String nom, int x, int y, int wid, int hei, int code) {
+		if(!p.moveElement(nom, x, y)) {
+			p.addButton(nom, 10, x, y, wid, hei, code, true);
+		}
+	}
+	
+	private void handleLine(String nom, int x, int y, int x2, int y2, int thck, Color col) {
+		if(!p.moveElement(nom, x, y)) {
+			p.addLine(nom, 5, x, y, x2, y2, thck, col);
+		}
+	}
+	
+	private void handleRectangle(String nom, int x, int y, int wid, int hei, Color col, Color col2) {
+		if(!p.moveElement(nom, x, y)) {
+			p.addRectangle(nom, 5, x, y, wid, hei, true, col, col2);
+		}
+	}
+	
 }

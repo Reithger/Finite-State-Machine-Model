@@ -15,6 +15,8 @@ public class ImagePage {
 	private static final int DEFAULT_ORIGIN_X = 0;
 	private static final int DEFAULT_ORIGIN_Y = 0;
 	private static final double DEFAULT_ZOOM = 1.0;
+	private static final double UI_BOX_RATIO_Y = 3 / 4.0;
+	private static final double UI_BOX_RATIO_X = 4 / 5.0;
 	
 	//-- Codes  -----------------------------------------------
 	private static final int CODE_MOVE_RIGHT = 10;
@@ -24,6 +26,7 @@ public class ImagePage {
 	private static final int CODE_ZOOM_IN = 14;
 	private static final int CODE_ZOOM_OUT = 15;
 	private static final int CODE_REMOVE_IMAGE = 16;
+	private static final int CODE_RESET_POSITION = 17;
 	private static final char KEY_MOVE_RIGHT = 'd';
 	private static final char KEY_MOVE_DOWN = 'w';
 	private static final char KEY_MOVE_LEFT = 'a';
@@ -31,6 +34,7 @@ public class ImagePage {
 	private static final char KEY_ZOOM_IN = 'q';
 	private static final char KEY_ZOOM_OUT = 'e';
 	private static final char KEY_REMOVE_IMAGE = 'f';
+	private static final char KEY_RESET_POSITION = 'h';
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -41,6 +45,8 @@ public class ImagePage {
 	private ArrayList<Double> zoom;
 	private ArrayList<Integer> originX;
 	private ArrayList<Integer> originY;
+	private int originUIX;
+	private int originUIY;
 	private boolean dragging;
 	
 //---  Constructors   -------------------------------------------------------------------------
@@ -75,14 +81,20 @@ public class ImagePage {
 						break;
 					case KEY_ZOOM_IN:
 						zoom.set(currentImageIndex, zoom.get(currentImageIndex) * ZOOM_FACTOR);
-						removeCurrentImage();
+						updateCurrentImage();
 						break;
 					case KEY_ZOOM_OUT:
 						zoom.set(currentImageIndex, zoom.get(currentImageIndex) / ZOOM_FACTOR);
-						removeCurrentImage();
+						updateCurrentImage();
 						break;
 					case KEY_REMOVE_IMAGE:
 						removeImage(images.get(currentImageIndex));
+						break;
+					case KEY_RESET_POSITION:
+						originY.set(currentImageIndex, 0);
+						originX.set(currentImageIndex, 0);
+						zoom.set(currentImageIndex, 1.0);
+						updateCurrentImage();
 						break;
 				}
 				drawPage();
@@ -104,19 +116,27 @@ public class ImagePage {
 						break;
 					case CODE_ZOOM_IN:
 						zoom.set(currentImageIndex, zoom.get(currentImageIndex) * ZOOM_FACTOR);
-						removeCurrentImage();
+						updateCurrentImage();
 						break;
 					case CODE_ZOOM_OUT:
 						zoom.set(currentImageIndex, zoom.get(currentImageIndex) / ZOOM_FACTOR);
-						removeCurrentImage();
+						updateCurrentImage();
 						break;
 					case CODE_REMOVE_IMAGE:
 						removeImage(images.get(currentImageIndex));
+						break;
+					case CODE_RESET_POSITION:
+						originY.set(currentImageIndex, 0);
+						originX.set(currentImageIndex, 0);
+						zoom.set(currentImageIndex, 1.0);
+						updateCurrentImage();
 						break;
 				}
 				drawPage();
 			}
 		};
+		originUIX = (int)(width * UI_BOX_RATIO_X);
+		originUIY = (int)(height  * UI_BOX_RATIO_Y);
 		addFraming();
 		return p;
 	}
@@ -125,8 +145,8 @@ public class ImagePage {
 		return "image_" + images.get(index).substring(images.get(index).lastIndexOf("/") + 1);
 	}
 	
-	private void removeCurrentImage() {
-		p.removeElement(formImageName(currentImageIndex));
+	private void updateCurrentImage() {
+		p.addImage(formImageName(currentImageIndex), 10, originX.get(currentImageIndex), originY.get(currentImageIndex), false, images.get(currentImageIndex), zoom.get(currentImageIndex));
 	}
 	
 	public void allotImage(String path) {
@@ -164,6 +184,20 @@ public class ImagePage {
 				p.addImage(imageName, 10, posX, posY, false, images.get(i), zoom.get(i));
 			}
 		}
+		int imageSize = p.getWidth() / 20;
+		int spacing = imageSize * 4 / 3;
+		int posX = originUIX + (int)(p.getWidth() * (1 - UI_BOX_RATIO_X)) / 2;
+		int posY = originUIY + spacing * 3 / 4;
+		drawImageButton("ui_box_zoom_in", posX - spacing, posY, imageSize, imageSize, "/assets/ui/zoom_in.png", CODE_ZOOM_IN);
+		drawImageButton("ui_box_zoom_out", posX + spacing, posY, imageSize, imageSize, "/assets/ui/zoom_out.png", CODE_ZOOM_OUT);
+		posY += spacing;
+		drawImageButton("ui_box_move_up", posX, posY, imageSize, imageSize, "/assets/ui/up_arrow.png", CODE_MOVE_UP);
+		posY += spacing;
+		drawImageButton("ui_box_move_left", posX - spacing, posY, imageSize, imageSize, "/assets/ui/left_arrow.png", CODE_MOVE_LEFT);
+		drawImageButton("ui_box_move_right", posX + spacing, posY, imageSize, imageSize, "/assets/ui/right_arrow.png", CODE_MOVE_RIGHT);
+		drawImageButton("ui_box_UI_ring", posX, posY, imageSize, imageSize, "/assets/ui/UI_ring.png", CODE_RESET_POSITION);
+		posY += spacing;
+		drawImageButton("ui_box_move_down", posX, posY, imageSize, imageSize, "/assets/ui/down_arrow.png", CODE_MOVE_DOWN);
 	}
 
 	private void addFraming() {
@@ -173,6 +207,7 @@ public class ImagePage {
 		p.addLine("frame_line_4", 15, 0, 0, width, 0, 2, Color.BLACK);
 		p.addLine("frame_line_5", 15, width, height, width, 0, 5, Color.BLACK);
 		p.addLine("frame_line_6", 15, width, height, 0, height, 5, Color.BLACK);
+		p.addRectangle("rect_ui", 13, originUIX, originUIY, (int)(width * (1 - UI_BOX_RATIO_X)), (int)(height * (1 - UI_BOX_RATIO_Y)), false, Color.white, Color.black);
 	}
 
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -217,6 +252,24 @@ public class ImagePage {
 	
 	public Image getCurrentImage() {
 		return imageReferences.get(currentImageIndex);
+	}
+	
+//---  Composite   ----------------------------------------------------------------------------
+	
+	private void drawImageButton(String name, int x, int y, int wid, int hei, String path, int code) {
+		String imageName = name + "_image";
+		if(!p.moveElement(imageName, x, y)) {
+			double imgWid = p.retrieveImage(path).getWidth(null);
+			double zoom = 1.0;
+			if(imgWid != wid) {
+				zoom = wid / imgWid;
+			}
+			p.addImage(imageName, 15, x, y, true, path, zoom);
+		}
+		String buttonName = name + "_button";
+		if(!p.moveElement(buttonName, x, y)) {
+			p.addButton(buttonName, 15, x, y, wid, hei, code, true);
+		}
 	}
 	
 }
