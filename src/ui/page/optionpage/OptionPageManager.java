@@ -29,7 +29,7 @@ public class OptionPageManager {
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
-				OPTION_PAGES[currentOptionPageIndex].applyCode(code);
+				OPTION_PAGES[currentOptionPageIndex].handleMouseInput(code, x, y);
 			}
 		};
 		OptionPage.assignElementPanel(p);

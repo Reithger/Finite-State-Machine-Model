@@ -19,6 +19,8 @@ public abstract class OptionPage {
 	public final static String ENTRY_CHECKBOX = "C";
 	public final static String ENTRY_EMPTY = "E";
 	private final static String DEFAULT_TEXT_ENTRY_CONTENTS = "";
+	private final static String CHECKBOX_TRUE = "t";
+	private final static String CHECKBOX_FALSE = "f";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 
@@ -48,7 +50,7 @@ public abstract class OptionPage {
 			for(int j = 0; j < lab[i].length; j++) {
 				contents[i][j] = new String[getEntryTextSize(types[i][j])];
 				for(int k = 0; k < getEntryTextSize(types[i][j]); k++) {
-					
+					contents[i][j][k] = "";
 				}
 			}
 		}
@@ -57,7 +59,6 @@ public abstract class OptionPage {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public void drawPage() {
-		updateTextEntryContents();
 		int startY = p.getHeight() / 20;
 		int codeStart = categories.length;
 		for(int i = 0; i < categories.length; i++) {
@@ -85,7 +86,7 @@ public abstract class OptionPage {
 				switch(types[i][j]) {
 					case ENTRY_CHECKBOX:
 						posX = p.getWidth() / 3 + p.getWidth() / 3 / 4;
-						handleRectangle(header + "_option_"  + i + "_" + j + "_checkbox_rect", posX, startY, p.getHeight() / 30, p.getHeight() / 30, contents[i][j][0].equals("i") ? Color.white : Color.black, Color.gray);
+						handleRectangle(header + "_option_"  + i + "_" + j + "_checkbox_rect", posX, startY, p.getHeight() / 30, p.getHeight() / 30, contents[i][j][0].equals(CHECKBOX_FALSE) ? Color.white : Color.black, Color.gray);
 						handleButton(header + "_option_" + i + "_" + j + "_checkbox_button", posX, startY, p.getWidth() / 3 / (5), p.getHeight() / 30, codes[i][j]);
 						break;
 					default:
@@ -111,16 +112,14 @@ public abstract class OptionPage {
 		}
 	}
 	
-	private void updateTextEntryContents() {
-		for(int i = 0; i < categories.length; i++) {
-			for(int j = 0; j < labels[i].length; j++) {
-				for(int k = 0; k < getEntryTextSize(types[i][j]); k++) {
-					String textEntryName = getTextEntryName(i, j, k);
-					String text = p.getElementStoredText(textEntryName);
-					contents[i][j][k] = new String(text == null ? DEFAULT_TEXT_ENTRY_CONTENTS : text);
-				}
-			}
+	public void handleMouseInput(int code, int x, int y) {
+		int[] pos = getCodeIndices(code);
+		if(pos != null && types[pos[0]][pos[1]].equals(ENTRY_CHECKBOX)) {
+			System.out.println(contents[pos[0]][pos[1]][0]);
+			contents[pos[0]][pos[1]][0] = (contents[pos[0]][pos[1]][0].equals(CHECKBOX_TRUE) ? CHECKBOX_FALSE : CHECKBOX_TRUE);
+			p.removeElementPrefixed(header + "_option_" + pos[0] + "_" + pos[1] + "_checkbox_rect");
 		}
+		applyCode(code);
 	}
 	
 	public abstract void applyCode(int code);

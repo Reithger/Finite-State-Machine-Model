@@ -35,16 +35,26 @@ public class FSMUI {
 	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
 	private ElementPanel optionHeader;
 	
+	private boolean prep;
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FSMUI() {
-		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
+		prep = false;
+		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT) {
+			public void repaint() {
+				super.repaint();
+				if(prep)
+					updateDisplay();
+			}
+		};
 		imagePage = new ImagePage();
 		optionPageManager = new OptionPageManager();
 		createPages();
 		initializePanels();
 		allotImage("/assets/test_image.jpg");
 		allotImage("/assets/test_image2.jpg");
+		prep = true;
 	}
 	
 	//-- Support  ---------------------------------------------
@@ -126,8 +136,18 @@ public class FSMUI {
 		
 	//-- Update ElementPanels  --------------------------------
 	
+	private void updateDisplay() {
+		updateOptionHeader();
+		updateImageHeader();
+		updateActiveOptionPage();
+		updateImagePanel();
+	}
+	
 	private void updateOptionHeader() {
 		ElementPanel p = optionHeader;
+		if(p == null) {
+			return;
+		}
 		p.removeElementPrefixed("header");
 		for(int i = 0 ; i < optionPageManager.getOptionPageList().length; i++) {
 			int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
@@ -142,6 +162,9 @@ public class FSMUI {
 
 	private void updateImageHeader() {
 		ElementPanel p = imageHeader;
+		if(p == null) {
+			return;
+		}
 		p.removeElementPrefixed("header");
 		ArrayList<String> images = imagePage.getImages();
 		if(images.size() == 0) {
@@ -172,11 +195,17 @@ public class FSMUI {
 	}
 	
 	private void updateActiveOptionPage() {
+		if(optionPageManager == null) {
+			return;
+		}
 		optionPageManager.drawPage();
 		updateOptionHeader();
 	}
 
 	private void updateImagePanel() {
+		if(imagePage == null) {
+			return;
+		}
 		imagePage.drawPage();
 		updateImageHeader();
 	}
