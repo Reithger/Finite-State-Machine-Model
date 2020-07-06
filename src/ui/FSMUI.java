@@ -18,7 +18,7 @@ public class FSMUI {
 	public final static int WINDOW_WIDTH = 1000;
 	public final static int WINDOW_HEIGHT = 600;
 	public final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
-	private final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
+	private final static Font HEADER_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int CODE_START_OPTIONS_HEADER = 150;
 	private final static int CODE_START_IMAGES_HEADER = 150;
 	
@@ -46,7 +46,7 @@ public class FSMUI {
 		imagePage = new ImagePage();
 		optionPageManager = new OptionPageManager();
 		createPages();
-		initializePanels();
+		updateDisplay();
 		allotImage("/assets/test_image.jpg");
 		allotImage("/assets/test_image2.jpg");
 	}
@@ -62,14 +62,7 @@ public class FSMUI {
 		frame.reservePanel("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 		frame.reservePanel("Home", "imageSpace", imagePage.generateElementPanel(WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 	}
-	
-	private void initializePanels() {
-		updateOptionHeader();
-		updateActiveOptionPage();
-		updateImageHeader();
-		updateImagePanel();
-	}
-	
+		
 //---  Operations   ---------------------------------------------------------------------------
 
 	private void allotImage(String path) {
@@ -93,6 +86,7 @@ public class FSMUI {
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
+				System.out.println(code);
 				int cod = code - CODE_START_OPTIONS_HEADER;
 				if(cod < optionPageManager.getOptionPageList().length && cod >= 0) {
 					optionPageManager.setCurrentOptionPageIndex(cod);
@@ -142,15 +136,17 @@ public class FSMUI {
 		if(p == null) {
 			return;
 		}
-		p.removeElementPrefixed("header");
 		for(int i = 0 ; i < optionPageManager.getOptionPageList().length; i++) {
 			int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
 			int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
 			int wid = WINDOW_WIDTH / 2 / 6;
 			int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
-			p.addRectangle("header_rect_" + i, 10, posX, posY, wid, hei, true, i == optionPageManager.getCurrentOptionPageIndex() ? Color.green : Color.gray);
-			p.addButton("header_butt_" + i, 10, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i, true);
-			p.addText("header_text_" + i, 15, posX, posY, wid, hei, optionPageManager.getOptionPageList()[i].getHeader(), OPTIONS_FONT, true, true, true);
+			if(i == optionPageManager.getCurrentOptionPageIndex()) {
+				handleRectangle(p, "header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
+			}
+			handleRectangle(p, "header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
+			handleButton(p, "header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
+			handleText(p, "header_text_" + i, posX, posY, wid, hei, optionPageManager.getOptionPageList()[i].getHeader());
 		}
 	}
 
@@ -159,31 +155,29 @@ public class FSMUI {
 		if(p == null) {
 			return;
 		}
-		p.removeElementPrefixed("header");
 		ArrayList<String> images = imagePage.getImages();
 		if(images.size() == 0) {
 			int posX = p.getWidth()/ 2;
 			int posY = p.getHeight() / 2;
 			int wid = p.getWidth() / 3;
 			int hei = p.getHeight() * 2 / 3;
-			String noHeaderRectName = "header_rect";
-			p.addRectangle(noHeaderRectName, 10, posX, posY, wid, hei, true, Color.gray);
-			String noHeaderTextName = "header_text";
-			p.addText(noHeaderTextName, 15, posX, posY, wid, hei, "No images currently available", OPTIONS_FONT, true, true, true);
+			handleRectangle(p, "stand_in_header_rect", 10, posX, posY, wid, hei, Color.gray, Color.black);
+			handleText(p, "stand_in_header_text", posX, posY, wid, hei, "No images currently available");
 		}
 		else {
+			p.removeElementPrefixed("stand_in");
 			for(int i = 0 ; i < images.size(); i++) {
-				int posX = p.getWidth()/ 10 + i * (p.getWidth() / 5);
-				int posY = p.getHeight() / 2;
-				int wid = p.getWidth() / 6;
-				int hei = p.getHeight() * 2 / 3;
-				String headerRectName = "header_rect_" + i;
-				p.addRectangle(headerRectName, 10, posX, posY, wid, hei, true, i == imagePage.getCurrentImageHeader() ? Color.green : Color.gray);
-				String headerButtName = "header_butt_" + i;
-				p.addButton(headerButtName, 10, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i, true);
-				String headerTextName = "header_text_" + i;
+				int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
+				int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
+				int wid = WINDOW_WIDTH / 2 / 6;
+				int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
+				if(i == imagePage.getCurrentImageIndex()) {
+					handleRectangle(p, "header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
+				}
+				handleRectangle(p, "header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
+				handleButton(p, "header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
 				String nom = images.get(i).substring(images.get(i).lastIndexOf("/") + 1);
-				p.addText(headerTextName, 15, posX, posY, wid, hei, nom, OPTIONS_FONT, true, true, true);
+				handleText(p, "header_text_" + i, posX, posY, wid, hei, nom);
 			}
 		}
 	}
@@ -203,5 +197,36 @@ public class FSMUI {
 		imagePage.drawPage();
 		updateImageHeader();
 	}
+
+//---  Composites   ---------------------------------------------------------------------------
+
+	private void handleText(ElementPanel p, String nom, int x, int y, int wid, int hei, String phr) {
+		if(!p.moveElement(nom, x, y)){
+			p.addText(nom, 15, x, y, wid, hei, phr, HEADER_FONT, true, true, true);
+		}
+	}
+
+	private void handleTextEntry(ElementPanel p, String nom, int x, int y, int wid, int hei, int cod, String phr) {
+		if(!p.moveElement(nom, x, y)){
+			p.addTextEntry(nom, 15, x, y, wid, hei, cod, phr, HEADER_FONT, true, true, true);
+		}
+	}
 	
+	private void handleButton(ElementPanel p, String nom, int x, int y, int wid, int hei, int code) {
+		if(!p.moveElement(nom, x, y)) {
+			p.addButton(nom, 10, x, y, wid, hei, code, true);
+		}
+	}
+	
+	private void handleLine(ElementPanel p, String nom, int x, int y, int x2, int y2, int thck, Color col) {
+		if(!p.moveElement(nom, x, y)) {
+			p.addLine(nom, 5, x, y, x2, y2, thck, col);
+		}
+	}
+	
+	private void handleRectangle(ElementPanel p, String nom, int prior, int x, int y, int wid, int hei, Color col, Color col2) {
+		if(!p.moveElement(nom, x, y)) {
+			p.addRectangle(nom, prior, x, y, wid, hei, true, col, col2);
+		}
+	}
 }

@@ -63,7 +63,7 @@ public abstract class OptionPage {
 		int codeStart = categories.length;
 		for(int i = 0; i < categories.length; i++) {
 			//Category header
-			int posX = p.getWidth() / 3 / 3;
+			int posX = p.getWidth() / 3 / 2;
 			int posY = startY;
 			handleText(header + "_option_header_text_" + i, posX, posY, p.getHeight() * 9/10, p.getHeight() / 20, categories[i]);
 			handleButton(header + "_option_header_butt_" + i, posX, posY, p.getHeight() * 9 / 10, p.getHeight() / 20, i);

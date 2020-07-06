@@ -246,7 +246,7 @@ public class ImagePage {
 		return images;
 	}
 	
-	public int getCurrentImageHeader() {
+	public int getCurrentImageIndex() {
 		return currentImageIndex;
 	}
 	

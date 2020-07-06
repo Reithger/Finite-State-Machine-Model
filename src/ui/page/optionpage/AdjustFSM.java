@@ -1,20 +1,22 @@
 package ui.page.optionpage;
 
-import java.util.Arrays;
-
 public class AdjustFSM extends OptionPage{
 	
 //---  Constant Values   ----------------------------------------------------------------------
 	
 	private final static String HEADER = "Head";
-	private final static String[] CATEGORIES = new String[] {"Generate FSM", "Edit FSM"};
+	private final static String[] CATEGORIES = new String[] {"Generate FSM", "Edit FSM States", "Edit FSM Events", "Edit FSM Transitions"};
 	private final static String[][] LABELS = new String[][] {
 		{"Number of States", "Number of Events", "Number of Transitions", "Generate"},
-		{"Option_1b", "Option 2b", "Option 3b"},
+		{"Add State", "Remove State", "Change State Name"},
+		{"Add Event", "Remove Event", "Change Event Name"},
+		{"Add Transition", "Remove Transition", "Change Transition Event"},
 	};
 	private final static String[][] TYPES = new String[][] {
 		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_EMPTY},
-		{ENTRY_TEXT_TRIPLE, ENTRY_CHECKBOX, ENTRY_TEXT_QUARTET,},
+		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_DOUBLE,},
+		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_DOUBLE},
+		{ENTRY_TEXT_TRIPLE, ENTRY_TEXT_TRIPLE, ENTRY_TEXT_QUARTET},
 	};
 	private final static int CODE_ACCESS_NUM_STATES = -5;
 	private final static int CODE_ACCESS_NUM_EVENTS = -6;
@@ -24,6 +26,8 @@ public class AdjustFSM extends OptionPage{
 	private final static int[][] CODES = new int[][] {
 		{CODE_ACCESS_NUM_STATES, CODE_ACCESS_NUM_EVENTS, CODE_ACCESS_NUM_TRANS, CODE_GENERATE_FSM},
 		{103, -8, 105},
+		{0, 0, 0},
+		{0, 0, 0},
 	};
 	
 //---  Constructors   -------------------------------------------------------------------------
