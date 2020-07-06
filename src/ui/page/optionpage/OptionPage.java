@@ -86,8 +86,8 @@ public abstract class OptionPage {
 				switch(types[i][j]) {
 					case ENTRY_CHECKBOX:
 						posX = p.getWidth() / 3 + p.getWidth() / 3 / 4;
-						handleRectangle(header + "_option_"  + i + "_" + j + "_checkbox_rect", posX, startY, p.getHeight() / 30, p.getHeight() / 30, contents[i][j][0].equals(CHECKBOX_FALSE) ? Color.white : Color.black, Color.gray);
-						handleButton(header + "_option_" + i + "_" + j + "_checkbox_button", posX, startY, p.getWidth() / 3 / (5), p.getHeight() / 30, codes[i][j]);
+						handleRectangle(header + "_option_"  + i + "_" + j + "_checkbox_rect", posX, startY, p.getHeight() / 30, p.getHeight() / 30, (contents[i][j][0].equals(CHECKBOX_FALSE) ? Color.white : Color.gray), Color.black);
+						handleButton(header + "_option_" + i + "_" + j + "_checkbox_button", posX, startY, p.getHeight() / 30, p.getHeight() / 30, codes[i][j]);
 						break;
 					default:
 						int num = getEntryTextSize(types[i][j]);
@@ -115,9 +115,11 @@ public abstract class OptionPage {
 	public void handleMouseInput(int code, int x, int y) {
 		int[] pos = getCodeIndices(code);
 		if(pos != null && types[pos[0]][pos[1]].equals(ENTRY_CHECKBOX)) {
+			System.out.println(code + " " + x + " " + y);
 			System.out.println(contents[pos[0]][pos[1]][0]);
 			contents[pos[0]][pos[1]][0] = (contents[pos[0]][pos[1]][0].equals(CHECKBOX_TRUE) ? CHECKBOX_FALSE : CHECKBOX_TRUE);
-			p.removeElementPrefixed(header + "_option_" + pos[0] + "_" + pos[1] + "_checkbox_rect");
+			p.removeElement(header + "_option_" + pos[0] + "_" + pos[1] + "_checkbox_rect");
+			drawPage();
 		}
 		applyCode(code);
 	}

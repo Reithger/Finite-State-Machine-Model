@@ -29,6 +29,7 @@ public class OptionPageManager {
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
+				System.out.println("H: " + code + " " + x + " " + y);
 				OPTION_PAGES[currentOptionPageIndex].handleMouseInput(code, x, y);
 			}
 		};

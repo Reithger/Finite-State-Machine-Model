@@ -35,17 +35,12 @@ public class FSMUI {
 	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
 	private ElementPanel optionHeader;
 	
-	private boolean prep;
-	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FSMUI() {
-		prep = false;
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT) {
 			public void repaint() {
 				super.repaint();
-				if(prep)
-					updateDisplay();
 			}
 		};
 		imagePage = new ImagePage();
@@ -54,7 +49,6 @@ public class FSMUI {
 		initializePanels();
 		allotImage("/assets/test_image.jpg");
 		allotImage("/assets/test_image2.jpg");
-		prep = true;
 	}
 	
 	//-- Support  ---------------------------------------------
