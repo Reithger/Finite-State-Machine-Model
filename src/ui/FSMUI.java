@@ -2,8 +2,16 @@ package ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Scanner;
 
+import fsm.TransitionSystem;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.AdjustFSM;
 import ui.page.optionpage.OptionPage;
@@ -21,37 +29,89 @@ public class FSMUI {
 	private final static Font HEADER_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int CODE_START_OPTIONS_HEADER = 150;
 	private final static int CODE_START_IMAGES_HEADER = 150;
+	private final static String OS = System.getProperty("os.name");
+	private final static String[] CONFIG_PHRASES = new String[] {
+			"tempDirForLinux", "dorForLinux", "tempDirForWindows",
+			"dotForWindows", "tempDirForMacOSX", "dorForMacOSX",
+	};
 	
 //---  Instance Variables   -------------------------------------------------------------------
+	
+	//-- UI  --------------------------------------------------
 	
 	/** WindowFrame object containing several ElementPanels that provide different services to the user, manages repainting*/
 	private WindowFrame frame;
 	/** ElementPanel object handling the presentation of images to the user relating to the work they are doing*/
 	private ImagePage imagePage;
-	
+	/** */
 	private OptionPageManager optionPageManager;
 	/** ElementPanel object handling the organization and accessing of all currently available images*/
 	private ElementPanel imageHeader;
 	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
 	private ElementPanel optionHeader;
 	
+	//-- System Information  ----------------------------------
+	
+	private ArrayList<TransitionSystem> fsms;
+	
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FSMUI() {
-		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT) {
-			public void repaint() {
-				super.repaint();
-			}
-		};
+		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
 		imagePage = new ImagePage();
 		optionPageManager = new OptionPageManager();
+		fsms = new ArrayList<TransitionSystem>();
 		createPages();
 		updateDisplay();
+		fileConfiguration();
 		allotImage("/assets/test_image.jpg");
-		allotImage("/assets/test_image2.jpg");
 	}
 	
 	//-- Support  ---------------------------------------------
+	
+	private void fileConfiguration() {
+		File settings = new File("./settings/");
+		settings.mkdir();
+		File config = new File(settings.getAbsolutePath() + "\\config.txt");
+		if(!config.exists() || verifyConfigFile(config)){
+			try {
+				config.createNewFile();
+				BufferedReader defaultConfig = retrieveFileReader("/assets/config/config.properties");
+				RandomAccessFile write = new RandomAccessFile(config, "rw");
+				int c = defaultConfig.read();
+				while(c != -1) {
+					write.write(c);
+					c = defaultConfig.read();
+				}
+				write.close();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+				//TODO: Error window popup
+			}
+		}
+		//TODO: Existence of a config file (if none, write from stored default path)
+		//TODO: Retrieve and assign file directories
+		//TODO: Folder for images, text representation of FSM objects
+	}
+	
+	private boolean verifyConfigFile(File f) {
+		try {
+			Scanner sc = new Scanner(f);
+			String line = sc.nextLine();
+			while(line != null) {
+				if(!line.matches("#.*")) {
+					
+				}
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			//TODO: Error window popup
+		}
+		return true;
+	}
 	
 	private void createPages() {
 		frame.reserveWindow("Home");
@@ -65,16 +125,29 @@ public class FSMUI {
 		
 //---  Operations   ---------------------------------------------------------------------------
 
-	private void allotImage(String path) {
+	public void allotImage(String path) {
 		imagePage.allotImage(path);
 		updateImageHeader();
 		updateImagePanel();
 	}
 
-	private void removeImage(String path) {
+	public void removeImage(int index) {
+		fsms.remove(index);
+	}
+	
+	public void removeImage(String path) {
 		imagePage.removeImage(path);
 		updateImageHeader();
 		updateImagePanel();
+	}
+	
+	public void allotTransitionSystem(TransitionSystem in) {
+		fsms.add(in);
+		//TODO: Write FSM to .png, use file location to allotImage
+	}
+	
+	public void removeTransitionSystem(int index) {
+		fsms.remove(index);
 	}
 	
 	//-- Generate ElementPanels  ------------------------------
@@ -229,4 +302,22 @@ public class FSMUI {
 			p.addRectangle(nom, prior, x, y, wid, hei, true, col, col2);
 		}
 	}
+
+//---  Mechanical   ---------------------------------------------------------------------------
+	
+	public BufferedReader retrieveFileReader(String pathIn) {
+		String path = pathIn.replace("\\", "/");
+		InputStream is = FSMUI.class.getResourceAsStream(path); 
+		if(is == null) {
+			try {
+				is = new FileInputStream(new File(path));
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return new BufferedReader(new InputStreamReader(is));
+	}
+	
 }
