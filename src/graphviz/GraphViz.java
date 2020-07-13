@@ -138,6 +138,10 @@ public class GraphViz
  
 //--- Operations  -----------------------------------------------------------------------------
  
+ 	public boolean verifyDotPath() {
+	 	return configFile.getProperty("dotFor" + osName) == null;
+ 	}
+ 	
  	/**
  	 * Increase the image size (dpi) if possible.
  	 */

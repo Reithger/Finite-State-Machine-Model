@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import fsm.TransitionSystem;
+import graphviz.GraphViz;
+import input.Communication;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.AdjustFSM;
 import ui.page.optionpage.OptionPage;
@@ -26,14 +28,18 @@ public class FSMUI {
 	public final static int WINDOW_WIDTH = 1000;
 	public final static int WINDOW_HEIGHT = 600;
 	public final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
-	private final static Font HEADER_FONT = new Font("Serif", Font.BOLD, 12);
+	private final static Font DEFAULT_FONT = new Font("Serif", Font.BOLD, 16);
+	private final static Font ENTRY_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int CODE_START_OPTIONS_HEADER = 150;
 	private final static int CODE_START_IMAGES_HEADER = 150;
+	
+	//-- Config  ----------------------------------------------
 	private final static String OS = System.getProperty("os.name");
-	private final static String[] CONFIG_PHRASES = new String[] {
-			"tempDirForLinux", "dorForLinux", "tempDirForWindows",
-			"dotForWindows", "tempDirForMacOSX", "dorForMacOSX",
-	};
+	private final static String DOT_ADDRESS_VAR = "dotAddress";
+	private final static String ADDRESS_SETTINGS = "./Finite State Machine Model/settings/";
+	private final static String ADDRESS_IMAGES = "./Finite State Machine Model/images";
+	private final static String ADDRESS_SOURCES = "./Finite State Machine Model/sources";
+	private final static String ADDRESS_CONFIG = ADDRESS_SETTINGS + "/config.txt";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -54,65 +60,23 @@ public class FSMUI {
 	
 	private ArrayList<TransitionSystem> fsms;
 	
+	private volatile String dotAddress;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FSMUI() {
+		fileConfiguration();
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
 		imagePage = new ImagePage();
 		optionPageManager = new OptionPageManager();
 		fsms = new ArrayList<TransitionSystem>();
 		createPages();
 		updateDisplay();
-		fileConfiguration();
 		allotImage("/assets/test_image.jpg");
 	}
 	
 	//-- Support  ---------------------------------------------
-	
-	private void fileConfiguration() {
-		File settings = new File("./settings/");
-		settings.mkdir();
-		File config = new File(settings.getAbsolutePath() + "\\config.txt");
-		if(!config.exists() || verifyConfigFile(config)){
-			try {
-				config.createNewFile();
-				BufferedReader defaultConfig = retrieveFileReader("/assets/config/config.properties");
-				RandomAccessFile write = new RandomAccessFile(config, "rw");
-				int c = defaultConfig.read();
-				while(c != -1) {
-					write.write(c);
-					c = defaultConfig.read();
-				}
-				write.close();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-				//TODO: Error window popup
-			}
-		}
-		//TODO: Existence of a config file (if none, write from stored default path)
-		//TODO: Retrieve and assign file directories
-		//TODO: Folder for images, text representation of FSM objects
-	}
-	
-	private boolean verifyConfigFile(File f) {
-		try {
-			Scanner sc = new Scanner(f);
-			String line = sc.nextLine();
-			while(line != null) {
-				if(!line.matches("#.*")) {
-					
-				}
-			}
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-			//TODO: Error window popup
-		}
-		return true;
-	}
-	
+
 	private void createPages() {
 		frame.reserveWindow("Home");
 		optionHeader = generateOptionHeader(0, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)));
@@ -122,7 +86,146 @@ public class FSMUI {
 		frame.reservePanel("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 		frame.reservePanel("Home", "imageSpace", imagePage.generateElementPanel(WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 	}
-		
+	
+	//-- File Configuration  ----------------------------------
+	
+	private void fileConfiguration() {
+		File settings = new File(ADDRESS_SETTINGS);
+		File images = new File(ADDRESS_IMAGES);
+		File source = new File(ADDRESS_SOURCES);
+		images.mkdirs();
+		source.mkdirs();
+		settings.mkdirs();
+		File config = new File(ADDRESS_CONFIG);
+		if(!config.exists() || !verifyConfigFile(config)){
+			createConfigurationFile(config);
+		}
+		readDirectories(config);
+	}
+	
+	private boolean verifyConfigFile(File f) {
+		try {
+			Scanner sc = new Scanner(f);
+			String line;
+			while(sc.hasNextLine()) {
+				line = sc.nextLine();
+				if(!line.matches("#.*")) {
+					if(!line.matches(DOT_ADDRESS_VAR + " = .*")) {
+						sc.close();
+						return false;
+					}
+				}
+			}
+			sc.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			//TODO: Error window popup
+		}
+		return true;
+	}
+	
+	private void createConfigurationFile(File config) {
+		try {
+			if(config.exists()) {
+				config.delete();
+			}
+			config.createNewFile();
+			BufferedReader defaultConfig = retrieveFileReader("/assets/config/config.properties");
+			RandomAccessFile write = new RandomAccessFile(config, "rw");
+			int c = defaultConfig.read();
+			while(c != -1) {
+				write.write(c);
+				c = defaultConfig.read();
+			}
+			write.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			//TODO: Error window popup
+		}
+	}
+	
+	private void readDirectories(File config) {
+		try {
+			Scanner sc = new Scanner(config);
+			String line;
+			while(sc.hasNextLine()) {
+				line = sc.nextLine();
+				if(line.matches(DOT_ADDRESS_VAR + " = .*")) {
+					dotAddress = line.substring((DOT_ADDRESS_VAR + " = ").length());
+					if(dotAddress.contentEquals("?") || !verifyDotAddress(dotAddress)) {
+						dotAddress = null;
+						
+						WindowFrame entry = new WindowFrame(300, 150);
+						ElementPanel p = new ElementPanel(0, 0, 300, 150) {
+							public void clickBehaviour(int event, int x, int y) {
+								if(event == 25) {
+									String addr = this.getElementStoredText("entry");
+									if(verifyDotAddress(addr)) {
+										dotAddress = addr;
+										entry.disposeFrame();
+									}
+								}
+							}
+						};
+						entry.reserveWindow("han");
+						entry.reservePanel("han", "pan", p);
+						handleText(p, "text", p.getWidth() / 2, p.getHeight() / 5, p.getWidth() * 2 / 3, p.getHeight() / 2, "Please submit the system path for the GraphViz dot.exe");
+						
+						handleRectangle(p, "rec", 5, p.getWidth() / 2, p.getHeight() /2, p.getWidth() * 4 / 5, p.getHeight() / 5, Color.white, Color.black);
+						handleTextEntry(p, "entry", p.getWidth() / 2, p.getHeight() /2, p.getWidth() * 4 / 5, p.getHeight() / 5, 20, "C://");
+						
+						handleRectangle(p, "rec2", 5, p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, Color.white, Color.black);
+						handleText(p, "text2", p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, "Submit");
+						handleButton(p, "but", p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, 25);
+						
+						while(dotAddress == null) {}
+						writeConfigEntry(DOT_ADDRESS_VAR, dotAddress);
+					}
+				}
+			}
+			sc.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			//TODO: Error window popup
+		}
+	}
+	
+	private void writeConfigEntry(String entry, String contents) {
+		try {
+			File config = new File(ADDRESS_CONFIG);
+			Scanner sc = new Scanner(config);
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while(sc.hasNextLine()) {
+				line = sc.nextLine();
+				if(line.matches(entry + ".*")) {
+					sb.append(entry + " = " + contents + "\n");
+				}
+				else {
+					sb.append(line + "\n");
+				}
+			}
+			sc.close();
+			config.delete();
+			config.createNewFile();
+			RandomAccessFile write = new RandomAccessFile(config, "rw");
+			write.writeBytes(sb.toString());
+			write.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			//TODO: Error window popup
+		}
+	}
+	
+	private boolean verifyDotAddress(String path) {
+		GraphViz test = new GraphViz(ADDRESS_SETTINGS, path);
+		return test.verifyDotPath();
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
 
 	public void allotImage(String path) {
@@ -275,13 +378,13 @@ public class FSMUI {
 
 	private void handleText(ElementPanel p, String nom, int x, int y, int wid, int hei, String phr) {
 		if(!p.moveElement(nom, x, y)){
-			p.addText(nom, 15, x, y, wid, hei, phr, HEADER_FONT, true, true, true);
+			p.addText(nom, 15, x, y, wid, hei, phr, DEFAULT_FONT, true, true, true);
 		}
 	}
 
 	private void handleTextEntry(ElementPanel p, String nom, int x, int y, int wid, int hei, int cod, String phr) {
 		if(!p.moveElement(nom, x, y)){
-			p.addTextEntry(nom, 15, x, y, wid, hei, cod, phr, HEADER_FONT, true, true, true);
+			p.addTextEntry(nom, 15, x, y, wid, hei, cod, phr, ENTRY_FONT, true, true, true);
 		}
 	}
 	
