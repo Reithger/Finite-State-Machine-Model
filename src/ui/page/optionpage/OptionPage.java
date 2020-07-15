@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.Arrays;
 
+import ui.FSMUI;
 import visual.panel.ElementPanel;
 
 public abstract class OptionPage {
@@ -34,6 +35,7 @@ public abstract class OptionPage {
 	/** Code system is a bit awkward: negative value makes a button not appear but be referenced, don't double up any values*/
 	private int[][] codes;
 	private static ElementPanel p;
+	private static FSMUI reference;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -138,6 +140,10 @@ public abstract class OptionPage {
 		p = inP;
 	}
 	
+	public static void assignFSMUI(FSMUI fsm) {
+		reference = fsm;
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String getHeader() {
@@ -202,6 +208,10 @@ public abstract class OptionPage {
 		return header + "_option_"  + i + "_" + j + "_" + k + "_" + categories[i] + "_" + labels[i][j] + "_" + k;
 	}
 
+	public static FSMUI getFSMUI() {
+		return reference;
+	}
+	
 //---  Composites   ---------------------------------------------------------------------------
 
 	private void handleText(String nom, int x, int y, int wid, int hei, String phr) {
@@ -233,5 +243,5 @@ public abstract class OptionPage {
 			p.addRectangle(nom, 5, x, y, wid, hei, true, col, col2);
 		}
 	}
-	
+		
 }

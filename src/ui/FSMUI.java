@@ -13,10 +13,7 @@ import java.util.Scanner;
 
 import fsm.TransitionSystem;
 import graphviz.GraphViz;
-import input.Communication;
 import ui.page.imagepage.ImagePage;
-import ui.page.optionpage.AdjustFSM;
-import ui.page.optionpage.OptionPage;
 import ui.page.optionpage.OptionPageManager;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
@@ -67,8 +64,8 @@ public class FSMUI {
 	public FSMUI() {
 		fileConfiguration();
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
-		imagePage = new ImagePage();
-		optionPageManager = new OptionPageManager();
+		imagePage = new ImagePage(this);
+		optionPageManager = new OptionPageManager(this);
 		fsms = new ArrayList<TransitionSystem>();
 		createPages();
 		updateDisplay();
@@ -300,14 +297,14 @@ public class FSMUI {
 		
 	//-- Update ElementPanels  --------------------------------
 	
-	private void updateDisplay() {
+	public void updateDisplay() {
 		updateOptionHeader();
 		updateImageHeader();
 		updateActiveOptionPage();
 		updateImagePanel();
 	}
 	
-	private void updateOptionHeader() {
+	public void updateOptionHeader() {
 		ElementPanel p = optionHeader;
 		if(p == null) {
 			return;
@@ -326,12 +323,13 @@ public class FSMUI {
 		}
 	}
 
-	private void updateImageHeader() {
+	public void updateImageHeader() {
 		ElementPanel p = imageHeader;
 		if(p == null) {
 			return;
 		}
 		ArrayList<String> images = imagePage.getImages();
+		p.removeElementPrefixed("header");
 		if(images.size() == 0) {
 			int posX = p.getWidth()/ 2;
 			int posY = p.getHeight() / 2;
@@ -358,7 +356,7 @@ public class FSMUI {
 		}
 	}
 	
-	private void updateActiveOptionPage() {
+	public void updateActiveOptionPage() {
 		if(optionPageManager == null) {
 			return;
 		}
@@ -366,7 +364,7 @@ public class FSMUI {
 		updateOptionHeader();
 	}
 
-	private void updateImagePanel() {
+	public void updateImagePanel() {
 		if(imagePage == null) {
 			return;
 		}

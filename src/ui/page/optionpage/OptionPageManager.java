@@ -16,8 +16,8 @@ public class OptionPageManager {
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public OptionPageManager() {
-		
+	public OptionPageManager(FSMUI reference) {
+		OptionPage.assignFSMUI(reference);
 	}
 
 //---  Operations   ---------------------------------------------------------------------------

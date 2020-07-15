@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Image;
 import java.util.ArrayList;
 
+import ui.FSMUI;
 import visual.panel.ElementPanel;
 
 public class ImagePage {
@@ -45,13 +46,15 @@ public class ImagePage {
 	private ArrayList<Double> zoom;
 	private ArrayList<Integer> originX;
 	private ArrayList<Integer> originY;
+	//TODO: Change this to use the new SVI Panel offsetX/Y capabilities
 	private int originUIX;
 	private int originUIY;
 	private boolean dragging;
+	private FSMUI reference;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public ImagePage() {
+	public ImagePage(FSMUI ref) {
 		images = new ArrayList<String>();
 		imageReferences = new ArrayList<Image>();
 		currentImageIndex = 0;
@@ -59,6 +62,7 @@ public class ImagePage {
 		originX = new ArrayList<Integer>();
 		originY = new ArrayList<Integer>();
 		dragging = false;
+		reference = ref;
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -80,21 +84,16 @@ public class ImagePage {
 						decreaseOriginY();
 						break;
 					case KEY_ZOOM_IN:
-						zoom.set(currentImageIndex, zoom.get(currentImageIndex) * ZOOM_FACTOR);
-						updateCurrentImage();
+						increaseZoom();
 						break;
 					case KEY_ZOOM_OUT:
-						zoom.set(currentImageIndex, zoom.get(currentImageIndex) / ZOOM_FACTOR);
-						updateCurrentImage();
+						decreaseZoom();
 						break;
 					case KEY_REMOVE_IMAGE:
-						removeImage(images.get(currentImageIndex));
+						removeImage(currentImageIndex);
 						break;
 					case KEY_RESET_POSITION:
-						originY.set(currentImageIndex, 0);
-						originX.set(currentImageIndex, 0);
-						zoom.set(currentImageIndex, 1.0);
-						updateCurrentImage();
+						resetPosition();
 						break;
 				}
 				drawPage();
@@ -115,21 +114,16 @@ public class ImagePage {
 						decreaseOriginY();
 						break;
 					case CODE_ZOOM_IN:
-						zoom.set(currentImageIndex, zoom.get(currentImageIndex) * ZOOM_FACTOR);
-						updateCurrentImage();
+						increaseZoom();
 						break;
 					case CODE_ZOOM_OUT:
-						zoom.set(currentImageIndex, zoom.get(currentImageIndex) / ZOOM_FACTOR);
-						updateCurrentImage();
+						decreaseZoom();
 						break;
 					case CODE_REMOVE_IMAGE:
-						removeImage(images.get(currentImageIndex));
+						removeImage(currentImageIndex);
 						break;
 					case CODE_RESET_POSITION:
-						originY.set(currentImageIndex, 0);
-						originX.set(currentImageIndex, 0);
-						zoom.set(currentImageIndex, 1.0);
-						updateCurrentImage();
+						resetPosition();
 						break;
 				}
 				drawPage();
@@ -142,11 +136,15 @@ public class ImagePage {
 	}
 	
 	private String formImageName(int index) {
-		return "image_" + images.get(index).substring(images.get(index).lastIndexOf("/") + 1);
+		if(index < images.size())
+			return "image_" + images.get(index).substring(images.get(index).lastIndexOf("/") + 1);
+		return null;
 	}
 	
 	private void updateCurrentImage() {
-		p.addImage(formImageName(currentImageIndex), 10, originX.get(currentImageIndex), originY.get(currentImageIndex), false, images.get(currentImageIndex), zoom.get(currentImageIndex));
+		String imgName = formImageName(currentImageIndex);
+		if(imgName != null)
+			p.addImage(imgName, 10, originX.get(currentImageIndex), originY.get(currentImageIndex), false, images.get(currentImageIndex), zoom.get(currentImageIndex));
 	}
 	
 	public void allotImage(String path) {
@@ -155,10 +153,11 @@ public class ImagePage {
 		zoom.add(DEFAULT_ZOOM);
 		originX.add(DEFAULT_ORIGIN_X);
 		originY.add(DEFAULT_ORIGIN_Y);
+		reference.updateImageHeader();
 	}
 	
 	public void removeImage(String path) {
-		if(images.size() == 0) {
+		if(images.size() == 0 || path == null) {
 			return;
 		}
 		int ind = images.indexOf(path);
@@ -171,8 +170,75 @@ public class ImagePage {
 		zoom.remove(ind);
 		originX.remove(ind);
 		originY.remove(ind);
+		reference.updateImageHeader();
 	}
 
+	public void removeImage(int ind){
+		if(ind >= images.size()) {
+			return;
+		}
+		removeImage(images.get(ind));
+	}
+	
+	//-- Change Values  ---------------------------------------
+	
+	public void resetPosition() {
+		if(currentImageIndex < zoom.size()) {
+			originY.set(currentImageIndex, 0);
+			originX.set(currentImageIndex, 0);
+			zoom.set(currentImageIndex, 1.0);
+			updateCurrentImage();
+		}
+	}
+
+	public void increaseOriginX() {
+		Image img = getCurrentImage();
+		if(img == null) {
+			return;
+		}
+		int wid = (int)(img.getWidth(null) * zoom.get(currentImageIndex));
+		originX.set(currentImageIndex, (int)(originX.get(currentImageIndex) + wid * MOVEMENT_FACTOR));
+	}
+	
+	public void increaseOriginY() {
+		Image img = getCurrentImage();
+		if(img == null) {
+			return;
+		}
+		int hei = (int)(img.getHeight(null) * zoom.get(currentImageIndex));
+		originY.set(currentImageIndex, (int)(originY.get(currentImageIndex) + hei * MOVEMENT_FACTOR));
+	}
+	
+	public void increaseZoom() {
+		if(currentImageIndex < zoom.size())
+			zoom.set(currentImageIndex, zoom.get(currentImageIndex) * ZOOM_FACTOR);
+		updateCurrentImage();
+	}
+	
+	public void decreaseOriginX() {
+		Image img = getCurrentImage();
+		if(img == null) {
+			return;
+		}
+		int wid = (int)(img.getWidth(null) * zoom.get(currentImageIndex));
+		originX.set(currentImageIndex, (int)(originX.get(currentImageIndex) - wid * MOVEMENT_FACTOR));
+	}
+	
+	public void decreaseOriginY() {
+		Image img = getCurrentImage();
+		if(img == null) {
+			return;
+		}
+		int hei = (int)(img.getHeight(null) * zoom.get(currentImageIndex));
+		originY.set(currentImageIndex, (int)(originY.get(currentImageIndex) - hei * MOVEMENT_FACTOR));
+	}
+
+	public void decreaseZoom() {
+		if(currentImageIndex < zoom.size())
+			zoom.set(currentImageIndex, zoom.get(currentImageIndex) / ZOOM_FACTOR);
+		updateCurrentImage();
+	}
+	
 	//-- Drawing  ---------------------------------------------
 	
 	public void drawPage() {
@@ -216,30 +282,6 @@ public class ImagePage {
 		currentImageIndex = in;
 	}
 
-	public void increaseOriginX() {
-		Image img = getCurrentImage();
-		int wid = (int)(img.getWidth(null) * zoom.get(currentImageIndex));
-		originX.set(currentImageIndex, (int)(originX.get(currentImageIndex) + wid * MOVEMENT_FACTOR));
-	}
-	
-	public void increaseOriginY() {
-		Image img = getCurrentImage();
-		int hei = (int)(img.getHeight(null) * zoom.get(currentImageIndex));
-		originY.set(currentImageIndex, (int)(originY.get(currentImageIndex) + hei * MOVEMENT_FACTOR));
-	}
-	
-	public void decreaseOriginX() {
-		Image img = getCurrentImage();
-		int wid = (int)(img.getWidth(null) * zoom.get(currentImageIndex));
-		originX.set(currentImageIndex, (int)(originX.get(currentImageIndex) - wid * MOVEMENT_FACTOR));
-	}
-	
-	public void decreaseOriginY() {
-		Image img = getCurrentImage();
-		int hei = (int)(img.getHeight(null) * zoom.get(currentImageIndex));
-		originY.set(currentImageIndex, (int)(originY.get(currentImageIndex) - hei * MOVEMENT_FACTOR));
-	}
-	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public ArrayList<String> getImages(){
@@ -251,7 +293,9 @@ public class ImagePage {
 	}
 	
 	public Image getCurrentImage() {
-		return imageReferences.get(currentImageIndex);
+		if(currentImageIndex < imageReferences.size())
+			return imageReferences.get(currentImageIndex);
+		return null;
 	}
 	
 //---  Composite   ----------------------------------------------------------------------------
