@@ -132,12 +132,14 @@ public class ImagePage {
 		originUIX = (int)(width * UI_BOX_RATIO_X);
 		originUIY = (int)(height  * UI_BOX_RATIO_Y);
 		addFraming();
+		p.setScrollBarHorizontal(false);
+		p.setScrollBarVertical(false);
 		return p;
 	}
 	
 	private String formImageName(int index) {
 		if(index < images.size())
-			return "image_" + images.get(index).substring(images.get(index).lastIndexOf("/") + 1);
+			return images.get(index).substring(images.get(index).lastIndexOf("/") + 1);
 		return null;
 	}
 	
@@ -282,6 +284,18 @@ public class ImagePage {
 		currentImageIndex = in;
 	}
 
+	public void increaseCurrentImageIndex() {
+		if(currentImageIndex + 1 < images.size()) {
+			currentImageIndex++;
+		}
+	}
+	
+	public void decreaseCurrentImageIndex() {
+		if(currentImageIndex - 1 >= 0) {
+			currentImageIndex--;
+		}
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public ArrayList<String> getImages(){

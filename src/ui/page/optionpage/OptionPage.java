@@ -52,7 +52,7 @@ public abstract class OptionPage {
 			for(int j = 0; j < lab[i].length; j++) {
 				contents[i][j] = new String[getEntryTextSize(types[i][j])];
 				for(int k = 0; k < getEntryTextSize(types[i][j]); k++) {
-					contents[i][j][k] = "";
+					contents[i][j][k] =	types[i][j].equals(ENTRY_CHECKBOX) ? "f" : "";
 				}
 			}
 		}
@@ -117,8 +117,6 @@ public abstract class OptionPage {
 	public void handleMouseInput(int code, int x, int y) {
 		int[] pos = getCodeIndices(code);
 		if(pos != null && types[pos[0]][pos[1]].equals(ENTRY_CHECKBOX)) {
-			System.out.println(code + " " + x + " " + y);
-			System.out.println(contents[pos[0]][pos[1]][0]);
 			contents[pos[0]][pos[1]][0] = (contents[pos[0]][pos[1]][0].equals(CHECKBOX_TRUE) ? CHECKBOX_FALSE : CHECKBOX_TRUE);
 			p.removeElement(header + "_option_" + pos[0] + "_" + pos[1] + "_checkbox_rect");
 			drawPage();
@@ -138,6 +136,7 @@ public abstract class OptionPage {
 
 	public static void assignElementPanel(ElementPanel inP) {
 		p = inP;
+		p.setScrollBarHorizontal(false);
 	}
 	
 	public static void assignFSMUI(FSMUI fsm) {
@@ -174,6 +173,31 @@ public abstract class OptionPage {
 		return out;
 	}
 	
+	public String getTextFromCode(int code, int posit) {
+		int[] indic = getCodeIndices(code);
+		int numPosit = getEntryTextSize(types[indic[0]][indic[1]]);
+		if(posit >= numPosit) {
+			return null;
+		}
+		return getTextEntry(indic[0], indic[1])[posit];
+	}
+	
+	public Integer getIntegerFromCode(int code, int posit) {
+		int[] indic = getCodeIndices(code);
+		int numPosit = getEntryTextSize(types[indic[0]][indic[1]]);
+		if(posit >= numPosit) {
+			return null;
+		}
+		String num = getTextEntry(indic[0], indic[1])[posit];
+		try {
+			return Integer.parseInt(num);
+		}
+		catch(Exception e) {
+			System.out.println("Failure to parse '" + num + "' as an Integer value");
+			return null;
+		}
+	}
+	
 	public int[] getCodeIndices(int code) {
 		for(int i = 0; i < codes.length; i++) {
 			for(int j = 0; j < codes[i].length; j++) {
@@ -185,6 +209,14 @@ public abstract class OptionPage {
 		return null;
 	}
 		
+	public Boolean getCheckboxContents(int code) {
+		int[] pos = getCodeIndices(code);
+		if(pos != null && types[pos[0]][pos[1]].equals(ENTRY_CHECKBOX)) {
+			return contents[pos[0]][pos[1]][0].contentEquals(CHECKBOX_TRUE);
+		}
+		return null;
+	}
+	
 	private int getEntryTextSize(String in) {
 		switch(in) {
 			case ENTRY_TEXT_QUARTET:

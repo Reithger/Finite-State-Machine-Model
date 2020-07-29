@@ -11,7 +11,9 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import fsm.NonDetObsContFSM;
 import fsm.TransitionSystem;
+import graphviz.FSMToDot;
 import graphviz.GraphViz;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.OptionPageManager;
@@ -33,10 +35,10 @@ public class FSMUI {
 	//-- Config  ----------------------------------------------
 	private final static String OS = System.getProperty("os.name");
 	private final static String DOT_ADDRESS_VAR = "dotAddress";
-	private final static String ADDRESS_SETTINGS = "./Finite State Machine Model/settings/";
-	private final static String ADDRESS_IMAGES = "./Finite State Machine Model/images";
-	private final static String ADDRESS_SOURCES = "./Finite State Machine Model/sources";
-	private final static String ADDRESS_CONFIG = ADDRESS_SETTINGS + "/config.txt";
+	public final static String ADDRESS_SETTINGS = "./Finite State Machine Model/settings/";
+	public final static String ADDRESS_IMAGES = "./Finite State Machine Model/images/";
+	public final static String ADDRESS_SOURCES = "./Finite State Machine Model/sources/";
+	public final static String ADDRESS_CONFIG = ADDRESS_SETTINGS + "/config.txt";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -55,7 +57,7 @@ public class FSMUI {
 	
 	//-- System Information  ----------------------------------
 	
-	private ArrayList<TransitionSystem> fsms;
+	private ArrayList<String> fsms;
 	
 	private volatile String dotAddress;
 	
@@ -66,7 +68,7 @@ public class FSMUI {
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
 		imagePage = new ImagePage(this);
 		optionPageManager = new OptionPageManager(this);
-		fsms = new ArrayList<TransitionSystem>();
+		fsms = new ArrayList<String>();
 		createPages();
 		updateDisplay();
 		allotImage("/assets/test_image.jpg");
@@ -227,27 +229,36 @@ public class FSMUI {
 
 	public void allotImage(String path) {
 		imagePage.allotImage(path);
+		imagePage.increaseCurrentImageIndex();
 		updateImageHeader();
 		updateImagePanel();
 	}
 
 	public void removeImage(int index) {
 		fsms.remove(index);
-	}
-	
-	public void removeImage(String path) {
-		imagePage.removeImage(path);
+		imagePage.removeImage(index);
+		imagePage.decreaseCurrentImageIndex();
 		updateImageHeader();
 		updateImagePanel();
 	}
 	
-	public void allotTransitionSystem(TransitionSystem in) {
+	public void removeImage(String path) {
+		imagePage.removeImage(path);
+		imagePage.decreaseCurrentImageIndex();
+		updateImageHeader();
+		updateImagePanel();
+	}
+	
+	public void allotTransitionSystem(String in, String name) {
 		fsms.add(in);
-		//TODO: Write FSM to .png, use file location to allotImage
+		NonDetObsContFSM cre = new NonDetObsContFSM(new File(in), name);
+		String imgPath = FSMToDot.createImgFromFSM(cre, ADDRESS_IMAGES + name, ADDRESS_IMAGES, ADDRESS_CONFIG);
+		allotImage(imgPath);
 	}
 	
 	public void removeTransitionSystem(int index) {
 		fsms.remove(index);
+		removeImage(index);
 	}
 	
 	//-- Generate ElementPanels  ------------------------------
@@ -259,7 +270,6 @@ public class FSMUI {
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
-				System.out.println(code);
 				int cod = code - CODE_START_OPTIONS_HEADER;
 				if(cod < optionPageManager.getOptionPageList().length && cod >= 0) {
 					optionPageManager.setCurrentOptionPageIndex(cod);
@@ -268,7 +278,7 @@ public class FSMUI {
 				updateOptionHeader();
 			}
 		};
-
+		p.setScrollBarVertical(false);
 		p.addLine("line_5", 15, width, height, width, 0, 2, Color.BLACK);
 		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
 		return p;
@@ -289,7 +299,7 @@ public class FSMUI {
 				updateImageHeader();
 			}
 		};
-
+		p.setScrollBarVertical(false);
 		p.addLine("line_3", 15, 0, 0, 0, height, 2, Color.BLACK);
 		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
 		return p;

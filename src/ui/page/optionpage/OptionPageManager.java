@@ -25,12 +25,15 @@ public class OptionPageManager {
 	public ElementPanel generateElementPanel(int x, int y, int width, int height) {
 		p = new ElementPanel(x, y, width, height) {
 			public void keyBehaviour(char code) {
-				System.out.println(getFocusElement() + " " + code);
+				
 			}
 			
 			public void clickBehaviour(int code, int x, int y) {
-				System.out.println("H: " + code + " " + x + " " + y);
 				OPTION_PAGES[currentOptionPageIndex].handleMouseInput(code, x, y);
+			}
+			
+			public int getMinimumScreenY() {
+				return 0;
 			}
 		};
 		OptionPage.assignElementPanel(p);
