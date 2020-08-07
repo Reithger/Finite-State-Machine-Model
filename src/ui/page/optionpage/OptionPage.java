@@ -17,6 +17,7 @@ public abstract class OptionPage {
 	public final static String ENTRY_TEXT_DOUBLE = "D";
 	public final static String ENTRY_TEXT_TRIPLE = "T";
 	public final static String ENTRY_TEXT_QUARTET = "Q";
+	public final static String ENTRY_TEXT_LONG = "L";
 	public final static String ENTRY_CHECKBOX = "C";
 	public final static String ENTRY_EMPTY = "E";
 	private final static String DEFAULT_TEXT_ENTRY_CONTENTS = "";
@@ -86,6 +87,13 @@ public abstract class OptionPage {
 				handleText(header + "_option_" + i + "_" + j + "_text", p.getWidth() / 3 / 2, startY, p.getWidth() / 3, p.getHeight() / 20, labels[i][j]);
 				handleLine(header + "_option_"  + i + "_" + j + "_line", p.getWidth() / 20, startY + p.getHeight() / 40, p.getWidth() * 19 / 20, startY + p.getHeight() / 40, 1, Color.black);
 				switch(types[i][j]) {
+				  	case ENTRY_TEXT_LONG:
+						posX = p.getWidth() / 3 + p.getWidth() / 3 ;
+						posY = startY;
+						String starr = contents[i][j][0] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[i][j][0];
+				  		handleRectangle(header + "_option_" + i + "_" + j + "_rect", posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
+						handleTextEntry(getTextEntryName(i, j, 0), posX, posY, p.getWidth() / 3, p.getHeight() / 30, codeStart++, starr);
+						break;
 					case ENTRY_CHECKBOX:
 						posX = p.getWidth() / 3 + p.getWidth() / 3 / 4;
 						handleRectangle(header + "_option_"  + i + "_" + j + "_checkbox_rect", posX, startY, p.getHeight() / 30, p.getHeight() / 30, (contents[i][j][0].equals(CHECKBOX_FALSE) ? Color.white : Color.gray), Color.black);
@@ -183,6 +191,7 @@ public abstract class OptionPage {
 	}
 	
 	public Integer getIntegerFromCode(int code, int posit) {
+		System.out.println(code + " " + posit);
 		int[] indic = getCodeIndices(code);
 		int numPosit = getEntryTextSize(types[indic[0]][indic[1]]);
 		if(posit >= numPosit) {
@@ -228,6 +237,8 @@ public abstract class OptionPage {
 			case ENTRY_TEXT_SINGLE:
 				return 1;
 			case ENTRY_CHECKBOX:
+				return 1;
+			case ENTRY_TEXT_LONG:
 				return 1;
 			case ENTRY_EMPTY:
 				return 0;

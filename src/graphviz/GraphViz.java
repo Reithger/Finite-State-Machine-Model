@@ -315,7 +315,6 @@ public class GraphViz
 
          // patch by Mike Chenault
          String[] args = {DOT, "-T"+type, "-Gdpi="+dpiSizes[this.currentDpiPos], dot.getAbsolutePath(), "-o", img.getAbsolutePath()};
-         System.out.println(DOT + " " + dot + " " + img);
          Process p = rt.exec(args);
 
          p.waitFor();

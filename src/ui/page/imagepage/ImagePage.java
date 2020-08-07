@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import ui.FSMUI;
 import visual.panel.ElementPanel;
 
+//TODO: There's something screwy with the zoom in and zoom out in keeping the image centered, fix it
+
 public class ImagePage {
 
 //---  Constants   ----------------------------------------------------------------------------
@@ -40,6 +42,7 @@ public class ImagePage {
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private ElementPanel p;
+	/** Contains path for each image*/
 	private ArrayList<String> images;
 	private ArrayList<Image> imageReferences;
 	private int currentImageIndex;
@@ -72,16 +75,16 @@ public class ImagePage {
 			public void keyBehaviour(char code) {
 				switch(code) {
 					case KEY_MOVE_RIGHT:
-						increaseOriginX();
-						break;
-					case KEY_MOVE_LEFT:
 						decreaseOriginX();
 						break;
+					case KEY_MOVE_LEFT:
+						increaseOriginX();
+						break;
 					case KEY_MOVE_UP:
-						increaseOriginY();
+						decreaseOriginY();
 						break;
 					case KEY_MOVE_DOWN:
-						decreaseOriginY();
+						increaseOriginY();
 						break;
 					case KEY_ZOOM_IN:
 						increaseZoom();
@@ -102,16 +105,16 @@ public class ImagePage {
 			public void clickBehaviour(int code, int x, int y) {
 				switch(code) {
 					case CODE_MOVE_RIGHT:
-						increaseOriginX();
-						break;
-					case CODE_MOVE_LEFT:
 						decreaseOriginX();
 						break;
+					case CODE_MOVE_LEFT:
+						increaseOriginX();
+						break;
 					case CODE_MOVE_UP:
-						increaseOriginY();
+						decreaseOriginY();
 						break;
 					case CODE_MOVE_DOWN:
-						decreaseOriginY();
+						increaseOriginY();
 						break;
 					case CODE_ZOOM_IN:
 						increaseZoom();
@@ -139,8 +142,16 @@ public class ImagePage {
 	
 	private String formImageName(int index) {
 		if(index < images.size())
-			return images.get(index).substring(images.get(index).lastIndexOf("/") + 1);
+			return images.get(index).substring(images.get(index).lastIndexOf("\\") + 1);
 		return null;
+	}
+	
+	public void refreshImage() {
+		String imgName = formImageName(currentImageIndex);
+		p.removeCachedImage(images.get(currentImageIndex));
+		imageReferences.set(currentImageIndex, p.retrieveImage(images.get(currentImageIndex)));
+		p.removeElement(imgName);
+		drawPage();
 	}
 	
 	private void updateCurrentImage() {
@@ -212,8 +223,16 @@ public class ImagePage {
 	}
 	
 	public void increaseZoom() {
+		int preWid = (int)(p.getWidth() * zoom.get(currentImageIndex));
+		int preHei = (int)(p.getHeight() * zoom.get(currentImageIndex));
 		if(currentImageIndex < zoom.size())
 			zoom.set(currentImageIndex, zoom.get(currentImageIndex) * ZOOM_FACTOR);
+		int postWid = (int)(p.getWidth() * zoom.get(currentImageIndex));
+		int postHei = (int)(p.getHeight() * zoom.get(currentImageIndex));
+		int offsetX = (preWid - postWid) / 2;
+		int offsetY = (preHei - postHei) / 2;
+		originX.set(currentImageIndex, originX.get(currentImageIndex) - Math.abs(offsetX));
+		originY.set(currentImageIndex, originY.get(currentImageIndex) - Math.abs(offsetY));
 		updateCurrentImage();
 	}
 	
@@ -236,8 +255,16 @@ public class ImagePage {
 	}
 
 	public void decreaseZoom() {
+		int preWid = (int)(p.getWidth() * zoom.get(currentImageIndex));
+		int preHei = (int)(p.getHeight() * zoom.get(currentImageIndex));
 		if(currentImageIndex < zoom.size())
 			zoom.set(currentImageIndex, zoom.get(currentImageIndex) / ZOOM_FACTOR);
+		int postWid = (int)(p.getWidth() * zoom.get(currentImageIndex));
+		int postHei = (int)(p.getHeight() * zoom.get(currentImageIndex));
+		int offsetX = (preWid - postWid) / 2;
+		int offsetY =(preHei - postHei) / 2;
+		originX.set(currentImageIndex, originX.get(currentImageIndex) + Math.abs(offsetX));
+		originY.set(currentImageIndex, originY.get(currentImageIndex) + Math.abs(offsetY));
 		updateCurrentImage();
 	}
 	

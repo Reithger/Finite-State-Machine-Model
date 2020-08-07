@@ -57,7 +57,9 @@ public class FSMUI {
 	
 	//-- System Information  ----------------------------------
 	
-	private ArrayList<String> fsms;
+	private ArrayList<String> fsmPaths;
+	
+	private ArrayList<TransitionSystem> fsms;
 	
 	private volatile String dotAddress;
 	
@@ -68,10 +70,10 @@ public class FSMUI {
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
 		imagePage = new ImagePage(this);
 		optionPageManager = new OptionPageManager(this);
-		fsms = new ArrayList<String>();
+		fsmPaths = new ArrayList<String>();
+		fsms = new ArrayList<TransitionSystem>();
 		createPages();
 		updateDisplay();
-		allotImage("/assets/test_image.jpg");
 	}
 	
 	//-- Support  ---------------------------------------------
@@ -235,7 +237,7 @@ public class FSMUI {
 	}
 
 	public void removeImage(int index) {
-		fsms.remove(index);
+		fsmPaths.remove(index);
 		imagePage.removeImage(index);
 		imagePage.decreaseCurrentImageIndex();
 		updateImageHeader();
@@ -250,15 +252,23 @@ public class FSMUI {
 	}
 	
 	public void allotTransitionSystem(String in, String name) {
-		fsms.add(in);
+		fsmPaths.add(in);
 		NonDetObsContFSM cre = new NonDetObsContFSM(new File(in), name);
-		String imgPath = FSMToDot.createImgFromFSM(cre, ADDRESS_IMAGES + name, ADDRESS_IMAGES, ADDRESS_CONFIG);
+		fsms.add(cre);
+		String imgPath = FSMToDot.createImgFromFSM(cre, ADDRESS_IMAGES + cre.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
 		allotImage(imgPath);
 	}
 	
 	public void removeTransitionSystem(int index) {
+		fsmPaths.remove(index);
 		fsms.remove(index);
 		removeImage(index);
+	}
+	
+	public void refreshActiveImage() {
+		TransitionSystem tS = getActiveFSM();
+		FSMToDot.createImgFromFSM(tS, ADDRESS_IMAGES + tS.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		imagePage.refreshImage();
 	}
 	
 	//-- Generate ElementPanels  ------------------------------
@@ -360,7 +370,7 @@ public class FSMUI {
 				}
 				handleRectangle(p, "header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
 				handleButton(p, "header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
-				String nom = images.get(i).substring(images.get(i).lastIndexOf("/") + 1);
+				String nom = images.get(i).substring(images.get(i).lastIndexOf("\\") + 1);
 				handleText(p, "header_text_" + i, posX, posY, wid, hei, nom);
 			}
 		}
@@ -382,6 +392,12 @@ public class FSMUI {
 		updateImageHeader();
 	}
 
+//---  Getter Methods   -----------------------------------------------------------------------
+	
+	public TransitionSystem getActiveFSM() {
+		return fsms.get(imagePage.getCurrentImageIndex());
+	}
+	
 //---  Composites   ---------------------------------------------------------------------------
 
 	private void handleText(ElementPanel p, String nom, int x, int y, int wid, int hei, String phr) {

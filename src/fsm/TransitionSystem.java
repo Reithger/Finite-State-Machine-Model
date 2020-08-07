@@ -2,7 +2,6 @@ package fsm;
 
 import support.map.TransitionFunction;
 import support.transition.Transition;
-import fsm.attribute.Deterministic;
 import java.util.LinkedList;
 import java.util.Collection;
 import support.map.EventMap;
