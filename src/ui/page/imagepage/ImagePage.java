@@ -147,10 +147,12 @@ public class ImagePage {
 	}
 	
 	public void refreshImage() {
-		String imgName = formImageName(currentImageIndex);
-		p.removeCachedImage(images.get(currentImageIndex));
-		imageReferences.set(currentImageIndex, p.retrieveImage(images.get(currentImageIndex)));
-		p.removeElement(imgName);
+		if(images.size() != 0) {
+			String imgName = formImageName(currentImageIndex);
+			p.removeCachedImage(images.get(currentImageIndex));
+			imageReferences.set(currentImageIndex, p.retrieveImage(images.get(currentImageIndex)));
+			p.removeElement(imgName);
+		}
 		drawPage();
 	}
 	

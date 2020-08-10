@@ -2,9 +2,11 @@ package ui.page.optionpage;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import ui.FSMUI;
+import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
 public abstract class OptionPage {
@@ -20,13 +22,18 @@ public abstract class OptionPage {
 	public final static String ENTRY_TEXT_LONG = "L";
 	public final static String ENTRY_CHECKBOX = "C";
 	public final static String ENTRY_EMPTY = "E";
+	public final static String ENTRY_SELECT_FSM = "F";
+	public final static String ENTRY_SELECT_FSMS = "FS";
 	private final static String DEFAULT_TEXT_ENTRY_CONTENTS = "";
 	private final static String CHECKBOX_TRUE = "t";
 	private final static String CHECKBOX_FALSE = "f";
 	
+	private final static int MAX_SELECT_FSMS = 8;
+	
 //---  Instance Variables   -------------------------------------------------------------------
 
 	private String header;
+	private String help;
 	private String[] categories;
 	private boolean[] openCategories;
 	private String[][] labels;
@@ -37,13 +44,16 @@ public abstract class OptionPage {
 	private int[][] codes;
 	private static ElementPanel p;
 	private static FSMUI reference;
+	private boolean showHelp;
+	private int helpKey;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public OptionPage(String head, String[] categ, String[][] lab, String[][] typ, int[][] cod) {
+	public OptionPage(String head, String[] categ, String[][] lab, String[][] typ, int[][] cod, String inHelp) {
 		header = head;
 		categories = categ;
 		openCategories = new boolean[categories.length];
+		help = inHelp;
 		labels = lab;
 		types = typ;
 		codes = cod;
@@ -62,13 +72,27 @@ public abstract class OptionPage {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public void drawPage() {
+		if(showHelp) {
+			drawHelpPage();
+		}
+		else {
+			drawNormalPage();
+		}
+	}
+	
+	public void drawNormalPage() {
 		int startY = p.getHeight() / 20;
 		int codeStart = categories.length;
+		helpKey = codeStart;
+		codeStart++;
+		handleRectangle("help_rect", p.getWidth() - p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, Color.gray, Color.black);
+		handleButton("help_button", p.getWidth() - p.getWidth() / 20,  p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, helpKey);
+		handleImage("help_img", p.getWidth() - p.getWidth() / 20, p.getWidth() / 20, "/assets/ui/question_mark.png", 3);
 		for(int i = 0; i < categories.length; i++) {
 			//Category header
 			int posX = p.getWidth() / 3 / 2;
 			int posY = startY;
-			handleText(header + "_option_header_text_" + i, posX, posY, p.getHeight() * 9/10, p.getHeight() / 20, categories[i]);
+			handleText(header + "_option_header_text_" + i, posX, posY, p.getHeight() * 9/10, p.getHeight() / 20, OPTIONS_FONT, categories[i]);
 			handleButton(header + "_option_header_butt_" + i, posX, posY, p.getHeight() * 9 / 10, p.getHeight() / 20, i);
 			posX = p.getWidth() / 20;
 			posY = startY + p.getHeight() / 40;
@@ -84,14 +108,38 @@ public abstract class OptionPage {
 			}
 			for(int j = 0; j < labels[i].length; j++) {
 				//Label
-				handleText(header + "_option_" + i + "_" + j + "_text", p.getWidth() / 3 / 2, startY, p.getWidth() / 3, p.getHeight() / 20, labels[i][j]);
+				handleText(header + "_option_" + i + "_" + j + "_text", p.getWidth() / 3 / 2, startY, p.getWidth() / 3, p.getHeight() / 20, OPTIONS_FONT, labels[i][j]);
 				handleLine(header + "_option_"  + i + "_" + j + "_line", p.getWidth() / 20, startY + p.getHeight() / 40, p.getWidth() * 19 / 20, startY + p.getHeight() / 40, 1, Color.black);
 				switch(types[i][j]) {
+					case ENTRY_SELECT_FSM:
+						posX = p.getWidth() / 3 + p.getWidth() / 3 ;
+						posY = startY;
+						String choze = contents[i][j][0] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[i][j][0];
+				  		handleRectangle(header + "_option_" + i + "_" + j + "_rect_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
+						handleText(getTextEntryName(i, j, 0), posX, posY, p.getWidth() / 3, p.getHeight() / 30, OPTIONS_FONT, choze);
+						handleButton(header + "_option_" + i + "_" + j + "_butt_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, codes[i][j]);
+						break;
+					case ENTRY_SELECT_FSMS:
+						posX = p.getWidth() / 3 + p.getWidth() / 3 ;
+						for(int a = 0; a < MAX_SELECT_FSMS; a++) {
+							posY = startY;
+							String chozes = contents[i][j][a] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[i][j][a];
+							if((chozes == null || chozes.equals("")) && a > 0) {
+								break;
+							}
+							if(a > 0) {
+								startY += p.getHeight() / 18;
+							}
+					  		handleRectangle(header + "_option_" + i + "_" + j + "_" + a + "_rect_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
+							handleText(getTextEntryName(i, j, a), posX, posY, p.getWidth() / 3, p.getHeight() / 30, OPTIONS_FONT, chozes);
+							handleButton(header + "_option_" + i + "_" + j + "_" + a + "_butt_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, codes[i][j]);
+						}
+						break;
 				  	case ENTRY_TEXT_LONG:
 						posX = p.getWidth() / 3 + p.getWidth() / 3 ;
 						posY = startY;
 						String starr = contents[i][j][0] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[i][j][0];
-				  		handleRectangle(header + "_option_" + i + "_" + j + "_rect", posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
+				  		handleRectangle(header + "_option_" + i + "_" + j + "_rect_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
 						handleTextEntry(getTextEntryName(i, j, 0), posX, posY, p.getWidth() / 3, p.getHeight() / 30, codeStart++, starr);
 						break;
 					case ENTRY_CHECKBOX:
@@ -122,11 +170,49 @@ public abstract class OptionPage {
 		}
 	}
 	
+	public void drawHelpPage() {
+		handleText("help", p.getWidth() / 2, p.getHeight() / 2, p.getWidth(), p.getHeight(), OPTIONS_FONT, help);
+	}
+	
 	public void handleMouseInput(int code, int x, int y) {
+		if(code == helpKey || showHelp == true) {
+			showHelp = ! showHelp;
+			p.removeElementPrefixed("");
+			drawPage();
+			return;
+		}
 		int[] pos = getCodeIndices(code);
-		if(pos != null && types[pos[0]][pos[1]].equals(ENTRY_CHECKBOX)) {
-			contents[pos[0]][pos[1]][0] = (contents[pos[0]][pos[1]][0].equals(CHECKBOX_TRUE) ? CHECKBOX_FALSE : CHECKBOX_TRUE);
-			p.removeElement(header + "_option_" + pos[0] + "_" + pos[1] + "_checkbox_rect");
+		if(pos != null) {
+			switch(types[pos[0]][pos[1]]) {
+				case ENTRY_CHECKBOX:
+					contents[pos[0]][pos[1]][0] = (contents[pos[0]][pos[1]][0].equals(CHECKBOX_TRUE) ? CHECKBOX_FALSE : CHECKBOX_TRUE);
+					p.removeElement(header + "_option_" + pos[0] + "_" + pos[1] + "_checkbox_rect");
+					break;
+				case ENTRY_SELECT_FSM:
+					WindowFrame fra = new WindowFrame(300, 200);
+					ArrayList<String> fsms = getFSMUI().getFSMList();
+					ElementPanel eP = new ElementPanel(0, 0, 300, 200) {
+						@Override
+						public void clickBehaviour(int code, int x, int y) {
+							if(code >= 0 && code < fsms.size()) {
+								contents[pos[0]][pos[1]][0] = fsms.get(code);
+								this.getParentFrame().disposeFrame();
+							}
+						}
+					};
+					fra.reservePanel("default", "pan", eP);
+					for(int i = 0; i < fsms.size(); i++) {	//TODO: Regex here is broken
+						String nom = fsms.get(i);
+						eP.addRectangle("back_" + i, 5, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, true, new Color(133, 133, 133), Color.black);
+						eP.addText("text_" + i, 10, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, nom, OPTIONS_FONT, true, true, true);
+						eP.addButton("butt_" + i, 10, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, i, true);
+					}
+					break;
+				case ENTRY_SELECT_FSMS:
+					break;
+				default:
+					break;
+			}
 			drawPage();
 		}
 		applyCode(code);
@@ -151,22 +237,19 @@ public abstract class OptionPage {
 		reference = fsm;
 	}
 	
+	public void resetCodeEntries(int code) {
+		int[] indic = getCodeIndices(code);
+		for(int i = 0; i < contents[indic[0]][indic[1]].length; i++) {
+			contents[indic[0]][indic[1]][i] = "";
+			p.setElementStoredText(getTextEntryName(indic[0], indic[1], i), "");
+		}
+		p.repaint();
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String getHeader() {
 		return header;
-	}
-
-	public String[] getTextEntry(String label) {
-		int len = 0;
-		while(p.getElementStoredText(header + "_option_" + label + "_" + len++) != null) {
-			
-		}
-		String[] out = new String[len-1];
-		for(int i = 0; i < out.length; i++) {
-			out[i] = p.getElementStoredText(header + "_option_" + label + "_" + i);
-		}
-		return out;
 	}
 	
 	public String[] getTextEntry(int i, int j) {
@@ -240,6 +323,10 @@ public abstract class OptionPage {
 				return 1;
 			case ENTRY_TEXT_LONG:
 				return 1;
+			case ENTRY_SELECT_FSM:
+				return 1;
+			case ENTRY_SELECT_FSMS:
+				return MAX_SELECT_FSMS;
 			case ENTRY_EMPTY:
 				return 0;
 			default:
@@ -257,9 +344,15 @@ public abstract class OptionPage {
 	
 //---  Composites   ---------------------------------------------------------------------------
 
-	private void handleText(String nom, int x, int y, int wid, int hei, String phr) {
+	private void handleText(String nom, int x, int y, int wid, int hei, Font inF, String phr) {
 		if(!p.moveElement(nom, x, y)){
-			p.addText(nom, 15, x, y, wid, hei, phr, OPTIONS_FONT, true, true, true);
+			p.addText(nom, 15, x, y, wid, hei, phr, inF, true, true, true);
+		}
+	}
+	
+	private void handleImage(String nom, int x, int y, String path, double scale) {
+		if(!p.moveElement(nom, x, y)){
+			p.addImage(nom, 15, x, y, true, path, scale);
 		}
 	}
 
@@ -281,9 +374,9 @@ public abstract class OptionPage {
 		}
 	}
 	
-	private void handleRectangle(String nom, int x, int y, int wid, int hei, Color col, Color col2) {
+	private void handleRectangle(String nom, int x, int y, int wid, int hei, Color inside, Color border) {
 		if(!p.moveElement(nom, x, y)) {
-			p.addRectangle(nom, 5, x, y, wid, hei, true, col, col2);
+			p.addRectangle(nom, 5, x, y, wid, hei, true, inside, border);
 		}
 	}
 		

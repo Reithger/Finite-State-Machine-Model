@@ -2,6 +2,6 @@
 #                       Configurations                       #
 ##############################################################
 # Where is your dot program located? It will be called externally.
-dotAddress = C://Program Files (x86)/GraphViz2.38/bin/dot.exe
+dotAddress = C://Program Files (x86)/Graphviz2.38/bin/dot.exe
 # Format as 'name = address', the " = " spacing is necessary
 # It's awkward but it makes the file reading easier and I'm telling you this directly

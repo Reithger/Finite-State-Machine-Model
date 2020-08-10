@@ -48,6 +48,7 @@ public class OptionPageManager {
 	
 	public void setCurrentOptionPageIndex(int in) {
 		currentOptionPageIndex = in;
+		p.removeElementPrefixed("");
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------

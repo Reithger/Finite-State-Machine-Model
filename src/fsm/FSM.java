@@ -280,4 +280,6 @@ public abstract class FSM<T extends Transition> extends TransitionSystem<T> impl
 	
 	public abstract FSM<? extends Transition> parallelComposition(FSM<?> ... other);
 	
+	public abstract <T1 extends Transition> FSM getSupremalControllableSublanguage(FSM<T1> other);
+	
 } // class FSM

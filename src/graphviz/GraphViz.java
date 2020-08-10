@@ -138,8 +138,18 @@ public class GraphViz
  
 //--- Operations  -----------------------------------------------------------------------------
  
- 	public boolean verifyDotPath() {
-	 	return configFile.getProperty("dotFor" + osName) == null;
+ 	public static boolean verifyDotPath(String path) {
+ 		try {
+ 			new Properties() {
+ 			     private final static long serialVersionUID = 1L; {
+			        load(new FileInputStream(path));
+ 			     }
+ 			 };
+ 		}
+ 		catch(Exception e) {
+ 			return false;
+ 		}
+	 	return true;
  	}
  	
  	/**

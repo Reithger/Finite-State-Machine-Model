@@ -2,6 +2,7 @@ package ui.page.optionpage;
 
 import java.util.Random;
 
+import graphviz.FSMToDot;
 import support.GenerateFSM;
 import ui.FSMUI;
 
@@ -37,15 +38,19 @@ public class AdjustFSM extends OptionPage{
 	private final static int CODE_MARKED_STATE = 105;
 	private final static int CODE_SECRET_STATE = 106;
 	private final static int CODE_BAD_STATE = 107;
-	//TODO: Duplicate FSMs - Do this in manipulate FSM section
 	//--
 	private final static int CODE_ADD_TRANSITION = 108;
 	private final static int CODE_REMOVE_TRANSITION = 109;
+	//--
+	private final static int CODE_SAVE_FSM = 110;
+	private final static int CODE_SAVE_IMG = 111;
+	private final static int CODE_DUPLICATE_FSM = 112;
+	private final static int CODE_CLOSE_FSM = 113;
 	
 	//-- Scripts  ---------------------------------------------
 	
 	private final static String HEADER = "Adjust FSM";
-	private final static String[] CATEGORIES = new String[] {"Generate FSM Simple", "Generate FSM Complicated", "Edit FSM States", "Edit FSM Transitions"};
+	private final static String[] CATEGORIES = new String[] {"Generate FSM Simple", "Generate FSM Complicated", "Edit FSM States", "Edit FSM Transitions", "Admin"};
 	private final static String[][] LABELS = new String[][] {
 		{"Number of States", "Number of Events", "Number of Transitions", "Non-Deterministic", "Name", "Generate"},
 		{"Number of States", "Number of Events", "Number of Transitions", "Number of Initial States", "Number of Marked States",
@@ -53,6 +58,7 @@ public class AdjustFSM extends OptionPage{
 			"Non-Deterministic", "Name", "Generate"},
 		{"Add State", "Remove State", "Add Initial State", "Set State Marked", "Set State Secret", "Set State Bad"},
 		{"Add Transition", "Remove Transition"},
+		{"Save Source", "Save Image", "Generate Copy", "Close FSM"},
 	};	//# marked states, # start states, # end states, # unobserv events, # attacker aware events, # controlled events, det/non-det, name
 	private final static String[][] TYPES = new String[][] {
 		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_CHECKBOX, ENTRY_TEXT_LONG, ENTRY_EMPTY},
@@ -60,6 +66,7 @@ public class AdjustFSM extends OptionPage{
 			ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_CHECKBOX, ENTRY_TEXT_LONG, ENTRY_EMPTY},
 		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE},
 		{ENTRY_TEXT_TRIPLE, ENTRY_TEXT_TRIPLE},
+		{ENTRY_EMPTY, ENTRY_EMPTY, ENTRY_TEXT_LONG, ENTRY_EMPTY}
 	};
 	/** Make sure codes are high values to give buffer for background behaviors*/
 	private final static int[][] CODES = new int[][] {
@@ -69,8 +76,12 @@ public class AdjustFSM extends OptionPage{
 			CODE_ACCESS_COMPLEX_FSM_NAME, CODE_GENERATE_COMPLEX_FSM},
 		{CODE_ADD_STATE, CODE_REMOVE_STATE, CODE_INITIAL_STATE, CODE_MARKED_STATE, CODE_SECRET_STATE, CODE_BAD_STATE},
 		{CODE_ADD_TRANSITION, CODE_REMOVE_TRANSITION},
+		{CODE_SAVE_FSM, CODE_SAVE_IMG, CODE_DUPLICATE_FSM, CODE_CLOSE_FSM},
 	};
-	
+	private final static String HELP = 
+			"Some line\n"
+			+ "Another line\n"
+			+ "This will be the help page";
 	private final static String LANGUAGE = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private final static int RANDOM_NAME_LENGTH = 8;
 
@@ -78,7 +89,7 @@ public class AdjustFSM extends OptionPage{
 //---  Constructors   -------------------------------------------------------------------------
 
 	public AdjustFSM(int x, int y, int width, int height) {
-		super(HEADER, CATEGORIES, LABELS, TYPES, CODES);
+		super(HEADER, CATEGORIES, LABELS, TYPES, CODES, HELP);
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -87,6 +98,17 @@ public class AdjustFSM extends OptionPage{
 	public void applyCode(int code) {
 		if(!toggleCategory(code)) {
 			switch(code) {
+				case CODE_SAVE_FSM:
+					getFSMUI().getActiveFSM().toTextFile(FSMUI.ADDRESS_SOURCES, getFSMUI().getActiveFSM().getId());
+					break;
+				case CODE_SAVE_IMG:
+					FSMToDot.createImgFromFSM(getFSMUI().getActiveFSM(), FSMUI.ADDRESS_IMAGES + getFSMUI().getActiveFSM().getId(), FSMUI.ADDRESS_IMAGES, FSMUI.ADDRESS_CONFIG);
+					break;
+				case CODE_DUPLICATE_FSM:
+					String tex = this.getTextFromCode(CODE_DUPLICATE_FSM, 0);
+					tex = tex.equals("") || tex == null ? getFSMUI().getActiveFSM().getId() + "(copy)" : tex;
+					getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM(), tex);
+					break;
 				case CODE_ADD_STATE: 
 					getFSMUI().getActiveFSM().addState(this.getTextFromCode(CODE_ADD_STATE, 0));
 					getFSMUI().refreshActiveImage();
@@ -98,10 +120,12 @@ public class AdjustFSM extends OptionPage{
 				case CODE_ADD_TRANSITION: 
 					getFSMUI().getActiveFSM().addTransition(this.getTextFromCode(CODE_ADD_TRANSITION, 0), this.getTextFromCode(CODE_ADD_TRANSITION, 1), this.getTextFromCode(CODE_ADD_TRANSITION, 2));
 					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);	//TODO: Let use decide whether or not to clear entries
 					break;
 				case CODE_REMOVE_TRANSITION: 
 					getFSMUI().getActiveFSM().removeTransition(this.getTextFromCode(CODE_REMOVE_TRANSITION, 0), this.getTextFromCode(CODE_REMOVE_TRANSITION, 1), this.getTextFromCode(CODE_REMOVE_TRANSITION, 2));
 					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
 					break;
 				case CODE_SECRET_STATE:
 					getFSMUI().getActiveFSM().toggleSecretState(this.getTextFromCode(CODE_SECRET_STATE, 0));
@@ -117,6 +141,10 @@ public class AdjustFSM extends OptionPage{
 					break;
 				case CODE_BAD_STATE:
 					getFSMUI().getActiveFSM().toggleBadState(this.getTextFromCode(CODE_BAD_STATE, 0));
+					getFSMUI().refreshActiveImage();
+					break;
+				case CODE_CLOSE_FSM:
+					getFSMUI().removeActiveTransitionSystem();
 					getFSMUI().refreshActiveImage();
 					break;
 				case CODE_GENERATE_FSM: 

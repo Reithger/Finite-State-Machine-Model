@@ -29,6 +29,7 @@ public class FSMUI {
 	public final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
 	private final static Font DEFAULT_FONT = new Font("Serif", Font.BOLD, 16);
 	private final static Font ENTRY_FONT = new Font("Serif", Font.BOLD, 12);
+	private final static Font ERROR_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int CODE_START_OPTIONS_HEADER = 150;
 	private final static int CODE_START_IMAGES_HEADER = 150;
 	
@@ -110,7 +111,7 @@ public class FSMUI {
 			String line;
 			while(sc.hasNextLine()) {
 				line = sc.nextLine();
-				if(!line.matches("#.*")) {
+				if(!line.matches("#.*")) { //TODO: This is a bad verification, doesn't extend
 					if(!line.matches(DOT_ADDRESS_VAR + " = .*")) {
 						sc.close();
 						return false;
@@ -158,14 +159,18 @@ public class FSMUI {
 					if(dotAddress.contentEquals("?") || !verifyDotAddress(dotAddress)) {
 						dotAddress = null;
 						
-						WindowFrame entry = new WindowFrame(300, 150);
-						ElementPanel p = new ElementPanel(0, 0, 300, 150) {
+						WindowFrame entry = new WindowFrame(400, 150);
+						ElementPanel p = new ElementPanel(0, 0, 400, 150) {
 							public void clickBehaviour(int event, int x, int y) {
 								if(event == 25) {
 									String addr = this.getElementStoredText("entry");
 									if(verifyDotAddress(addr)) {
 										dotAddress = addr;
 										entry.disposeFrame();
+									}
+									else {
+										handleText(this, "error", getWidth() / 5, getHeight() * 4 / 5, getWidth() / 3, getHeight() / 5, "NOT FOUND");
+										handleText(this, "error2", getWidth() * 4 / 5, getHeight() * 4 / 5, getWidth() / 3, getHeight() / 5, "TRY AGAIN");
 									}
 								}
 							}
@@ -181,7 +186,9 @@ public class FSMUI {
 						handleText(p, "text2", p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, "Submit");
 						handleButton(p, "but", p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, 25);
 						
-						while(dotAddress == null) {}
+						p.setScrollBarVertical(false);
+						
+						while(dotAddress == null || !(new File(dotAddress).exists())) {}
 						writeConfigEntry(DOT_ADDRESS_VAR, dotAddress);
 					}
 				}
@@ -223,8 +230,7 @@ public class FSMUI {
 	}
 	
 	private boolean verifyDotAddress(String path) {
-		GraphViz test = new GraphViz(ADDRESS_SETTINGS, path);
-		return test.verifyDotPath();
+		return GraphViz.verifyDotPath(path);
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -259,15 +265,28 @@ public class FSMUI {
 		allotImage(imgPath);
 	}
 	
+	public void allotTransitionSystem(TransitionSystem in, String name) {
+		in.setId(name);
+		fsmPaths.add(ADDRESS_SOURCES + "/" + name);
+		fsms.add(in);
+		String imgPath = FSMToDot.createImgFromFSM(in, ADDRESS_IMAGES + in.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		allotImage(imgPath);
+	}
+	
 	public void removeTransitionSystem(int index) {
-		fsmPaths.remove(index);
 		fsms.remove(index);
 		removeImage(index);
 	}
 	
+	public void removeActiveTransitionSystem() {
+		removeTransitionSystem(imagePage.getCurrentImageIndex());
+	}
+	
 	public void refreshActiveImage() {
 		TransitionSystem tS = getActiveFSM();
-		FSMToDot.createImgFromFSM(tS, ADDRESS_IMAGES + tS.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		if(tS != null) {
+			FSMToDot.createImgFromFSM(tS, ADDRESS_IMAGES + tS.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		}
 		imagePage.refreshImage();
 	}
 	
@@ -330,9 +349,9 @@ public class FSMUI {
 			return;
 		}
 		for(int i = 0 ; i < optionPageManager.getOptionPageList().length; i++) {
-			int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
+			int posX = WINDOW_WIDTH / 2/ 8 + i * (WINDOW_WIDTH / 2 / 4);
 			int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
-			int wid = WINDOW_WIDTH / 2 / 6;
+			int wid = WINDOW_WIDTH / 2 / 5;
 			int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
 			if(i == optionPageManager.getCurrentOptionPageIndex()) {
 				handleRectangle(p, "header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
@@ -395,7 +414,26 @@ public class FSMUI {
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public TransitionSystem getActiveFSM() {
+		if(fsms.size() == 0) {
+			return null;
+		}
 		return fsms.get(imagePage.getCurrentImageIndex());
+	}
+	
+	public ArrayList<String> getFSMList(){
+		return fsmPaths;
+	}
+	
+	public String getFSMPath(int index) {
+		return fsmPaths.get(index);
+	}
+	
+	public TransitionSystem getFSM(int index) {
+		return fsms.get(index);
+	}
+	
+	public int getCurrentActiveFSM() {
+		return imagePage.getCurrentImageIndex();
 	}
 	
 //---  Composites   ---------------------------------------------------------------------------
