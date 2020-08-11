@@ -46,6 +46,8 @@ public abstract class OptionPage {
 	private static FSMUI reference;
 	private boolean showHelp;
 	private int helpKey;
+	private boolean showSettings; //TODO: Settings menu
+	private int settingsKey;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -203,6 +205,9 @@ public abstract class OptionPage {
 					fra.reservePanel("default", "pan", eP);
 					for(int i = 0; i < fsms.size(); i++) {	//TODO: Regex here is broken
 						String nom = fsms.get(i);
+						nom = nom.substring(nom.lastIndexOf("/") + 1);
+						nom = nom.substring(nom.lastIndexOf("\\") + 1);
+						System.out.println(nom);
 						eP.addRectangle("back_" + i, 5, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, true, new Color(133, 133, 133), Color.black);
 						eP.addText("text_" + i, 10, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, nom, OPTIONS_FONT, true, true, true);
 						eP.addButton("butt_" + i, 10, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, i, true);

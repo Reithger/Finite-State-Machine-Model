@@ -1692,6 +1692,9 @@ public class ModalSpecification extends TransitionSystem<DetTransition> implemen
 		return(super.removeTransition(state1, eventName, state2));
 	}
 
+	public ModalSpecification copy() {
+		return new ModalSpecification(this, this.getId());
+	}
 //---  Miscellaneous   ------------------------------------------------------------------------
 	
 	/**

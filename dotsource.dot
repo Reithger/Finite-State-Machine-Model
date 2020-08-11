@@ -5,6 +5,10 @@ digraph G {
 {"___NEVER_USE_THIS_NAME___1"}->{"1"}; 
 "2"[shape = circle color = "black"];
 "1"->{"2"} [label = "a" color = "black" arrowhead = "normal" ]; 
-"0"->{"2"} [label = "b" color = "black" arrowhead = "normal" ]; 
-"2"->{"0"} [label = "b" color = "black" arrowhead = "normal" ]; 
+"1"->{"2"} [label = "c" color = "black" arrowhead = "normal" ]; 
+"0"->{"1"} [label = "b" color = "black" arrowhead = "normal" ]; 
+"0"->{"1"} [label = "a" color = "black" arrowhead = "normal" ]; 
+"0"->{"2"} [label = "c" color = "black" arrowhead = "normal" ]; 
+"2"->{"1"} [label = "a" color = "black" arrowhead = "normal" ]; 
+"2"->{"1"} [label = "c" color = "black" arrowhead = "normal" ]; 
 }

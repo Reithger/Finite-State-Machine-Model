@@ -553,4 +553,8 @@ public class DetObsContFSM extends FSM<DetTransition> implements Deterministic<D
 		return false;
 	}
 
+	public DetObsContFSM copy() {
+		return new DetObsContFSM(this, this.getId());
+	}
+	
 }

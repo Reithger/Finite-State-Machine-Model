@@ -524,4 +524,7 @@ public class NonDetObsContFSM extends FSM<NonDetTransition> implements NonDeterm
 		return false;
 	}
 
+	public NonDetObsContFSM copy() {
+		return new NonDetObsContFSM(this, this.getId());
+	}
 }

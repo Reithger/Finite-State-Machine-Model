@@ -2,6 +2,7 @@ package ui.page.optionpage;
 
 import java.util.Random;
 
+import fsm.NonDetObsContFSM;
 import graphviz.FSMToDot;
 import support.GenerateFSM;
 import ui.FSMUI;
@@ -105,9 +106,9 @@ public class AdjustFSM extends OptionPage{
 					FSMToDot.createImgFromFSM(getFSMUI().getActiveFSM(), FSMUI.ADDRESS_IMAGES + getFSMUI().getActiveFSM().getId(), FSMUI.ADDRESS_IMAGES, FSMUI.ADDRESS_CONFIG);
 					break;
 				case CODE_DUPLICATE_FSM:
-					String tex = this.getTextFromCode(CODE_DUPLICATE_FSM, 0);
+					String tex = this.getTextFromCode(CODE_DUPLICATE_FSM, 0); 
 					tex = tex.equals("") || tex == null ? getFSMUI().getActiveFSM().getId() + "(copy)" : tex;
-					getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM(), tex);
+					getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().copy(), tex);
 					break;
 				case CODE_ADD_STATE: 
 					getFSMUI().getActiveFSM().addState(this.getTextFromCode(CODE_ADD_STATE, 0));
@@ -120,7 +121,7 @@ public class AdjustFSM extends OptionPage{
 				case CODE_ADD_TRANSITION: 
 					getFSMUI().getActiveFSM().addTransition(this.getTextFromCode(CODE_ADD_TRANSITION, 0), this.getTextFromCode(CODE_ADD_TRANSITION, 1), this.getTextFromCode(CODE_ADD_TRANSITION, 2));
 					getFSMUI().refreshActiveImage();
-					resetCodeEntries(code);	//TODO: Let use decide whether or not to clear entries
+					resetCodeEntries(code);	//TODO: Let user decide whether or not to clear entries
 					break;
 				case CODE_REMOVE_TRANSITION: 
 					getFSMUI().getActiveFSM().removeTransition(this.getTextFromCode(CODE_REMOVE_TRANSITION, 0), this.getTextFromCode(CODE_REMOVE_TRANSITION, 1), this.getTextFromCode(CODE_REMOVE_TRANSITION, 2));

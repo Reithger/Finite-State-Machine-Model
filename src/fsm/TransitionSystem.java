@@ -963,4 +963,6 @@ public abstract class TransitionSystem<T extends Transition> {
 		return !isSecret;
 	}
 	
+	public abstract <T1 extends TransitionSystem<T>> T1 copy();
+	
 }
