@@ -111,7 +111,6 @@ public abstract class OptionPage {
 			for(int j = 0; j < labels[i].length; j++) {
 				//Label
 				handleText(header + "_option_" + i + "_" + j + "_text", p.getWidth() / 3 / 2, startY, p.getWidth() / 3, p.getHeight() / 20, OPTIONS_FONT, labels[i][j]);
-				handleLine(header + "_option_"  + i + "_" + j + "_line", p.getWidth() / 20, startY + p.getHeight() / 40, p.getWidth() * 19 / 20, startY + p.getHeight() / 40, 1, Color.black);
 				switch(types[i][j]) {
 					case ENTRY_SELECT_FSM:
 						posX = p.getWidth() / 3 + p.getWidth() / 3 ;
@@ -122,11 +121,13 @@ public abstract class OptionPage {
 						handleButton(header + "_option_" + i + "_" + j + "_butt_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, codes[i][j]);
 						break;
 					case ENTRY_SELECT_FSMS:
-						posX = p.getWidth() / 3 + p.getWidth() / 3 ;
+						posX = p.getWidth() / 3 + p.getWidth() / 3;
 						for(int a = 0; a < MAX_SELECT_FSMS; a++) {
 							posY = startY;
 							String chozes = contents[i][j][a] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[i][j][a];
-							if((chozes == null || chozes.equals("")) && a > 0) {
+							if((chozes == null || chozes.equals(""))) {
+						  		handleRectangle(header + "_option_" + i + "_" + j + "_" + a + "_rect_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
+								handleButton(header + "_option_" + i + "_" + j + "_" + a + "_butt_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, codes[i][j]);
 								break;
 							}
 							if(a > 0) {
@@ -160,6 +161,7 @@ public abstract class OptionPage {
 							handleTextEntry(getTextEntryName(i, j, k), posX, posY, p.getWidth() / 3 / (5), p.getHeight() / 30, codeStart++, star);
 						}
 				}
+				handleLine(header + "_option_"  + i + "_" + j + "_line", p.getWidth() / 20, startY + p.getHeight() / 40, p.getWidth() * 19 / 20, startY + p.getHeight() / 40, 1, Color.black);
 				//Submission button
 				posX = p.getWidth() - p.getWidth() / 3 / 4;
 				posY = startY;
@@ -197,7 +199,9 @@ public abstract class OptionPage {
 						@Override
 						public void clickBehaviour(int code, int x, int y) {
 							if(code >= 0 && code < fsms.size()) {
-								contents[pos[0]][pos[1]][0] = fsms.get(code);
+								contents[pos[0]][pos[1]][0] = FSMUI.stripPath(fsms.get(code));
+								p.removeElement(getTextEntryName(pos[0], pos[1], 0));
+								drawPage();
 								this.getParentFrame().disposeFrame();
 							}
 						}
@@ -207,13 +211,34 @@ public abstract class OptionPage {
 						String nom = fsms.get(i);
 						nom = nom.substring(nom.lastIndexOf("/") + 1);
 						nom = nom.substring(nom.lastIndexOf("\\") + 1);
-						System.out.println(nom);
 						eP.addRectangle("back_" + i, 5, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, true, new Color(133, 133, 133), Color.black);
 						eP.addText("text_" + i, 10, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, nom, OPTIONS_FONT, true, true, true);
 						eP.addButton("butt_" + i, 10, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, i, true);
 					}
 					break;
 				case ENTRY_SELECT_FSMS:
+					WindowFrame fra2 = new WindowFrame(300, 200);
+					ArrayList<String> fsms2 = getFSMUI().getFSMList();
+					ElementPanel eP2 = new ElementPanel(0, 0, 300, 200) {
+						@Override
+						public void clickBehaviour(int code, int x, int y) {
+							if(code >= 0 && code < fsms2.size()) {
+								contents[pos[0]][pos[1]][0] = FSMUI.stripPath(fsms2.get(code));
+								p.removeElement(getTextEntryName(pos[0], pos[1], 0));
+								drawPage();
+								this.getParentFrame().disposeFrame();
+							}
+						}
+					};
+					fra2.reservePanel("default", "pan", eP2);
+					for(int i = 0; i < fsms2.size(); i++) {	//TODO: Regex here is broken
+						String nom = fsms2.get(i);
+						nom = nom.substring(nom.lastIndexOf("/") + 1);
+						nom = nom.substring(nom.lastIndexOf("\\") + 1);
+						eP2.addRectangle("back_" + i, 5, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, true, new Color(133, 133, 133), Color.black);
+						eP2.addText("text_" + i, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, nom, OPTIONS_FONT, true, true, true);
+						eP2.addButton("butt_" + i, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, i, true);
+					}
 					break;
 				default:
 					break;

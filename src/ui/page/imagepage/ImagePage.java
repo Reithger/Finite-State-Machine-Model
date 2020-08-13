@@ -5,9 +5,11 @@ import java.awt.Image;
 import java.util.ArrayList;
 
 import ui.FSMUI;
+import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
 //TODO: There's something screwy with the zoom in and zoom out in keeping the image centered, fix it
+//TODO: Pop-out window so you can look at a larger copy of the image (identical ElementPanel, just bigger in a new frame)
 
 public class ImagePage {
 
@@ -20,6 +22,9 @@ public class ImagePage {
 	private static final double DEFAULT_ZOOM = 1.0;
 	private static final double UI_BOX_RATIO_Y = 3 / 4.0;
 	private static final double UI_BOX_RATIO_X = 4 / 5.0;
+	
+	private static final int DEFAULT_POPOUT_WIDTH = 800;
+	private static final int DEFAULT_POPOUT_HEIGHT = 800;
 	
 	//-- Codes  -----------------------------------------------
 	private static final int CODE_MOVE_RIGHT = 10;
@@ -81,10 +86,10 @@ public class ImagePage {
 						increaseOriginX();
 						break;
 					case KEY_MOVE_UP:
-						decreaseOriginY();
+						increaseOriginY();
 						break;
 					case KEY_MOVE_DOWN:
-						increaseOriginY();
+						decreaseOriginY();
 						break;
 					case KEY_ZOOM_IN:
 						increaseZoom();
@@ -111,10 +116,10 @@ public class ImagePage {
 						increaseOriginX();
 						break;
 					case CODE_MOVE_UP:
-						decreaseOriginY();
+						increaseOriginY();
 						break;
 					case CODE_MOVE_DOWN:
-						increaseOriginY();
+						decreaseOriginY();
 						break;
 					case CODE_ZOOM_IN:
 						increaseZoom();
@@ -139,11 +144,30 @@ public class ImagePage {
 		p.setScrollBarVertical(false);
 		return p;
 	}
+
+	public void generatePopout() {
+		WindowFrame fra = new WindowFrame(DEFAULT_POPOUT_WIDTH, DEFAULT_POPOUT_HEIGHT) {
+			@Override
+			public void reactToResize() {
+				
+			}
+		};
+		PopoutDisplay pp = new PopoutDisplay(0, 0, DEFAULT_POPOUT_WIDTH, DEFAULT_POPOUT_HEIGHT, getCurrentImage());
+		fra.reservePanel("default", "pan", pp);
+	}
+
 	
 	private String formImageName(int index) {
 		if(index < images.size())
-			return images.get(index).substring(images.get(index).lastIndexOf("\\") + 1);
+			return images.get(index).substring(images.get(index).lastIndexOf("\\") + 1).substring(images.get(index).lastIndexOf("/") + 1);
 		return null;
+	}
+	
+	public void updateActiveImage(String newName) {
+		p.removeElement(formImageName(currentImageIndex));
+		images.set(currentImageIndex, FSMUI.ADDRESS_IMAGES + newName + ".jpg");
+		imageReferences.set(currentImageIndex, p.retrieveImage(images.get(currentImageIndex)));
+		refreshImage();
 	}
 	
 	public void refreshImage() {
@@ -359,4 +383,116 @@ public class ImagePage {
 		}
 	}
 	
+//---  Support Classes   ----------------------------------------------------------------------
+	
+	public class PopoutDisplay extends ElementPanel{
+		
+	//---  Constants   ------------------------------------------------------------------------
+		
+		private static final int CODE_MOVE_RIGHT = 10;
+		private static final int CODE_MOVE_DOWN = 11;
+		private static final int CODE_MOVE_LEFT = 12;
+		private static final int CODE_MOVE_UP = 13;
+		private static final int CODE_ZOOM_IN = 14;
+		private static final int CODE_ZOOM_OUT = 15;
+		private static final int CODE_RESET_POSITION = 17;
+		private static final char KEY_MOVE_RIGHT = 'd';
+		private static final char KEY_MOVE_DOWN = 'w';
+		private static final char KEY_MOVE_LEFT = 'a';
+		private static final char KEY_MOVE_UP = 's';
+		private static final char KEY_ZOOM_IN = 'q';
+		private static final char KEY_ZOOM_OUT = 'e';
+		private static final char KEY_RESET_POSITION = 'h';
+
+		private static final double MOVEMENT_FACTOR = .1;
+		private static final double ZOOM_FACTOR = 1.1;
+		
+	//---  Instance Variables   ---------------------------------------------------------------
+		
+		private Image display;
+		private double zoom;
+		
+		public PopoutDisplay(int x, int y, int width, int height, Image img) {
+			super(x, y, width, height);
+			display = img;
+			zoom = 1;
+		}
+	
+		public void keyBehaviour(char code) {
+			switch(code) {
+				case KEY_MOVE_RIGHT:
+					setOffsetX((int)(getOffsetX() - getWidth() * zoom * MOVEMENT_FACTOR));
+					break;
+				case KEY_MOVE_LEFT:
+					setOffsetX((int)(getOffsetX() + getWidth() * zoom * MOVEMENT_FACTOR));
+					break;
+				case KEY_MOVE_UP:
+					setOffsetY((int)(getOffsetY() + getHeight() * zoom * MOVEMENT_FACTOR));
+					break;
+				case KEY_MOVE_DOWN:
+					setOffsetY((int)(getOffsetY() - getHeight() * zoom * MOVEMENT_FACTOR));
+					break;
+				case KEY_ZOOM_IN:
+					zoom *= ZOOM_FACTOR;
+					break;
+				case KEY_ZOOM_OUT:
+					zoom /= ZOOM_FACTOR;
+					break;
+				case KEY_RESET_POSITION:
+					setOffsetX(0);
+					setOffsetY(0);
+					zoom = 1;
+					break;
+			}
+			drawPopout();
+		}
+		
+		public void clickBehaviour(int code, int x, int y) {
+			switch(code) {
+				case CODE_MOVE_RIGHT:
+					setOffsetX((int)(getOffsetX() - getWidth() * zoom * MOVEMENT_FACTOR));
+					break;
+				case CODE_MOVE_LEFT:
+					setOffsetX((int)(getOffsetX() + getWidth() * zoom * MOVEMENT_FACTOR));
+					break;
+				case CODE_MOVE_UP:
+					setOffsetY((int)(getOffsetY() + getHeight() * zoom * MOVEMENT_FACTOR));
+					break;
+				case CODE_MOVE_DOWN:
+					setOffsetY((int)(getOffsetY() - getHeight() * zoom * MOVEMENT_FACTOR));
+					break;
+				case CODE_ZOOM_IN:
+					zoom *= ZOOM_FACTOR;
+					break;
+				case CODE_ZOOM_OUT:
+					zoom /= ZOOM_FACTOR;
+					break;
+				case CODE_RESET_POSITION:
+					setOffsetX(0);
+					setOffsetY(0);
+					zoom = 1;
+					break;
+			}
+			drawPopout();
+		}
+
+		public void drawPopout() {
+			addImage("img", 5, 0, 0, true, display);
+			int imageSize = getWidth() / 20;
+			int spacing = imageSize * 4 / 3;
+			int posX = originUIX + (int)(getWidth() * (1 - UI_BOX_RATIO_X)) / 2;
+			int posY = originUIY + spacing * 3 / 4;
+			drawImageButton("ui_box_zoom_in", posX - spacing, posY, imageSize, imageSize, "/assets/ui/zoom_in.png", CODE_ZOOM_IN);
+			drawImageButton("ui_box_zoom_out", posX + spacing, posY, imageSize, imageSize, "/assets/ui/zoom_out.png", CODE_ZOOM_OUT);
+			posY += spacing;
+			drawImageButton("ui_box_move_up", posX, posY, imageSize, imageSize, "/assets/ui/up_arrow.png", CODE_MOVE_UP);
+			posY += spacing;
+			drawImageButton("ui_box_move_left", posX - spacing, posY, imageSize, imageSize, "/assets/ui/left_arrow.png", CODE_MOVE_LEFT);
+			drawImageButton("ui_box_move_right", posX + spacing, posY, imageSize, imageSize, "/assets/ui/right_arrow.png", CODE_MOVE_RIGHT);
+			drawImageButton("ui_box_UI_ring", posX, posY, imageSize, imageSize, "/assets/ui/UI_ring.png", CODE_RESET_POSITION);
+			posY += spacing;
+			drawImageButton("ui_box_move_down", posX, posY, imageSize, imageSize, "/assets/ui/down_arrow.png", CODE_MOVE_DOWN);
+		}
+
+	}
 }

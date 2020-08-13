@@ -45,8 +45,11 @@ public class AdjustFSM extends OptionPage{
 	//--
 	private final static int CODE_SAVE_FSM = 110;
 	private final static int CODE_SAVE_IMG = 111;
-	private final static int CODE_DUPLICATE_FSM = 112;
-	private final static int CODE_CLOSE_FSM = 113;
+	private final static int CODE_LOAD_SOURCE = 112;
+	private final static int CODE_DELETE_SOURCE = 113;
+	private final static int CODE_RENAME_FSM = 114;
+	private final static int CODE_DUPLICATE_FSM = 115;
+	private final static int CODE_CLOSE_FSM = 116;
 	
 	//-- Scripts  ---------------------------------------------
 	
@@ -58,8 +61,8 @@ public class AdjustFSM extends OptionPage{
 			"Number of Secret States", "Number of Controlled Events", "Number of Unobservable Events", "Number of Attacker Invisible Events",
 			"Non-Deterministic", "Name", "Generate"},
 		{"Add State", "Remove State", "Add Initial State", "Set State Marked", "Set State Secret", "Set State Bad"},
-		{"Add Transition", "Remove Transition"},
-		{"Save Source", "Save Image", "Generate Copy", "Close FSM"},
+		{"Add Transition", "Remove Transition"},	//TODO: Option to disable delete in case of misclicking
+		{"Save Source", "Save Image", "Load Source", "Rename FSM", "Generate Copy", "Close FSM", "Delete Source"},
 	};	//# marked states, # start states, # end states, # unobserv events, # attacker aware events, # controlled events, det/non-det, name
 	private final static String[][] TYPES = new String[][] {
 		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_CHECKBOX, ENTRY_TEXT_LONG, ENTRY_EMPTY},
@@ -67,7 +70,7 @@ public class AdjustFSM extends OptionPage{
 			ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_CHECKBOX, ENTRY_TEXT_LONG, ENTRY_EMPTY},
 		{ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE, ENTRY_TEXT_SINGLE},
 		{ENTRY_TEXT_TRIPLE, ENTRY_TEXT_TRIPLE},
-		{ENTRY_EMPTY, ENTRY_EMPTY, ENTRY_TEXT_LONG, ENTRY_EMPTY}
+		{ENTRY_EMPTY, ENTRY_EMPTY, ENTRY_TEXT_LONG, ENTRY_TEXT_LONG, ENTRY_TEXT_LONG, ENTRY_EMPTY, ENTRY_EMPTY}
 	};
 	/** Make sure codes are high values to give buffer for background behaviors*/
 	private final static int[][] CODES = new int[][] {
@@ -77,7 +80,7 @@ public class AdjustFSM extends OptionPage{
 			CODE_ACCESS_COMPLEX_FSM_NAME, CODE_GENERATE_COMPLEX_FSM},
 		{CODE_ADD_STATE, CODE_REMOVE_STATE, CODE_INITIAL_STATE, CODE_MARKED_STATE, CODE_SECRET_STATE, CODE_BAD_STATE},
 		{CODE_ADD_TRANSITION, CODE_REMOVE_TRANSITION},
-		{CODE_SAVE_FSM, CODE_SAVE_IMG, CODE_DUPLICATE_FSM, CODE_CLOSE_FSM},
+		{CODE_SAVE_FSM, CODE_SAVE_IMG, CODE_LOAD_SOURCE, CODE_RENAME_FSM, CODE_DUPLICATE_FSM, CODE_CLOSE_FSM, CODE_DELETE_SOURCE},
 	};
 	private final static String HELP = 
 			"Some line\n"
@@ -109,6 +112,16 @@ public class AdjustFSM extends OptionPage{
 					String tex = this.getTextFromCode(CODE_DUPLICATE_FSM, 0); 
 					tex = tex.equals("") || tex == null ? getFSMUI().getActiveFSM().getId() + "(copy)" : tex;
 					getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().copy(), tex);
+					break;
+				case CODE_RENAME_FSM:
+					getFSMUI().renameActiveFSM(getTextFromCode(CODE_RENAME_FSM, 0));
+					break;
+				case CODE_LOAD_SOURCE:
+					getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_LOAD_SOURCE, 0), getTextFromCode(CODE_LOAD_SOURCE, 0).replaceAll(".fsm", ""));
+					getFSMUI().refreshActiveImage();	//TODO: Add actual file selecting thing, relying on exact names is bad form
+					break;
+				case CODE_DELETE_SOURCE:
+					getFSMUI().deleteActiveFSM();
 					break;
 				case CODE_ADD_STATE: 
 					getFSMUI().getActiveFSM().addState(this.getTextFromCode(CODE_ADD_STATE, 0));

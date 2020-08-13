@@ -241,7 +241,26 @@ public class FSMUI {
 		updateImageHeader();
 		updateImagePanel();
 	}
-
+	
+	public void allotTransitionSystem(String in, String name) {
+		if(in.contains(".fsm") == false) {
+			in = in + ".fsm";
+		}
+		fsmPaths.add(in);
+		NonDetObsContFSM cre = new NonDetObsContFSM(new File(in), name);
+		fsms.add(cre);
+		String imgPath = FSMToDot.createImgFromFSM(cre, ADDRESS_IMAGES + cre.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		allotImage(imgPath);
+	}
+	
+	public void allotTransitionSystem(TransitionSystem in, String name) {
+		in.setId(name);
+		fsmPaths.add(ADDRESS_SOURCES + name);
+		fsms.add(in);
+		String imgPath = FSMToDot.createImgFromFSM(in, ADDRESS_IMAGES + in.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		allotImage(imgPath);
+	}
+	
 	public void removeImage(int index) {
 		fsmPaths.remove(index);
 		imagePage.removeImage(index);
@@ -256,23 +275,7 @@ public class FSMUI {
 		updateImageHeader();
 		updateImagePanel();
 	}
-	
-	public void allotTransitionSystem(String in, String name) {
-		fsmPaths.add(in);
-		NonDetObsContFSM cre = new NonDetObsContFSM(new File(in), name);
-		fsms.add(cre);
-		String imgPath = FSMToDot.createImgFromFSM(cre, ADDRESS_IMAGES + cre.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
-		allotImage(imgPath);
-	}
-	
-	public void allotTransitionSystem(TransitionSystem in, String name) {
-		in.setId(name);
-		fsmPaths.add(ADDRESS_SOURCES + "/" + name);
-		fsms.add(in);
-		String imgPath = FSMToDot.createImgFromFSM(in, ADDRESS_IMAGES + in.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
-		allotImage(imgPath);
-	}
-	
+
 	public void removeTransitionSystem(int index) {
 		fsms.remove(index);
 		removeImage(index);
@@ -280,6 +283,28 @@ public class FSMUI {
 	
 	public void removeActiveTransitionSystem() {
 		removeTransitionSystem(imagePage.getCurrentImageIndex());
+	}
+	
+	public void deleteActiveFSM() {
+		deleteFSMFromMemory(getActiveFSM().getId());
+		removeActiveTransitionSystem();
+		refreshActiveImage();
+	}
+	
+	private void deleteFSMFromMemory(String name) {
+		File f = new File(ADDRESS_SOURCES + name + ".fsm");
+		f.delete();
+		f = new File(ADDRESS_IMAGES + name + ".jpg");
+		f.delete();
+	}
+	
+	public void renameActiveFSM(String newName) {
+		deleteFSMFromMemory(newName);
+		getActiveFSM().setId(newName);
+		getActiveFSM().toTextFile(ADDRESS_SOURCES, newName);
+		FSMToDot.createImgFromFSM(getActiveFSM(), ADDRESS_IMAGES + getActiveFSM().getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		imagePage.updateActiveImage(newName);
+		updateImageHeader();
 	}
 	
 	public void refreshActiveImage() {
@@ -389,7 +414,7 @@ public class FSMUI {
 				}
 				handleRectangle(p, "header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
 				handleButton(p, "header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
-				String nom = images.get(i).substring(images.get(i).lastIndexOf("\\") + 1);
+				String nom = images.get(i).substring(images.get(i).lastIndexOf("\\") + 1).substring(images.get(i).lastIndexOf("/") + 1);
 				handleText(p, "header_text_" + i, posX, posY, wid, hei, nom);
 			}
 		}
@@ -483,6 +508,11 @@ public class FSMUI {
 			}
 		}
 		return new BufferedReader(new InputStreamReader(is));
+	}
+	
+	public static String stripPath(String in) {
+		String out = in.substring(in.lastIndexOf("/") + 1);
+		return out.substring(in.lastIndexOf("\\") + 1);
 	}
 	
 }
