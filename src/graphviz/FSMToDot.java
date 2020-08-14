@@ -44,6 +44,11 @@ public class FSMToDot {
 	    gv.increaseDpi();
 	    gv.increaseDpi();
 	    gv.increaseDpi();
+	    gv.increaseDpi();
+	    gv.increaseDpi();
+	    gv.increaseDpi();
+	    gv.increaseDpi();
+	    gv.increaseDpi();
 	    File out = new File(path + "." + type);
 	    gv.writeGraphToFile( gv.getGraph( gv.getDotSource(), type ), out );
 	    return out.getAbsolutePath();

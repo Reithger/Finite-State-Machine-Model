@@ -30,6 +30,14 @@ public abstract class OptionPage {
 	
 	private final static int MAX_SELECT_FSMS = 8;
 	
+	private final static int WIDTH_SELECT_FSM_WINDOW = 300;
+	private final static int HEIGHT_SELECT_FSM_WINDOW = 200;
+	private final static int WIDTH_SELECT_FSMS_WINDOW = 500;
+	private final static int WIDTH_SELECT_FSMS_PANEL = 250;
+	private final static int HEIGHT_SELECT_FSMS_WINDOW = 300;
+	private final static int CODE_CLOSE_SELECT_FSMS = -15;
+	private final static Color BACK_COLOR_GRAY = new Color(192, 192, 192);
+	
 //---  Instance Variables   -------------------------------------------------------------------
 
 	private String header;
@@ -87,9 +95,9 @@ public abstract class OptionPage {
 		int codeStart = categories.length;
 		helpKey = codeStart;
 		codeStart++;
-		handleRectangle("help_rect", p.getWidth() - p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, Color.gray, Color.black);
-		handleButton("help_button", p.getWidth() - p.getWidth() / 20,  p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, helpKey);
-		handleImage("help_img", p.getWidth() - p.getWidth() / 20, p.getWidth() / 20, "/assets/ui/question_mark.png", 3);
+		handleRectangle("help_rect", p.getWidth() - p.getWidth() / 15, p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, Color.gray, Color.black);
+		handleButton("help_button", p.getWidth() - p.getWidth() / 15,  p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, helpKey);
+		handleImage("help_img", p.getWidth() - p.getWidth() / 15, p.getWidth() / 20, "/assets/ui/question_mark.png", 3);
 		for(int i = 0; i < categories.length; i++) {
 			//Category header
 			int posX = p.getWidth() / 3 / 2;
@@ -187,15 +195,15 @@ public abstract class OptionPage {
 		}
 		int[] pos = getCodeIndices(code);
 		if(pos != null) {
-			switch(types[pos[0]][pos[1]]) {
+			switch(getTypeFromCode(code)) {
 				case ENTRY_CHECKBOX:
 					contents[pos[0]][pos[1]][0] = (contents[pos[0]][pos[1]][0].equals(CHECKBOX_TRUE) ? CHECKBOX_FALSE : CHECKBOX_TRUE);
 					p.removeElement(header + "_option_" + pos[0] + "_" + pos[1] + "_checkbox_rect");
 					break;
 				case ENTRY_SELECT_FSM:
-					WindowFrame fra = new WindowFrame(300, 200);
+					WindowFrame fra = new WindowFrame(WIDTH_SELECT_FSM_WINDOW, HEIGHT_SELECT_FSM_WINDOW);
 					ArrayList<String> fsms = getFSMUI().getFSMList();
-					ElementPanel eP = new ElementPanel(0, 0, 300, 200) {
+					ElementPanel eP = new ElementPanel(0, 0, WIDTH_SELECT_FSM_WINDOW, HEIGHT_SELECT_FSM_WINDOW) {
 						@Override
 						public void clickBehaviour(int code, int x, int y) {
 							if(code >= 0 && code < fsms.size()) {
@@ -207,38 +215,50 @@ public abstract class OptionPage {
 						}
 					};
 					fra.reservePanel("default", "pan", eP);
-					for(int i = 0; i < fsms.size(); i++) {	//TODO: Regex here is broken
-						String nom = fsms.get(i);
-						nom = nom.substring(nom.lastIndexOf("/") + 1);
-						nom = nom.substring(nom.lastIndexOf("\\") + 1);
-						eP.addRectangle("back_" + i, 5, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, true, new Color(133, 133, 133), Color.black);
+					fra.setExitOnClose(false);
+					for(int i = 0; i < fsms.size(); i++) {
+						String nom = FSMUI.stripPath(fsms.get(i));
+						eP.addRectangle("back_" + i, 5, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, true, BACK_COLOR_GRAY, Color.black);
 						eP.addText("text_" + i, 10, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, nom, OPTIONS_FONT, true, true, true);
 						eP.addButton("butt_" + i, 10, eP.getWidth() / 2, eP.getHeight() / 4 + eP.getHeight() * 3 / 8 * i, eP.getWidth() * 2 / 3, eP.getHeight() / 4, i, true);
 					}
 					break;
 				case ENTRY_SELECT_FSMS:
-					WindowFrame fra2 = new WindowFrame(300, 200);
-					ArrayList<String> fsms2 = getFSMUI().getFSMList();
-					ElementPanel eP2 = new ElementPanel(0, 0, 300, 200) {
+					WindowFrame fra2 = new WindowFrame(WIDTH_SELECT_FSMS_WINDOW, HEIGHT_SELECT_FSMS_WINDOW);
+					fra2.setExitOnClose(false);
+					
+					String[] selectedFSMs = getFSMsFromCode(code);
+					ElementPanel eP2 = new ElementPanel(0, 0, WIDTH_SELECT_FSMS_PANEL, HEIGHT_SELECT_FSMS_WINDOW) {
 						@Override
-						public void clickBehaviour(int code, int x, int y) {
-							if(code >= 0 && code < fsms2.size()) {
-								contents[pos[0]][pos[1]][0] = FSMUI.stripPath(fsms2.get(code));
-								p.removeElement(getTextEntryName(pos[0], pos[1], 0));
+						public void clickBehaviour(int codeB, int x, int y) {
+							if(codeB >= 0 && codeB < selectedFSMs.length) {
+								removeFSM(code, codeB);
+								removeElementPrefixed("select_fsm_rect_" + codeB);
+								drawSelectedFSMsPanel(this, code);
 								drawPage();
-								this.getParentFrame().disposeFrame();
+							}
+							else if(code == CODE_CLOSE_SELECT_FSMS) {
+								fra2.disposeFrame();
+								drawPage();
 							}
 						}
 					};
+					drawSelectedFSMsPanel(eP2, code);
+					
+					ArrayList<String> fsms2 = getFSMUI().getFSMList();
+					ElementPanel eP3 = new ElementPanel(WIDTH_SELECT_FSMS_WINDOW - WIDTH_SELECT_FSMS_PANEL, 0, WIDTH_SELECT_FSMS_PANEL, HEIGHT_SELECT_FSMS_WINDOW) {
+						@Override
+						public void clickBehaviour(int codeB, int x, int y) {
+							if(codeB >= 0 && codeB < fsms2.size()) {
+								appendFSM(code, FSMUI.stripPath(fsms2.get(codeB)));
+								drawPage();
+							}
+						}
+					};
+					drawSelectableFSMsPanel(eP3, fsms2);
+					
 					fra2.reservePanel("default", "pan", eP2);
-					for(int i = 0; i < fsms2.size(); i++) {	//TODO: Regex here is broken
-						String nom = fsms2.get(i);
-						nom = nom.substring(nom.lastIndexOf("/") + 1);
-						nom = nom.substring(nom.lastIndexOf("\\") + 1);
-						eP2.addRectangle("back_" + i, 5, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, true, new Color(133, 133, 133), Color.black);
-						eP2.addText("text_" + i, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, nom, OPTIONS_FONT, true, true, true);
-						eP2.addButton("butt_" + i, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, i, true);
-					}
+					fra2.reservePanel("default", "pan2", eP3);
 					break;
 				default:
 					break;
@@ -248,15 +268,36 @@ public abstract class OptionPage {
 		applyCode(code);
 	}
 	
+	private void drawSelectedFSMsPanel(ElementPanel eP2, int code) {
+		int bottomI = 0;
+		for(int i = 0; i < MAX_SELECT_FSMS; i++) {	//Display selected FSMs for removal/reference
+			String nom = getTextFromCode(code, i);	//TODO: Close select screen button not working
+			if(nom == null || nom.equals("")) {
+				bottomI = i;
+				break;
+			}
+			eP2.addRectangle("select_fsm_rect_" + i, 5, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, true, BACK_COLOR_GRAY, Color.black);
+			eP2.addText("select_fsm_text_" + i, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, nom, OPTIONS_FONT, true, true, true);
+			eP2.addButton("select_fsm_butt_" + i, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, i, true);
+		}
+		eP2.addRectangle("select_fsm_rect_" + bottomI, 5, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * bottomI, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, true, BACK_COLOR_GRAY, Color.black);
+		eP2.addText("select_fsm_text_" + bottomI, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * bottomI, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, "Close Selection Screen", OPTIONS_FONT, true, true, true);
+		eP2.addButton("select_fsm_butt_" + bottomI, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * bottomI, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, CODE_CLOSE_SELECT_FSMS, true);
+	
+	}
+	
+	private void drawSelectableFSMsPanel(ElementPanel eP2, ArrayList<String> fsms2) {
+		for(int i = 0; i < fsms2.size(); i++) {	
+			String nom = FSMUI.stripPath(fsms2.get(i));
+			eP2.addRectangle("back_" + i, 5, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, true, BACK_COLOR_GRAY, Color.black);
+			eP2.addText("text_" + i, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, nom, OPTIONS_FONT, true, true, true);
+			eP2.addButton("butt_" + i, 10, eP2.getWidth() / 2, eP2.getHeight() / 4 + eP2.getHeight() * 3 / 8 * i, eP2.getWidth() * 2 / 3, eP2.getHeight() / 4, i, true);
+		}
+	}
+	
 	public abstract void applyCode(int code);
 
-	public boolean toggleCategory(int index) {
-		if(index >= 0 && index < openCategories.length) {
-			openCategories[index] = !openCategories[index];
-			return true;
-		}
-		return false;
-	}
+//---  Setter Methods   -----------------------------------------------------------------------
 
 	public static void assignElementPanel(ElementPanel inP) {
 		p = inP;
@@ -275,32 +316,66 @@ public abstract class OptionPage {
 		}
 		p.repaint();
 	}
+
+	public boolean toggleCategory(int index) {
+		if(index >= 0 && index < openCategories.length) {
+			openCategories[index] = !openCategories[index];
+			return true;
+		}
+		return false;
+	}
+
+	public void appendFSM(int code, String reference) {
+		if(getTypeFromCode(code).contentEquals(ENTRY_SELECT_FSMS)) {
+			int[] indic = getCodeIndices(code);
+			int index = 0;
+			while(!contents[indic[0]][indic[1]][index].equals("") && index < contents[indic[0]][indic[1]].length) {
+				index++;
+			}
+			contents[indic[0]][indic[1]][index] = reference;
+		}
+	}
+	
+	public void removeFSM(int code, int index) {
+		if(getTypeFromCode(code).contentEquals(ENTRY_SELECT_FSMS)) {
+			int[] indic = getCodeIndices(code);
+			contents[indic[0]][indic[1]][index] = contents[indic[0]][indic[1]][index++];
+			while(!contents[indic[0]][indic[1]][index].equals("") && index < contents[indic[0]][indic[1]].length) {
+				contents[indic[0]][indic[1]][index] = contents[indic[0]][indic[1]][index++];
+			}
+		}
+	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	//-- Meta  ------------------------------------------------
 	
 	public String getHeader() {
 		return header;
 	}
-	
-	public String[] getTextEntry(int i, int j) {
-		int len = 0;
-		while(p.getElementStoredText(getTextEntryName(i, j, len++)) != null) {
-			
-		}
-		String[] out = new String[len-1];
-		for(int k = 0; k < out.length; k++) {
-			out[k] = p.getElementStoredText(getTextEntryName(i, j, k));
-		}
-		return out;
+
+	public static FSMUI getFSMUI() {
+		return reference;
 	}
 	
-	public String getTextFromCode(int code, int posit) {
+	//-- Access Contents  -------------------------------------
+	
+	public String getTextFromCode(int code, int posit){
 		int[] indic = getCodeIndices(code);
 		int numPosit = getEntryTextSize(types[indic[0]][indic[1]]);
 		if(posit >= numPosit) {
 			return null;
 		}
-		return getTextEntry(indic[0], indic[1])[posit];
+		return contents[indic[0]][indic[1]][posit];
+	}
+	
+	public String getTextEntryFromCode(int code, int posit) {
+		int[] indic = getCodeIndices(code);
+		int numPosit = getEntryTextSize(types[indic[0]][indic[1]]);
+		if(posit >= numPosit) {
+			return null;
+		}
+		return getTextEntryElementContents(code)[posit];
 	}
 	
 	public Integer getIntegerFromCode(int code, int posit) {
@@ -310,7 +385,7 @@ public abstract class OptionPage {
 		if(posit >= numPosit) {
 			return null;
 		}
-		String num = getTextEntry(indic[0], indic[1])[posit];
+		String num = getTextEntryElementContents(code)[posit];
 		try {
 			return Integer.parseInt(num);
 		}
@@ -320,24 +395,28 @@ public abstract class OptionPage {
 		}
 	}
 	
-	public int[] getCodeIndices(int code) {
-		for(int i = 0; i < codes.length; i++) {
-			for(int j = 0; j < codes[i].length; j++) {
-				if(codes[i][j] == code) {
-					return new int[] {i, j};
-				}
-			}
-		}
-		return null;
-	}
-		
-	public Boolean getCheckboxContents(int code) {
+	public Boolean getCheckboxContentsFromCode(int code) {
 		int[] pos = getCodeIndices(code);
 		if(pos != null && types[pos[0]][pos[1]].equals(ENTRY_CHECKBOX)) {
 			return contents[pos[0]][pos[1]][0].contentEquals(CHECKBOX_TRUE);
 		}
 		return null;
 	}
+	
+	public String getTypeFromCode(int code) {
+		int[] indic = getCodeIndices(code);
+		return types[indic[0]][indic[1]];
+	}
+
+	public String[] getFSMsFromCode(int code) {
+		if(getTypeFromCode(code).contentEquals(ENTRY_SELECT_FSMS)) {
+			int[] indic = getCodeIndices(code);
+			return contents[indic[0]][indic[1]];
+		}
+		return null;
+	}
+	
+	//-- Mechanic Reference  ----------------------------------
 	
 	private int getEntryTextSize(String in) {
 		switch(in) {
@@ -368,8 +447,28 @@ public abstract class OptionPage {
 		return header + "_option_"  + i + "_" + j + "_" + k + "_" + categories[i] + "_" + labels[i][j] + "_" + k;
 	}
 
-	public static FSMUI getFSMUI() {
-		return reference;
+	private int[] getCodeIndices(int code) {
+		for(int i = 0; i < codes.length; i++) {
+			for(int j = 0; j < codes[i].length; j++) {
+				if(codes[i][j] == code) {
+					return new int[] {i, j};
+				}
+			}
+		}
+		return null;
+	}
+	
+	public String[] getTextEntryElementContents(int code) {
+		int[] ref = getCodeIndices(code);
+		int len = 0;
+		while(p.getElementStoredText(getTextEntryName(ref[0], ref[1], len++)) != null) {
+			
+		}
+		String[] out = new String[len-1];
+		for(int k = 0; k < out.length; k++) {
+			out[k] = p.getElementStoredText(getTextEntryName(ref[0], ref[1], k));
+		}
+		return out;
 	}
 	
 //---  Composites   ---------------------------------------------------------------------------

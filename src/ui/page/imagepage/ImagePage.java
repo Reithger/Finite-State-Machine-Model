@@ -35,14 +35,16 @@ public class ImagePage {
 	private static final int CODE_ZOOM_OUT = 15;
 	private static final int CODE_REMOVE_IMAGE = 16;
 	private static final int CODE_RESET_POSITION = 17;
+	private static final int CODE_POPOUT = 18;
 	private static final char KEY_MOVE_RIGHT = 'd';
-	private static final char KEY_MOVE_DOWN = 'w';
+	private static final char KEY_MOVE_DOWN = 's';
 	private static final char KEY_MOVE_LEFT = 'a';
-	private static final char KEY_MOVE_UP = 's';
+	private static final char KEY_MOVE_UP = 'w';
 	private static final char KEY_ZOOM_IN = 'q';
 	private static final char KEY_ZOOM_OUT = 'e';
 	private static final char KEY_REMOVE_IMAGE = 'f';
 	private static final char KEY_RESET_POSITION = 'h';
+	private static final char KEY_POPOUT = 'p';
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -103,6 +105,9 @@ public class ImagePage {
 					case KEY_RESET_POSITION:
 						resetPosition();
 						break;
+					case KEY_POPOUT:
+						generatePopout();
+						break;
 				}
 				drawPage();
 			}
@@ -133,6 +138,9 @@ public class ImagePage {
 					case CODE_RESET_POSITION:
 						resetPosition();
 						break;
+					case CODE_POPOUT:
+						generatePopout();
+						break;
 				}
 				drawPage();
 			}
@@ -146,17 +154,22 @@ public class ImagePage {
 	}
 
 	public void generatePopout() {
+		PopoutDisplay pp = new PopoutDisplay(0, 0, DEFAULT_POPOUT_WIDTH, DEFAULT_POPOUT_HEIGHT, images.get(getCurrentImageIndex()));
+		pp.setScrollBarVertical(false);
+		pp.setScrollBarHorizontal(false);
 		WindowFrame fra = new WindowFrame(DEFAULT_POPOUT_WIDTH, DEFAULT_POPOUT_HEIGHT) {
 			@Override
 			public void reactToResize() {
-				
+				pp.removeElementPrefixed("");
+				pp.resize(getWidth(), getHeight());
+				pp.drawPopout();
 			}
 		};
-		PopoutDisplay pp = new PopoutDisplay(0, 0, DEFAULT_POPOUT_WIDTH, DEFAULT_POPOUT_HEIGHT, getCurrentImage());
+		fra.setExitOnClose(false);
+		fra.setResizable(true);
 		fra.reservePanel("default", "pan", pp);
 	}
 
-	
 	private String formImageName(int index) {
 		if(index < images.size())
 			return images.get(index).substring(images.get(index).lastIndexOf("\\") + 1).substring(images.get(index).lastIndexOf("/") + 1);
@@ -319,6 +332,9 @@ public class ImagePage {
 		drawImageButton("ui_box_UI_ring", posX, posY, imageSize, imageSize, "/assets/ui/UI_ring.png", CODE_RESET_POSITION);
 		posY += spacing;
 		drawImageButton("ui_box_move_down", posX, posY, imageSize, imageSize, "/assets/ui/down_arrow.png", CODE_MOVE_DOWN);
+		
+		drawImageButton("ui_box_popout", p.getWidth() - imageSize, imageSize, imageSize * 3 / 2, imageSize * 3 / 2, "/assets/ui/popout.png", CODE_POPOUT);
+		p.addRectangle("rect_ui_popout", 13, p.getWidth() - imageSize, imageSize, imageSize * 3 / 2, imageSize * 3 / 2, true, Color.white, Color.black);
 	}
 
 	private void addFraming() {
@@ -397,9 +413,9 @@ public class ImagePage {
 		private static final int CODE_ZOOM_OUT = 15;
 		private static final int CODE_RESET_POSITION = 17;
 		private static final char KEY_MOVE_RIGHT = 'd';
-		private static final char KEY_MOVE_DOWN = 'w';
+		private static final char KEY_MOVE_DOWN = 's';
 		private static final char KEY_MOVE_LEFT = 'a';
-		private static final char KEY_MOVE_UP = 's';
+		private static final char KEY_MOVE_UP = 'w';
 		private static final char KEY_ZOOM_IN = 'q';
 		private static final char KEY_ZOOM_OUT = 'e';
 		private static final char KEY_RESET_POSITION = 'h';
@@ -407,30 +423,37 @@ public class ImagePage {
 		private static final double MOVEMENT_FACTOR = .1;
 		private static final double ZOOM_FACTOR = 1.1;
 		
+		private static final int MAX_UI_SIZE = 30;
+		
 	//---  Instance Variables   ---------------------------------------------------------------
 		
 		private Image display;
 		private double zoom;
 		
-		public PopoutDisplay(int x, int y, int width, int height, Image img) {
+		public PopoutDisplay(int x, int y, int width, int height, String img) {
 			super(x, y, width, height);
-			display = img;
+			display = retrieveImage(img);
 			zoom = 1;
 		}
 	
 		public void keyBehaviour(char code) {
+			int offset = 0;
 			switch(code) {
 				case KEY_MOVE_RIGHT:
-					setOffsetX((int)(getOffsetX() - getWidth() * zoom * MOVEMENT_FACTOR));
+					offset = (int)(getOffsetX() - getWidth() * zoom * MOVEMENT_FACTOR);
+					setOffsetX(offset);
 					break;
 				case KEY_MOVE_LEFT:
-					setOffsetX((int)(getOffsetX() + getWidth() * zoom * MOVEMENT_FACTOR));
+					offset = (int)(getOffsetX() + getWidth() * zoom * MOVEMENT_FACTOR);
+					setOffsetX(offset);
 					break;
 				case KEY_MOVE_UP:
-					setOffsetY((int)(getOffsetY() + getHeight() * zoom * MOVEMENT_FACTOR));
+					offset = (int)(getOffsetY() + getHeight() * zoom * MOVEMENT_FACTOR);
+					setOffsetY(offset);
 					break;
 				case KEY_MOVE_DOWN:
-					setOffsetY((int)(getOffsetY() - getHeight() * zoom * MOVEMENT_FACTOR));
+					offset = (int)(getOffsetY() - getHeight() * zoom * MOVEMENT_FACTOR);
+					setOffsetY(offset);
 					break;
 				case KEY_ZOOM_IN:
 					zoom *= ZOOM_FACTOR;
@@ -476,12 +499,18 @@ public class ImagePage {
 			drawPopout();
 		}
 
+		public void resetView() {
+			removeElementPrefixed("");
+			drawPopout();
+		}
+		
 		public void drawPopout() {
-			addImage("img", 5, 0, 0, true, display);
-			int imageSize = getWidth() / 20;
+			addImage("img", 5, 0, 0, false, display, zoom);
+			int imageSize = getWidth() / 20 > MAX_UI_SIZE ? MAX_UI_SIZE : getWidth() / 20;
 			int spacing = imageSize * 4 / 3;
-			int posX = originUIX + (int)(getWidth() * (1 - UI_BOX_RATIO_X)) / 2;
-			int posY = originUIY + spacing * 3 / 4;
+			int posX = -getOffsetX() + spacing * 5 / 3;// + (int)(getWidth() * (1 - UI_BOX_RATIO_X)) / 2;
+			int posY = -getOffsetY() + spacing * 3 / 4;
+			addRectangle("rect_ui", 13, posX - spacing * 3 / 2, posY - spacing * 2 / 3, spacing * 3, spacing * 9 / 2, false, Color.white, Color.black);
 			drawImageButton("ui_box_zoom_in", posX - spacing, posY, imageSize, imageSize, "/assets/ui/zoom_in.png", CODE_ZOOM_IN);
 			drawImageButton("ui_box_zoom_out", posX + spacing, posY, imageSize, imageSize, "/assets/ui/zoom_out.png", CODE_ZOOM_OUT);
 			posY += spacing;
@@ -493,6 +522,24 @@ public class ImagePage {
 			posY += spacing;
 			drawImageButton("ui_box_move_down", posX, posY, imageSize, imageSize, "/assets/ui/down_arrow.png", CODE_MOVE_DOWN);
 		}
+		
+		private void drawImageButton(String name, int x, int y, int wid, int hei, String path, int code) {
+			String imageName = name + "_image";
+			if(!moveElement(imageName, x, y)) {
+				double imgWid = retrieveImage(path).getWidth(null);
+				double zoom = 1.0;
+				if(imgWid != wid) {
+					zoom = wid / imgWid;
+				}
+				addImage(imageName, 15, x, y, true, path, zoom);
+			}
+			String buttonName = name + "_button";
+			if(!moveElement(buttonName, x, y)) {
+				addButton(buttonName, 15, x, y, wid, hei, code, true);
+			}
+		}
+		
 
 	}
+	
 }

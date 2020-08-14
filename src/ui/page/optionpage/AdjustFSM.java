@@ -109,52 +109,53 @@ public class AdjustFSM extends OptionPage{
 					FSMToDot.createImgFromFSM(getFSMUI().getActiveFSM(), FSMUI.ADDRESS_IMAGES + getFSMUI().getActiveFSM().getId(), FSMUI.ADDRESS_IMAGES, FSMUI.ADDRESS_CONFIG);
 					break;
 				case CODE_DUPLICATE_FSM:
-					String tex = this.getTextFromCode(CODE_DUPLICATE_FSM, 0); 
+					String tex = this.getTextEntryFromCode(CODE_DUPLICATE_FSM, 0); 
 					tex = tex.equals("") || tex == null ? getFSMUI().getActiveFSM().getId() + "(copy)" : tex;
 					getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().copy(), tex);
 					break;
 				case CODE_RENAME_FSM:
-					getFSMUI().renameActiveFSM(getTextFromCode(CODE_RENAME_FSM, 0));
+					getFSMUI().renameActiveFSM(getTextEntryFromCode(CODE_RENAME_FSM, 0));
 					break;
 				case CODE_LOAD_SOURCE:
-					getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_LOAD_SOURCE, 0), getTextFromCode(CODE_LOAD_SOURCE, 0).replaceAll(".fsm", ""));
+					getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + getTextEntryFromCode(CODE_LOAD_SOURCE, 0), getTextEntryFromCode(CODE_LOAD_SOURCE, 0).replaceAll(".fsm", ""));
 					getFSMUI().refreshActiveImage();	//TODO: Add actual file selecting thing, relying on exact names is bad form
+					resetCodeEntries(code);
 					break;
 				case CODE_DELETE_SOURCE:
 					getFSMUI().deleteActiveFSM();
 					break;
 				case CODE_ADD_STATE: 
-					getFSMUI().getActiveFSM().addState(this.getTextFromCode(CODE_ADD_STATE, 0));
+					getFSMUI().getActiveFSM().addState(this.getTextEntryFromCode(CODE_ADD_STATE, 0));
 					getFSMUI().refreshActiveImage();
 					break;
 				case CODE_REMOVE_STATE: 
-					getFSMUI().getActiveFSM().removeState(this.getTextFromCode(CODE_REMOVE_STATE, 0));
+					getFSMUI().getActiveFSM().removeState(this.getTextEntryFromCode(CODE_REMOVE_STATE, 0));
 					getFSMUI().refreshActiveImage();
 					break;
 				case CODE_ADD_TRANSITION: 
-					getFSMUI().getActiveFSM().addTransition(this.getTextFromCode(CODE_ADD_TRANSITION, 0), this.getTextFromCode(CODE_ADD_TRANSITION, 1), this.getTextFromCode(CODE_ADD_TRANSITION, 2));
+					getFSMUI().getActiveFSM().addTransition(this.getTextEntryFromCode(CODE_ADD_TRANSITION, 0), this.getTextEntryFromCode(CODE_ADD_TRANSITION, 1), this.getTextEntryFromCode(CODE_ADD_TRANSITION, 2));
 					getFSMUI().refreshActiveImage();
 					resetCodeEntries(code);	//TODO: Let user decide whether or not to clear entries
 					break;
 				case CODE_REMOVE_TRANSITION: 
-					getFSMUI().getActiveFSM().removeTransition(this.getTextFromCode(CODE_REMOVE_TRANSITION, 0), this.getTextFromCode(CODE_REMOVE_TRANSITION, 1), this.getTextFromCode(CODE_REMOVE_TRANSITION, 2));
+					getFSMUI().getActiveFSM().removeTransition(this.getTextEntryFromCode(CODE_REMOVE_TRANSITION, 0), this.getTextEntryFromCode(CODE_REMOVE_TRANSITION, 1), this.getTextEntryFromCode(CODE_REMOVE_TRANSITION, 2));
 					getFSMUI().refreshActiveImage();
 					resetCodeEntries(code);
 					break;
 				case CODE_SECRET_STATE:
-					getFSMUI().getActiveFSM().toggleSecretState(this.getTextFromCode(CODE_SECRET_STATE, 0));
+					getFSMUI().getActiveFSM().toggleSecretState(this.getTextEntryFromCode(CODE_SECRET_STATE, 0));
 					getFSMUI().refreshActiveImage();
 					break;
 				case CODE_INITIAL_STATE:
-					getFSMUI().getActiveFSM().addInitialState(this.getTextFromCode(CODE_INITIAL_STATE, 0));
+					getFSMUI().getActiveFSM().addInitialState(this.getTextEntryFromCode(CODE_INITIAL_STATE, 0));
 					getFSMUI().refreshActiveImage();
 					break;
 				case CODE_MARKED_STATE:
-					getFSMUI().getActiveFSM().toggleMarkedState(this.getTextFromCode(CODE_MARKED_STATE, 0));
+					getFSMUI().getActiveFSM().toggleMarkedState(this.getTextEntryFromCode(CODE_MARKED_STATE, 0));
 					getFSMUI().refreshActiveImage();
 					break;
 				case CODE_BAD_STATE:
-					getFSMUI().getActiveFSM().toggleBadState(this.getTextFromCode(CODE_BAD_STATE, 0));
+					getFSMUI().getActiveFSM().toggleBadState(this.getTextEntryFromCode(CODE_BAD_STATE, 0));
 					getFSMUI().refreshActiveImage();
 					break;
 				case CODE_CLOSE_FSM:
@@ -165,8 +166,8 @@ public class AdjustFSM extends OptionPage{
 					int numState = getIntegerFromCode(CODE_ACCESS_NUM_STATES, 0);
 					int numEvent = getIntegerFromCode(CODE_ACCESS_NUM_EVENTS, 0);
 					int numTrans = getIntegerFromCode(CODE_ACCESS_NUM_TRANS, 0);
-					boolean nonDet = getCheckboxContents(CODE_ACCESS_NON_DETERMINISTIC);
-					String name = getTextFromCode(CODE_ACCESS_FSM_NAME, 0);
+					boolean nonDet = getCheckboxContentsFromCode(CODE_ACCESS_NON_DETERMINISTIC);
+					String name = getTextEntryFromCode(CODE_ACCESS_FSM_NAME, 0);
 					if(name == null) {
 						name = "";
 						Random rand = new Random();
@@ -187,8 +188,8 @@ public class AdjustFSM extends OptionPage{
 					int numControlledC = getIntegerFromCode(CODE_ACCESS_COMPLEX_CONTROLLED, 0);
 					int numUnobservedC = getIntegerFromCode(CODE_ACCESS_COMPLEX_UNOBSERVED, 0);
 					int numAttackerC = getIntegerFromCode(CODE_ACCESS_COMPLEX_ATTACKER, 0);
-					boolean nonDetC = getCheckboxContents(CODE_ACCESS_NON_DETERMINISTIC);
-					String nameC = getTextFromCode(CODE_ACCESS_COMPLEX_FSM_NAME, 0);
+					boolean nonDetC = getCheckboxContentsFromCode(CODE_ACCESS_NON_DETERMINISTIC);
+					String nameC = getTextEntryFromCode(CODE_ACCESS_COMPLEX_FSM_NAME, 0);
 					if(nameC == null) {
 						name = "";
 						Random rand = new Random();
