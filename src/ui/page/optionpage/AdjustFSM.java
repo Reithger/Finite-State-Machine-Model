@@ -7,6 +7,13 @@ import graphviz.FSMToDot;
 import support.GenerateFSM;
 import ui.FSMUI;
 
+/**
+ * 
+ * TODO: Allow editing a transition to become a Must transition, other types?
+ * @author Borinor
+ *
+ */
+
 public class AdjustFSM extends OptionPage{
 	
 //---  Constant Values   ----------------------------------------------------------------------
@@ -103,10 +110,10 @@ public class AdjustFSM extends OptionPage{
 		if(!toggleCategory(code)) {
 			switch(code) {
 				case CODE_SAVE_FSM:
-					getFSMUI().getActiveFSM().toTextFile(FSMUI.ADDRESS_SOURCES, getFSMUI().getActiveFSM().getId());
+					getFSMUI().saveActiveFSMSource();
 					break;
 				case CODE_SAVE_IMG:
-					FSMToDot.createImgFromFSM(getFSMUI().getActiveFSM(), FSMUI.ADDRESS_IMAGES + getFSMUI().getActiveFSM().getId(), FSMUI.ADDRESS_IMAGES, FSMUI.ADDRESS_CONFIG);
+					getFSMUI().saveActiveFSMImage();
 					break;
 				case CODE_DUPLICATE_FSM:
 					String tex = this.getTextEntryFromCode(CODE_DUPLICATE_FSM, 0); 
@@ -118,8 +125,8 @@ public class AdjustFSM extends OptionPage{
 					break;
 				case CODE_LOAD_SOURCE:
 					getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + getTextEntryFromCode(CODE_LOAD_SOURCE, 0), getTextEntryFromCode(CODE_LOAD_SOURCE, 0).replaceAll(".fsm", ""));
-					getFSMUI().refreshActiveImage();	//TODO: Add actual file selecting thing, relying on exact names is bad form
-					resetCodeEntries(code);
+					getFSMUI().refreshActiveImage();	//TODO: Add actual file selecting thing, relying on exact names is bad form (file select from SVI?)
+					resetCodeEntries(code);				//TODO: Loads only from source folder, so add display for those entries
 					break;
 				case CODE_DELETE_SOURCE:
 					getFSMUI().deleteActiveFSM();

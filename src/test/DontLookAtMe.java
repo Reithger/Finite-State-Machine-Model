@@ -169,7 +169,7 @@ public class DontLookAtMe {
 		FSMToDot.createImgFromFSM(ms2, GRAEME_WORKING_FOLDER + "modal2", GRAEME_WORKING_FOLDER, GRAEME_CONFIG_FILE_PATH);
 		FSMToDot.createImgFromFSM(ms3, GRAEME_WORKING_FOLDER + "modal3", GRAEME_WORKING_FOLDER, GRAEME_CONFIG_FILE_PATH);
 	}
-	
+	/*
 	private void supremalContSubTest1() {
 		File f1 = new File("/Users/graemezinck/Documents/OneDrive/Documents/Work/2018 Summer Research/GraphViz/SupremalCont/FullLang.fsm");
 		NonDetObsContFSM fsm1 = new NonDetObsContFSM(f1, "OK");
@@ -181,7 +181,7 @@ public class DontLookAtMe {
 		FSMToDot.createImgFromFSM(fsm2, GRAEME_WORKING_FOLDER + "smaller", GRAEME_WORKING_FOLDER, GRAEME_CONFIG_FILE_PATH);
 		FSMToDot.createImgFromFSM(fsm3, GRAEME_WORKING_FOLDER + "supremal", GRAEME_WORKING_FOLDER, GRAEME_CONFIG_FILE_PATH);
 	}
-	
+	*/
 	@Test
 	public void test() {
 		modalTest3();

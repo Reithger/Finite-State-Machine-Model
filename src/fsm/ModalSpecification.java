@@ -33,12 +33,7 @@ public class ModalSpecification extends TransitionSystem<DetTransition> implemen
 																				 Observability,
 																				 Controllability,
 																				 OpacityTest{
-	
-//--- Constants  ----------------------------------------------------------------------
-	
-	/** String object constant representing the file extension of a file representing a ModalSpecification object. */
-	public static final String MODAL_EXTENSION = ".mdl";
-	
+		
 //--- Instance Variables  ----------------------------------------------------------------------
 	
 	/** ArrayList<<r>State> object that holds a list of Initial States for this Modal Specification object. */
@@ -383,7 +378,7 @@ public class ModalSpecification extends TransitionSystem<DetTransition> implemen
 			special += s + "\n";
 
 		ReadWrite<DetTransition> rdWrt = new ReadWrite<DetTransition>();
-		rdWrt.writeToFile(truePath,  special, this.getTransitions(), MODAL_EXTENSION);
+		rdWrt.writeToFile(truePath,  special, this.getTransitions(), ".fsm");
 	}
 	
 	@Override
@@ -1695,6 +1690,7 @@ public class ModalSpecification extends TransitionSystem<DetTransition> implemen
 	public ModalSpecification copy() {
 		return new ModalSpecification(this, this.getId());
 	}
+	
 //---  Miscellaneous   ------------------------------------------------------------------------
 	
 	/**
@@ -1759,6 +1755,4 @@ public class ModalSpecification extends TransitionSystem<DetTransition> implemen
 		
 		}
 	
-		
-
 }

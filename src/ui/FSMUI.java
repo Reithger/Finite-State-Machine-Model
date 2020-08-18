@@ -11,6 +11,8 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import fsm.DetObsContFSM;
+import fsm.ModalSpecification;
 import fsm.NonDetObsContFSM;
 import fsm.TransitionSystem;
 import graphviz.FSMToDot;
@@ -20,6 +22,15 @@ import ui.page.optionpage.OptionPageManager;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
+/**
+ * 
+ * TODO: Display type of TransitionSystem, as much as possible anyways, backend needs some rearranging but type is important right now
+ * TODO: Factory for reading in files and generating the correct type of TransitionSystem
+ * 
+ * @author Borinor
+ *
+ */
+
 public class FSMUI {
 
 //---  Constants   ----------------------------------------------------------------------------
@@ -28,10 +39,15 @@ public class FSMUI {
 	public final static int WINDOW_HEIGHT = 600;
 	public final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
 	private final static Font DEFAULT_FONT = new Font("Serif", Font.BOLD, 16);
+	private final static Font IMAGE_HEADER_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static Font ENTRY_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static Font ERROR_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int CODE_START_OPTIONS_HEADER = 150;
 	private final static int CODE_START_IMAGES_HEADER = 150;
+	private final static int DEFAULT_POPUP_WIDTH = 300;
+	private final static int DEFAULT_POPUP_HEIGHT = 200;
+	private final static int ROTATION_MULTIPLIER = 6;	//TODO: Extract some of this into its own class, lots of stuff going on here
+	private final static Color COLOR_TRANSPARENT = new Color(0, 0, 0, 0);
 	
 	//-- Config  ----------------------------------------------
 	private final static String OS = System.getProperty("os.name");
@@ -69,6 +85,7 @@ public class FSMUI {
 	public FSMUI() {
 		fileConfiguration();
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
+		frame.setName("Finite State Machine Model");
 		imagePage = new ImagePage(this);
 		optionPageManager = new OptionPageManager(this);
 		fsmPaths = new ArrayList<String>();
@@ -169,21 +186,21 @@ public class FSMUI {
 										entry.disposeFrame();
 									}
 									else {
-										handleText(this, "error", getWidth() / 5, getHeight() * 4 / 5, getWidth() / 3, getHeight() / 5, "NOT FOUND");
-										handleText(this, "error2", getWidth() * 4 / 5, getHeight() * 4 / 5, getWidth() / 3, getHeight() / 5, "TRY AGAIN");
+										handleText(this, "error", getWidth() / 5, getHeight() * 4 / 5, getWidth() / 3, getHeight() / 5, DEFAULT_FONT, "NOT FOUND");
+										handleText(this, "error2", getWidth() * 4 / 5, getHeight() * 4 / 5, getWidth() / 3, getHeight() / 5, DEFAULT_FONT, "TRY AGAIN");
 									}
 								}
 							}
 						};
 						entry.reserveWindow("han");
 						entry.reservePanel("han", "pan", p);
-						handleText(p, "text", p.getWidth() / 2, p.getHeight() / 5, p.getWidth() * 2 / 3, p.getHeight() / 2, "Please submit the system path for the GraphViz dot.exe");
+						handleText(p, "text", p.getWidth() / 2, p.getHeight() / 5, p.getWidth() * 2 / 3, p.getHeight() / 2, DEFAULT_FONT, "Please submit the system path for the GraphViz dot.exe");
 						
 						handleRectangle(p, "rec", 5, p.getWidth() / 2, p.getHeight() /2, p.getWidth() * 4 / 5, p.getHeight() / 5, Color.white, Color.black);
 						handleTextEntry(p, "entry", p.getWidth() / 2, p.getHeight() /2, p.getWidth() * 4 / 5, p.getHeight() / 5, 20, "C://");
 						
 						handleRectangle(p, "rec2", 5, p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, Color.white, Color.black);
-						handleText(p, "text2", p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, "Submit");
+						handleText(p, "text2", p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, DEFAULT_FONT, "Submit");
 						handleButton(p, "but", p.getWidth() / 2, p.getHeight() * 4 / 5, p.getWidth() / 4, p.getHeight() / 5, 25);
 						
 						p.setScrollBarVertical(false);
@@ -246,8 +263,25 @@ public class FSMUI {
 		if(in.contains(".fsm") == false) {
 			in = in + ".fsm";
 		}
+		TransitionSystem cre = new ModalSpecification();;
+		try {
+			cre = new ModalSpecification(new File(in), name);
+		}
+		catch(Exception e) {
+			try {
+				cre = new NonDetObsContFSM(new File(in), name);
+			}
+			catch(Exception e1) {
+				try {
+					cre = new DetObsContFSM(new File(in), name);
+				}
+				catch(Exception e2) {
+					e2.printStackTrace();
+				}
+			}
+		}
+		cre.toTextFile(FSMUI.ADDRESS_SOURCES, name);
 		fsmPaths.add(in);
-		NonDetObsContFSM cre = new NonDetObsContFSM(new File(in), name);
 		fsms.add(cre);
 		String imgPath = FSMToDot.createImgFromFSM(cre, ADDRESS_IMAGES + cre.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
 		allotImage(imgPath);
@@ -257,6 +291,7 @@ public class FSMUI {
 		in.setId(name);
 		fsmPaths.add(ADDRESS_SOURCES + name);
 		fsms.add(in);
+		in.toTextFile(FSMUI.ADDRESS_SOURCES, name);
 		String imgPath = FSMToDot.createImgFromFSM(in, ADDRESS_IMAGES + in.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
 		allotImage(imgPath);
 	}
@@ -283,6 +318,14 @@ public class FSMUI {
 	
 	public void removeActiveTransitionSystem() {
 		removeTransitionSystem(imagePage.getCurrentImageIndex());
+	}
+	
+	public void saveActiveFSMSource() {
+		getActiveFSM().toTextFile(FSMUI.ADDRESS_SOURCES, getActiveFSM().getId());
+	}
+	
+	public void saveActiveFSMImage() {
+		FSMToDot.createImgFromFSM(getActiveFSM(), FSMUI.ADDRESS_IMAGES + getActiveFSM().getId(), FSMUI.ADDRESS_IMAGES, FSMUI.ADDRESS_CONFIG);
 	}
 	
 	public void deleteActiveFSM() {
@@ -331,8 +374,19 @@ public class FSMUI {
 				}
 				updateOptionHeader();
 			}
+		
+			
+			@Override
+			public void mouseWheelBehaviour(int rotation) {
+				if(getMaximumScreenX() < getWidth()) {
+					return;
+				}
+				setOffsetXBounded(getOffsetX() + rotation * ROTATION_MULTIPLIER);
+			}
+			
 		};
 		p.setScrollBarVertical(false);
+		p.setScrollBarHorizontal(false);
 		p.addLine("line_5", 15, width, height, width, 0, 2, Color.BLACK);
 		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
 		return p;
@@ -352,8 +406,22 @@ public class FSMUI {
 				}
 				updateImageHeader();
 			}
+			
+			@Override
+			public int getMinimumScreenX() {
+				return 0;
+			}
+			
+			@Override
+			public void mouseWheelBehaviour(int rotation) {
+				if(getMaximumScreenX() < getWidth()) {
+					return;
+				}
+				setOffsetXBounded(getOffsetX() + rotation * ROTATION_MULTIPLIER);
+			}
 		};
 		p.setScrollBarVertical(false);
+		p.setScrollBarHorizontal(false);
 		p.addLine("line_3", 15, 0, 0, 0, height, 2, Color.BLACK);
 		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
 		return p;
@@ -373,17 +441,21 @@ public class FSMUI {
 		if(p == null) {
 			return;
 		}
-		for(int i = 0 ; i < optionPageManager.getOptionPageList().length; i++) {
+		for(int i = 0 ; i < optionPageManager.getOptionPageList().length + 1; i++) {
 			int posX = WINDOW_WIDTH / 2/ 8 + i * (WINDOW_WIDTH / 2 / 4);
 			int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
 			int wid = WINDOW_WIDTH / 2 / 5;
 			int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
+			if(i == optionPageManager.getOptionPageList().length) {
+				handleRectangle(p, "header_rect_" + i, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
+				break;
+			}
 			if(i == optionPageManager.getCurrentOptionPageIndex()) {
 				handleRectangle(p, "header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
 			}
 			handleRectangle(p, "header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
 			handleButton(p, "header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
-			handleText(p, "header_text_" + i, posX, posY, wid, hei, optionPageManager.getOptionPageList()[i].getHeader());
+			handleText(p, "header_text_" + i, posX, posY, wid, hei, DEFAULT_FONT, optionPageManager.getOptionPageList()[i].getHeader());
 		}
 	}
 
@@ -400,22 +472,26 @@ public class FSMUI {
 			int wid = p.getWidth() / 3;
 			int hei = p.getHeight() * 2 / 3;
 			handleRectangle(p, "stand_in_header_rect", 10, posX, posY, wid, hei, Color.gray, Color.black);
-			handleText(p, "stand_in_header_text", posX, posY, wid, hei, "No images currently available");
+			handleText(p, "stand_in_header_text", posX, posY, wid, hei, IMAGE_HEADER_FONT, "No images currently available");
 		}
 		else {
 			p.removeElementPrefixed("stand_in");
-			for(int i = 0 ; i < images.size(); i++) {
+			for(int i = 0 ; i < images.size() + 1; i++) {
 				int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
 				int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
 				int wid = WINDOW_WIDTH / 2 / 6;
 				int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
+				if(i == images.size()) {
+					handleRectangle(p, "header_rect_" + i, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
+					break;
+				}
 				if(i == imagePage.getCurrentImageIndex()) {
 					handleRectangle(p, "header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
 				}
 				handleRectangle(p, "header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
 				handleButton(p, "header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
 				String nom = images.get(i).substring(images.get(i).lastIndexOf("\\") + 1).substring(images.get(i).lastIndexOf("/") + 1);
-				handleText(p, "header_text_" + i, posX, posY, wid, hei, nom);
+				handleText(p, "header_text_" + i, posX, posY, wid, hei, IMAGE_HEADER_FONT, nom);
 			}
 		}
 	}
@@ -463,9 +539,9 @@ public class FSMUI {
 	
 //---  Composites   ---------------------------------------------------------------------------
 
-	private void handleText(ElementPanel p, String nom, int x, int y, int wid, int hei, String phr) {
+	private void handleText(ElementPanel p, String nom, int x, int y, int wid, int hei, Font font, String phr) {
 		if(!p.moveElement(nom, x, y)){
-			p.addText(nom, 15, x, y, wid, hei, phr, DEFAULT_FONT, true, true, true);
+			p.addText(nom, 15, x, y, wid, hei, phr, font, true, true, true);
 		}
 	}
 
@@ -513,6 +589,20 @@ public class FSMUI {
 	public static String stripPath(String in) {
 		String out = in.substring(in.lastIndexOf("/") + 1);
 		return out.substring(in.lastIndexOf("\\") + 1);
+	}
+
+	public void popupDisplayText(String text) {
+		WindowFrame popup = new WindowFrame(DEFAULT_POPUP_WIDTH, DEFAULT_POPUP_HEIGHT);
+		popup.setName("Popup Window");
+		popup.setExitOnClose(false);
+		ElementPanel p = new ElementPanel(0, 0, DEFAULT_POPUP_WIDTH, DEFAULT_POPUP_HEIGHT) {
+			@Override
+			public void clickBehaviour(int code, int x, int y){
+				popup.disposeFrame();
+			}
+		};
+		p.addText("tex", 5, p.getWidth() /2, p.getHeight() / 2, p.getWidth() * 2 / 3, p.getHeight() * 3 / 4, text, DEFAULT_FONT, true, true, true);
+		popup.reservePanel("default",  "pan", p);
 	}
 	
 }

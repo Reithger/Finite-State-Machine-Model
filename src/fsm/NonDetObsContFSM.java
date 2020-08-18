@@ -29,7 +29,7 @@ public class NonDetObsContFSM extends FSM<NonDetTransition> implements NonDeterm
 //--- Constant Values  -------------------------------------------------------------------------
 
 	/** String constant designating this object as a specific type of FSM for clarification purposes*/
-	public static final String FSM_TYPE = "NonDeterministic FSM with Observability and Controllability";
+	public static final String FSM_TYPE = "NDFSM";
 			
 //--- Instance Variables  ----------------------------------------------------------------------
 			
@@ -47,7 +47,7 @@ public class NonDetObsContFSM extends FSM<NonDetTransition> implements NonDeterm
 	 * @param id - String object representing the id for the FSM (can be any String).
 	 */
 	
-	public NonDetObsContFSM(File in, String inId) {
+	public NonDetObsContFSM(File in, String inId) throws Exception{
 		id = inId;									//Assign id
 		states = new StateMap();	//Initialize the storage for States, Event, and Transitions
 		events = new EventMap();	//51: Create a ReadWrite object for file reading/writing (reading in this case), denote generics
@@ -56,6 +56,10 @@ public class NonDetObsContFSM extends FSM<NonDetTransition> implements NonDeterm
 		
 		ReadWrite<NonDetTransition> redWrt = new ReadWrite<NonDetTransition>();
 		ArrayList<ArrayList<String>> special = redWrt.readFromFile(states, events, transitions, in);
+		
+		if(special == null) {
+			throw new Exception("Error in reading file to construct NonDetObsContFSM object");
+		}
 		
 		for(int i = 0; i < special.get(0).size(); i++) {	//Special ArrayList 0-entry is InitialState
 			if(states.getState(special.get(0).get(i)) == null)

@@ -29,7 +29,7 @@ public class DetObsContFSM extends FSM<DetTransition> implements Deterministic<D
 //--- Constant Values  -------------------------------------------------------------------------
 
 	/** String object constant designating this object as a specific type of FSM for clarification purposes*/
-	public static final String FSM_TYPE = "Deterministic FSM with Observability and Controllability";
+	public static final String FSM_TYPE = "DFSM";
 			
 //--- Instance Variables  ----------------------------------------------------------------------
 			

@@ -67,12 +67,12 @@ public class ImagePage {
 	public ImagePage(FSMUI ref) {
 		images = new ArrayList<String>();
 		imageReferences = new ArrayList<Image>();
-		currentImageIndex = 0;
 		zoom = new ArrayList<Double>();
 		originX = new ArrayList<Integer>();
 		originY = new ArrayList<Integer>();
 		dragging = false;
 		reference = ref;
+		currentImageIndex = 0;
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -341,7 +341,7 @@ public class ImagePage {
 		int width = p.getWidth();
 		int height = p.getHeight();
 		p.addLine("frame_line_3", 15, 0, 0, 0, height, 5, Color.BLACK);
-		p.addLine("frame_line_4", 15, 0, 0, width, 0, 2, Color.BLACK);
+		p.addLine("frame_line_4", 15, 0, 1, width, 1, 2, Color.BLACK);
 		p.addLine("frame_line_5", 15, width, height, width, 0, 5, Color.BLACK);
 		p.addLine("frame_line_6", 15, width, height, 0, height, 5, Color.BLACK);
 		p.addRectangle("rect_ui", 13, originUIX, originUIY, (int)(width * (1 - UI_BOX_RATIO_X)), (int)(height * (1 - UI_BOX_RATIO_Y)), false, Color.white, Color.black);
