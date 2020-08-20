@@ -17,6 +17,8 @@ import fsm.NonDetObsContFSM;
 import fsm.TransitionSystem;
 import graphviz.FSMToDot;
 import graphviz.GraphViz;
+import ui.page.headers.ImageHeader;
+import ui.page.headers.OptionsHeader;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.OptionPageManager;
 import visual.frame.WindowFrame;
@@ -26,6 +28,10 @@ import visual.panel.ElementPanel;
  * 
  * TODO: Display type of TransitionSystem, as much as possible anyways, backend needs some rearranging but type is important right now
  * TODO: Factory for reading in files and generating the correct type of TransitionSystem
+ * TODO: Add States (can add like 15 really quickly)
+ * TODO: Convert to .tkz
+ * TODO: Rename states
+ * TODO: Adding a 'new' fsm of the same name should replace the previous one to avoid collision issue (especially image display)
  * 
  * @author Borinor
  *
@@ -42,8 +48,6 @@ public class FSMUI {
 	private final static Font IMAGE_HEADER_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static Font ENTRY_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static Font ERROR_FONT = new Font("Serif", Font.BOLD, 12);
-	private final static int CODE_START_OPTIONS_HEADER = 150;
-	private final static int CODE_START_IMAGES_HEADER = 150;
 	private final static int DEFAULT_POPUP_WIDTH = 300;
 	private final static int DEFAULT_POPUP_HEIGHT = 200;
 	private final static int ROTATION_MULTIPLIER = 6;	//TODO: Extract some of this into its own class, lots of stuff going on here
@@ -68,9 +72,9 @@ public class FSMUI {
 	/** */
 	private OptionPageManager optionPageManager;
 	/** ElementPanel object handling the organization and accessing of all currently available images*/
-	private ElementPanel imageHeader;
+	private ImageHeader imageHeader;
 	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
-	private ElementPanel optionHeader;
+	private OptionsHeader optionHeader;
 	
 	//-- System Information  ----------------------------------
 	
@@ -98,8 +102,8 @@ public class FSMUI {
 
 	private void createPages() {
 		frame.reserveWindow("Home");
-		optionHeader = generateOptionHeader(0, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)));
-		imageHeader = generateImageHeader(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)));
+		optionHeader = new OptionsHeader(0, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)));
+		imageHeader = new ImageHeader(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL))); 
 		frame.reservePanel("Home", "optionHeader", optionHeader);
 		frame.reservePanel("Home", "imageHeader", imageHeader);
 		frame.reservePanel("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
@@ -304,13 +308,6 @@ public class FSMUI {
 		updateImagePanel();
 	}
 	
-	public void removeImage(String path) {
-		imagePage.removeImage(path);
-		imagePage.decreaseCurrentImageIndex();
-		updateImageHeader();
-		updateImagePanel();
-	}
-
 	public void removeTransitionSystem(int index) {
 		fsms.remove(index);
 		removeImage(index);
@@ -346,7 +343,7 @@ public class FSMUI {
 		getActiveFSM().setId(newName);
 		getActiveFSM().toTextFile(ADDRESS_SOURCES, newName);
 		FSMToDot.createImgFromFSM(getActiveFSM(), ADDRESS_IMAGES + getActiveFSM().getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
-		imagePage.updateActiveImage(newName);
+		imagePage.replaceActiveImage(newName);
 		updateImageHeader();
 	}
 	
@@ -355,78 +352,9 @@ public class FSMUI {
 		if(tS != null) {
 			FSMToDot.createImgFromFSM(tS, ADDRESS_IMAGES + tS.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
 		}
-		imagePage.refreshImage();
+		imagePage.refreshActiveImage();
 	}
-	
-	//-- Generate ElementPanels  ------------------------------
-
-	private ElementPanel generateOptionHeader(int x, int y, int width, int height) {
-		ElementPanel p = new ElementPanel(x, y, width, height) {
-			public void keyBehaviour(char code) {
-				
-			}
 			
-			public void clickBehaviour(int code, int x, int y) {
-				int cod = code - CODE_START_OPTIONS_HEADER;
-				if(cod < optionPageManager.getOptionPageList().length && cod >= 0) {
-					optionPageManager.setCurrentOptionPageIndex(cod);
-					updateActiveOptionPage();
-				}
-				updateOptionHeader();
-			}
-		
-			
-			@Override
-			public void mouseWheelBehaviour(int rotation) {
-				if(getMaximumScreenX() < getWidth()) {
-					return;
-				}
-				setOffsetXBounded(getOffsetX() + rotation * ROTATION_MULTIPLIER);
-			}
-			
-		};
-		p.setScrollBarVertical(false);
-		p.setScrollBarHorizontal(false);
-		p.addLine("line_5", 15, width, height, width, 0, 2, Color.BLACK);
-		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
-		return p;
-	}
-	
-	private ElementPanel generateImageHeader(int x, int y, int width, int height) {
-		ElementPanel p = new ElementPanel(x, y, width, height) {
-			public void keyBehaviour(char code) {
-				
-			}
-			
-			public void clickBehaviour(int code, int x, int y) {
-				int cod = code - CODE_START_IMAGES_HEADER;
-				if(cod < imagePage.getImages().size() && cod >= 0) {
-					imagePage.setCurrentImageIndex(cod);
-					updateImagePanel();
-				}
-				updateImageHeader();
-			}
-			
-			@Override
-			public int getMinimumScreenX() {
-				return 0;
-			}
-			
-			@Override
-			public void mouseWheelBehaviour(int rotation) {
-				if(getMaximumScreenX() < getWidth()) {
-					return;
-				}
-				setOffsetXBounded(getOffsetX() + rotation * ROTATION_MULTIPLIER);
-			}
-		};
-		p.setScrollBarVertical(false);
-		p.setScrollBarHorizontal(false);
-		p.addLine("line_3", 15, 0, 0, 0, height, 2, Color.BLACK);
-		p.addLine("line_6", 15, width, height, 0, height, 5, Color.BLACK);
-		return p;
-	}
-		
 	//-- Update ElementPanels  --------------------------------
 	
 	public void updateDisplay() {
@@ -437,63 +365,13 @@ public class FSMUI {
 	}
 	
 	public void updateOptionHeader() {
-		ElementPanel p = optionHeader;
-		if(p == null) {
-			return;
-		}
-		for(int i = 0 ; i < optionPageManager.getOptionPageList().length + 1; i++) {
-			int posX = WINDOW_WIDTH / 2/ 8 + i * (WINDOW_WIDTH / 2 / 4);
-			int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
-			int wid = WINDOW_WIDTH / 2 / 5;
-			int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
-			if(i == optionPageManager.getOptionPageList().length) {
-				handleRectangle(p, "header_rect_" + i, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
-				break;
-			}
-			if(i == optionPageManager.getCurrentOptionPageIndex()) {
-				handleRectangle(p, "header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
-			}
-			handleRectangle(p, "header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
-			handleButton(p, "header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
-			handleText(p, "header_text_" + i, posX, posY, wid, hei, DEFAULT_FONT, optionPageManager.getOptionPageList()[i].getHeader());
-		}
+		if(optionHeader != null)
+			optionHeader.update();
 	}
 
 	public void updateImageHeader() {
-		ElementPanel p = imageHeader;
-		if(p == null) {
-			return;
-		}
-		ArrayList<String> images = imagePage.getImages();
-		p.removeElementPrefixed("header");
-		if(images.size() == 0) {
-			int posX = p.getWidth()/ 2;
-			int posY = p.getHeight() / 2;
-			int wid = p.getWidth() / 3;
-			int hei = p.getHeight() * 2 / 3;
-			handleRectangle(p, "stand_in_header_rect", 10, posX, posY, wid, hei, Color.gray, Color.black);
-			handleText(p, "stand_in_header_text", posX, posY, wid, hei, IMAGE_HEADER_FONT, "No images currently available");
-		}
-		else {
-			p.removeElementPrefixed("stand_in");
-			for(int i = 0 ; i < images.size() + 1; i++) {
-				int posX = WINDOW_WIDTH / 2/ 10 + i * (WINDOW_WIDTH / 2 / 5);
-				int posY = (int)(WINDOW_HEIGHT * (1.0 - PANEL_RATIO_VERTICAL) / 2);
-				int wid = WINDOW_WIDTH / 2 / 6;
-				int hei = (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL) * 2 / 3);
-				if(i == images.size()) {
-					handleRectangle(p, "header_rect_" + i, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
-					break;
-				}
-				if(i == imagePage.getCurrentImageIndex()) {
-					handleRectangle(p, "header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
-				}
-				handleRectangle(p, "header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
-				handleButton(p, "header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
-				String nom = images.get(i).substring(images.get(i).lastIndexOf("\\") + 1).substring(images.get(i).lastIndexOf("/") + 1);
-				handleText(p, "header_text_" + i, posX, posY, wid, hei, IMAGE_HEADER_FONT, nom);
-			}
-		}
+		if(imageHeader != null) 
+			imageHeader.update();
 	}
 	
 	public void updateActiveOptionPage() {
@@ -541,31 +419,31 @@ public class FSMUI {
 
 	private void handleText(ElementPanel p, String nom, int x, int y, int wid, int hei, Font font, String phr) {
 		if(!p.moveElement(nom, x, y)){
-			p.addText(nom, 15, x, y, wid, hei, phr, font, true, true, true);
+			p.addText(nom, 15, false, x, y, wid, hei, phr, font, true, true, true);
 		}
 	}
 
 	private void handleTextEntry(ElementPanel p, String nom, int x, int y, int wid, int hei, int cod, String phr) {
 		if(!p.moveElement(nom, x, y)){
-			p.addTextEntry(nom, 15, x, y, wid, hei, cod, phr, ENTRY_FONT, true, true, true);
+			p.addTextEntry(nom, 15, false, x, y, wid, hei, cod, phr, ENTRY_FONT, true, true, true);
 		}
 	}
 	
 	private void handleButton(ElementPanel p, String nom, int x, int y, int wid, int hei, int code) {
 		if(!p.moveElement(nom, x, y)) {
-			p.addButton(nom, 10, x, y, wid, hei, code, true);
+			p.addButton(nom, 10, false, x, y, wid, hei, code, true);
 		}
 	}
 	
 	private void handleLine(ElementPanel p, String nom, int x, int y, int x2, int y2, int thck, Color col) {
 		if(!p.moveElement(nom, x, y)) {
-			p.addLine(nom, 5, x, y, x2, y2, thck, col);
+			p.addLine(nom, 5, false, x, y, x2, y2, thck, col);
 		}
 	}
 	
 	private void handleRectangle(ElementPanel p, String nom, int prior, int x, int y, int wid, int hei, Color col, Color col2) {
 		if(!p.moveElement(nom, x, y)) {
-			p.addRectangle(nom, prior, x, y, wid, hei, true, col, col2);
+			p.addRectangle(nom, prior, false, x, y, wid, hei, true, col, col2);
 		}
 	}
 
@@ -601,7 +479,7 @@ public class FSMUI {
 				popup.disposeFrame();
 			}
 		};
-		p.addText("tex", 5, p.getWidth() /2, p.getHeight() / 2, p.getWidth() * 2 / 3, p.getHeight() * 3 / 4, text, DEFAULT_FONT, true, true, true);
+		p.addText("tex", 5, false, p.getWidth() /2, p.getHeight() / 2, p.getWidth() * 2 / 3, p.getHeight() * 3 / 4, text, DEFAULT_FONT, true, true, true);
 		popup.reservePanel("default",  "pan", p);
 	}
 	

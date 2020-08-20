@@ -1,6 +1,8 @@
 package ui.page.optionpage;
 
 import ui.FSMUI;
+import ui.page.optionpage.implementation.AdjustFSM;
+import ui.page.optionpage.implementation.Operations;
 import visual.panel.ElementPanel;
 
 public class OptionPageManager {

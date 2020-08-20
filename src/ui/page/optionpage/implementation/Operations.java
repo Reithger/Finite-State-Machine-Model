@@ -1,4 +1,4 @@
-package ui.page.optionpage;
+package ui.page.optionpage.implementation;
 
 
 import java.io.File;
@@ -8,6 +8,7 @@ import fsm.FSM;
 import fsm.ModalSpecification;
 import fsm.NonDetObsContFSM;
 import ui.FSMUI;
+import ui.page.optionpage.OptionPage;
 
 /**
  * 
@@ -51,24 +52,35 @@ public class Operations extends OptionPage{
 	
 	private final static String HEADER = "Operations";
 	private final static String[] CATEGORIES = new String[] {"Transition Systems", "FSM", "Modal", "Queries"};
-	private final static String[][] LABELS = new String[][] {
-		{"Trim", "Make Accessible", "Make Co-Accessible"},
-		{"Build Observer", "Product", "", "Parallel Composition", "", "Generate Supremal Controllable Sublanguage", ""},
-		{"Get Underlying FSM", "Build Optimal Opaque Controller", "Make Optimal Supervisor", "", "Get Greatest Lower Bound", "", "Prune"},
-		{"Is Blocking", "State Exists"},
-	};
-	private final static String[][] TYPES = new String[][] {
-		{ENTRY_EMPTY, ENTRY_EMPTY, ENTRY_EMPTY},
-		{ENTRY_EMPTY, ENTRY_SELECT_FSMS, ENTRY_EMPTY, ENTRY_SELECT_FSMS, ENTRY_EMPTY, ENTRY_SELECT_FSM, ENTRY_EMPTY},
-		{ENTRY_EMPTY, ENTRY_EMPTY, ENTRY_SELECT_FSM, ENTRY_EMPTY, ENTRY_SELECT_FSM, ENTRY_EMPTY, ENTRY_EMPTY},
-		{ENTRY_EMPTY, ENTRY_TEXT_SINGLE},
-	};
-	/** Make sure codes are high values to give buffer for background behaviors*/
-	private final static int[][] CODES = new int[][] {
-		{CODE_TRIM, CODE_ACCESSIBLE, CODE_CO_ACCESSIBLE},
-		{CODE_OBSERVER, CODE_PRODUCT_SELECT, CODE_PRODUCT, CODE_PARALLEL_COMPOSITION_SELECT, CODE_PARALLEL_COMPOSITION, CODE_SUP_CNT_SBL_SELECT, CODE_SUP_CNT_SBL},
-		{CODE_UNDER_FSM, CODE_OPT_OPQ_CONTROLLER, CODE_OPT_SPVR_SELECT, CODE_OPT_SPVR, CODE_GRT_LWR_BND_SELECT, CODE_GRT_LWR_BND, CODE_PRUNE},
-		{CODE_BLOCKING, CODE_STATE_EXISTS},
+	private final static Object[][][] DATA = new Object[][][] {
+		{
+			{"Trim", ENTRY_EMPTY, CODE_TRIM, true},
+			{"Make Accessible", ENTRY_EMPTY, CODE_ACCESSIBLE, true},
+			{"Make Co-Accessible", ENTRY_EMPTY, CODE_CO_ACCESSIBLE, true},
+		},
+		{
+			{"Build Observer", ENTRY_EMPTY, CODE_OBSERVER, true},
+			{"Product", ENTRY_SELECT_FSMS, CODE_PRODUCT_SELECT, false},
+			{"", ENTRY_EMPTY, CODE_PRODUCT, true},
+			{"Parallel Composition", ENTRY_SELECT_FSMS, CODE_PARALLEL_COMPOSITION_SELECT, false},
+			{"", ENTRY_EMPTY, CODE_PARALLEL_COMPOSITION, true},
+			{"Generate Supremal Controllable Sublanguage", ENTRY_SELECT_FSM, CODE_SUP_CNT_SBL_SELECT, false},
+			{"", ENTRY_EMPTY, CODE_SUP_CNT_SBL, true},
+		},
+		{
+			{"Get Underlying FSM", ENTRY_EMPTY, CODE_UNDER_FSM, true},
+			{"Build Optimal Opaque Controller", ENTRY_EMPTY, CODE_OPT_OPQ_CONTROLLER, true},
+			{"Make Optimal Supervisor", ENTRY_SELECT_FSM, CODE_OPT_SPVR_SELECT, false},
+			{"", ENTRY_EMPTY, CODE_OPT_SPVR, true},
+			{"Get Greatest Lower Bound", ENTRY_SELECT_FSM, CODE_GRT_LWR_BND_SELECT, false},
+			{"", ENTRY_EMPTY, CODE_GRT_LWR_BND, true},
+			{"Prune", ENTRY_EMPTY, CODE_PRUNE, true},
+		},
+		{
+			{"Is Blocking", ENTRY_EMPTY, CODE_BLOCKING, true},
+			{"State Exists", ENTRY_TEXT_SINGLE, CODE_STATE_EXISTS, true},
+		},
+
 	};
 	private final static String HELP = 
 			"Some words\n"
@@ -78,7 +90,7 @@ public class Operations extends OptionPage{
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public Operations(int x, int y, int wid, int hei) {
-		super(HEADER, CATEGORIES, LABELS, TYPES, CODES, HELP);
+		super(HEADER, HELP, CATEGORIES, DATA);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -214,7 +226,7 @@ public class Operations extends OptionPage{
 					getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().isBlocking() ? "Is Blocking" : "Is Not Blocking");
 					break;
 				case CODE_STATE_EXISTS: 
-					String state = this.getTextEntryFromCode(CODE_STATE_EXISTS, 0);
+					String state = this.getTextFromCode(CODE_STATE_EXISTS, 0);
 					getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().stateExists(state) ? state + " exists" : state + " does not exist");
 					break;
 				default:
@@ -225,7 +237,7 @@ public class Operations extends OptionPage{
 	}
 	
 	private FSM[] getFSMArray(int code) throws Exception{
-		String[] fsmPaths = getFSMsFromCode(code);
+		String[] fsmPaths = getContentFromCode(code);
 		FSM[] fsms = new FSM[fsmPaths.length];
 		for(int i = 0; i < fsmPaths.length; i++) {
 			fsms[i] = new NonDetObsContFSM(new File(FSMUI.ADDRESS_SOURCES + fsmPaths[i]), fsmPaths[i]);

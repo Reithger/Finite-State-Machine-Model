@@ -9,17 +9,11 @@ import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
 //TODO: There's something screwy with the zoom in and zoom out in keeping the image centered, fix it
-//TODO: Pop-out window so you can look at a larger copy of the image (identical ElementPanel, just bigger in a new frame)
 
 public class ImagePage {
 
 //---  Constants   ----------------------------------------------------------------------------
 
-	private static final double MOVEMENT_FACTOR = .1;
-	private static final double ZOOM_FACTOR = 1.1;
-	private static final int DEFAULT_ORIGIN_X = 0;
-	private static final int DEFAULT_ORIGIN_Y = 0;
-	private static final double DEFAULT_ZOOM = 1.0;
 	private static final double UI_BOX_RATIO_Y = 3 / 4.0;
 	private static final double UI_BOX_RATIO_X = 4 / 5.0;
 	
@@ -49,28 +43,16 @@ public class ImagePage {
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private ElementPanel p;
-	/** Contains path for each image*/
-	private ArrayList<String> images;
-	private ArrayList<Image> imageReferences;
+	private ArrayList<ImageDisplay> images;
 	private int currentImageIndex;
-	private ArrayList<Double> zoom;
-	private ArrayList<Integer> originX;
-	private ArrayList<Integer> originY;
-	//TODO: Change this to use the new SVI Panel offsetX/Y capabilities
 	private int originUIX;
 	private int originUIY;
-	private boolean dragging;
 	private FSMUI reference;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public ImagePage(FSMUI ref) {
-		images = new ArrayList<String>();
-		imageReferences = new ArrayList<Image>();
-		zoom = new ArrayList<Double>();
-		originX = new ArrayList<Integer>();
-		originY = new ArrayList<Integer>();
-		dragging = false;
+		images = new ArrayList<ImageDisplay>();
 		reference = ref;
 		currentImageIndex = 0;
 	}
@@ -154,7 +136,7 @@ public class ImagePage {
 	}
 
 	public void generatePopout() {
-		PopoutDisplay pp = new PopoutDisplay(0, 0, DEFAULT_POPOUT_WIDTH, DEFAULT_POPOUT_HEIGHT, images.get(getCurrentImageIndex()));
+		PopoutDisplay pp = new PopoutDisplay(0, 0, DEFAULT_POPOUT_WIDTH, DEFAULT_POPOUT_HEIGHT, images.get(getCurrentImageIndex()).getImagePath());
 		pp.setScrollBarVertical(false);
 		pp.setScrollBarHorizontal(false);
 		WindowFrame fra = new WindowFrame(DEFAULT_POPOUT_WIDTH, DEFAULT_POPOUT_HEIGHT) {
@@ -170,220 +152,152 @@ public class ImagePage {
 		fra.reservePanel("default", "pan", pp);
 	}
 
-	private String formImageName(int index) {
-		if(index < images.size())
-			return images.get(index).substring(images.get(index).lastIndexOf("\\") + 1).substring(images.get(index).lastIndexOf("/") + 1);
-		return null;
+	public void replaceActiveImage(String newName) {
+		p.removeElement(getCurrentImageDisplay().getImagePath());
+		getCurrentImageDisplay().setImagePath(FSMUI.ADDRESS_IMAGES + newName + ".jpg");
 	}
 	
-	public void updateActiveImage(String newName) {
-		p.removeElement(formImageName(currentImageIndex));
-		images.set(currentImageIndex, FSMUI.ADDRESS_IMAGES + newName + ".jpg");
-		imageReferences.set(currentImageIndex, p.retrieveImage(images.get(currentImageIndex)));
-		refreshImage();
-	}
-	
-	public void refreshImage() {
-		if(images.size() != 0) {
-			String imgName = formImageName(currentImageIndex);
-			p.removeCachedImage(images.get(currentImageIndex));
-			imageReferences.set(currentImageIndex, p.retrieveImage(images.get(currentImageIndex)));
-			p.removeElement(imgName);
-		}
-		drawPage();
-	}
-	
-	private void updateCurrentImage() {
-		String imgName = formImageName(currentImageIndex);
-		if(imgName != null)
-			p.addImage(imgName, 10, originX.get(currentImageIndex), originY.get(currentImageIndex), false, images.get(currentImageIndex), zoom.get(currentImageIndex));
+	public void refreshActiveImage() {
+		getCurrentImageDisplay().refresh();
 	}
 	
 	public void allotImage(String path) {
-		images.add(path);
-		imageReferences.add(p.retrieveImage(path));
-		zoom.add(DEFAULT_ZOOM);
-		originX.add(DEFAULT_ORIGIN_X);
-		originY.add(DEFAULT_ORIGIN_Y);
+		images.add(new ImageDisplay(path, p));
 		reference.updateImageHeader();
 	}
 	
-	public void removeImage(String path) {
-		if(images.size() == 0 || path == null) {
-			return;
-		}
-		int ind = images.indexOf(path);
-		p.removeElement(formImageName(ind));
-		if(ind < currentImageIndex) {
-			currentImageIndex--;
-		}
-		imageReferences.remove(ind);
-		images.remove(ind);
-		zoom.remove(ind);
-		originX.remove(ind);
-		originY.remove(ind);
-		reference.updateImageHeader();
-	}
-
 	public void removeImage(int ind){
-		if(ind >= images.size()) {
+		if(ind < 0 || ind >= images.size()) {
 			return;
 		}
-		removeImage(images.get(ind));
+		images.get(ind).clear();
+		images.remove(ind);
 	}
 	
 	//-- Change Values  ---------------------------------------
 	
 	public void resetPosition() {
-		if(currentImageIndex < zoom.size()) {
-			originY.set(currentImageIndex, 0);
-			originX.set(currentImageIndex, 0);
-			zoom.set(currentImageIndex, 1.0);
-			updateCurrentImage();
+		if(currentImageIndex < images.size()) {
+			getCurrentImageDisplay().resetPosition();
 		}
 	}
 
 	public void increaseOriginX() {
-		Image img = getCurrentImage();
-		if(img == null) {
-			return;
+		if(currentImageIndex < images.size()) {
+			getCurrentImageDisplay().increaseOriginX();
 		}
-		int wid = (int)(img.getWidth(null) * zoom.get(currentImageIndex));
-		originX.set(currentImageIndex, (int)(originX.get(currentImageIndex) + wid * MOVEMENT_FACTOR));
 	}
 	
 	public void increaseOriginY() {
-		Image img = getCurrentImage();
-		if(img == null) {
-			return;
+		if(currentImageIndex < images.size()) {
+			getCurrentImageDisplay().increaseOriginY();
 		}
-		int hei = (int)(img.getHeight(null) * zoom.get(currentImageIndex));
-		originY.set(currentImageIndex, (int)(originY.get(currentImageIndex) + hei * MOVEMENT_FACTOR));
 	}
 	
 	public void increaseZoom() {
-		int preWid = (int)(p.getWidth() * zoom.get(currentImageIndex));
-		int preHei = (int)(p.getHeight() * zoom.get(currentImageIndex));
-		if(currentImageIndex < zoom.size())
-			zoom.set(currentImageIndex, zoom.get(currentImageIndex) * ZOOM_FACTOR);
-		int postWid = (int)(p.getWidth() * zoom.get(currentImageIndex));
-		int postHei = (int)(p.getHeight() * zoom.get(currentImageIndex));
-		int offsetX = (preWid - postWid) / 2;
-		int offsetY = (preHei - postHei) / 2;
-		originX.set(currentImageIndex, originX.get(currentImageIndex) - Math.abs(offsetX));
-		originY.set(currentImageIndex, originY.get(currentImageIndex) - Math.abs(offsetY));
-		updateCurrentImage();
+		if(currentImageIndex < images.size()) {
+			getCurrentImageDisplay().increaseZoom();
+		}
 	}
 	
 	public void decreaseOriginX() {
-		Image img = getCurrentImage();
-		if(img == null) {
-			return;
+		if(currentImageIndex < images.size()) {
+			getCurrentImageDisplay().decreaseOriginX();
 		}
-		int wid = (int)(img.getWidth(null) * zoom.get(currentImageIndex));
-		originX.set(currentImageIndex, (int)(originX.get(currentImageIndex) - wid * MOVEMENT_FACTOR));
 	}
 	
 	public void decreaseOriginY() {
-		Image img = getCurrentImage();
-		if(img == null) {
-			return;
+		if(currentImageIndex < images.size()) {
+			getCurrentImageDisplay().decreaseOriginY();
 		}
-		int hei = (int)(img.getHeight(null) * zoom.get(currentImageIndex));
-		originY.set(currentImageIndex, (int)(originY.get(currentImageIndex) - hei * MOVEMENT_FACTOR));
 	}
 
 	public void decreaseZoom() {
-		int preWid = (int)(p.getWidth() * zoom.get(currentImageIndex));
-		int preHei = (int)(p.getHeight() * zoom.get(currentImageIndex));
-		if(currentImageIndex < zoom.size())
-			zoom.set(currentImageIndex, zoom.get(currentImageIndex) / ZOOM_FACTOR);
-		int postWid = (int)(p.getWidth() * zoom.get(currentImageIndex));
-		int postHei = (int)(p.getHeight() * zoom.get(currentImageIndex));
-		int offsetX = (preWid - postWid) / 2;
-		int offsetY =(preHei - postHei) / 2;
-		originX.set(currentImageIndex, originX.get(currentImageIndex) + Math.abs(offsetX));
-		originY.set(currentImageIndex, originY.get(currentImageIndex) + Math.abs(offsetY));
-		updateCurrentImage();
+		if(currentImageIndex < images.size()) {
+			getCurrentImageDisplay().decreaseZoom();
+		}
 	}
 	
 	//-- Drawing  ---------------------------------------------
 	
 	public void drawPage() {
-		for(int i = 0; i < images.size(); i++) {
-			int posX = (i == currentImageIndex ? originX.get(i) : 5000);
-			int posY = (i == currentImageIndex ? originY.get(i) : 5000);
-			String imageName = formImageName(i);
-			if(!p.moveElement(imageName, posX, posY)) {
-				p.addImage(imageName, 10, posX, posY, false, images.get(i), zoom.get(i));
-			}
+		if(images.size() > 0) {
+			ImageDisplay img = images.get(currentImageIndex);
+			p.addImage("img", 10, false, 0, 0, false, img.getImage(), img.getZoom());
 		}
+		addFraming();
 		int imageSize = p.getWidth() / 20;
 		int spacing = imageSize * 4 / 3;
 		int posX = originUIX + (int)(p.getWidth() * (1 - UI_BOX_RATIO_X)) / 2;
 		int posY = originUIY + spacing * 3 / 4;
-		drawImageButton("ui_box_zoom_in", posX - spacing, posY, imageSize, imageSize, "/assets/ui/zoom_in.png", CODE_ZOOM_IN);
-		drawImageButton("ui_box_zoom_out", posX + spacing, posY, imageSize, imageSize, "/assets/ui/zoom_out.png", CODE_ZOOM_OUT);
+		drawImageButton("ui_box_zoom_in", true, posX - spacing, posY, imageSize, imageSize, "/assets/ui/zoom_in.png", CODE_ZOOM_IN);
+		drawImageButton("ui_box_zoom_out", true, posX + spacing, posY, imageSize, imageSize, "/assets/ui/zoom_out.png", CODE_ZOOM_OUT);
 		posY += spacing;
-		drawImageButton("ui_box_move_up", posX, posY, imageSize, imageSize, "/assets/ui/up_arrow.png", CODE_MOVE_UP);
+		drawImageButton("ui_box_move_up", true, posX, posY, imageSize, imageSize, "/assets/ui/up_arrow.png", CODE_MOVE_UP);
 		posY += spacing;
-		drawImageButton("ui_box_move_left", posX - spacing, posY, imageSize, imageSize, "/assets/ui/left_arrow.png", CODE_MOVE_LEFT);
-		drawImageButton("ui_box_move_right", posX + spacing, posY, imageSize, imageSize, "/assets/ui/right_arrow.png", CODE_MOVE_RIGHT);
-		drawImageButton("ui_box_UI_ring", posX, posY, imageSize, imageSize, "/assets/ui/UI_ring.png", CODE_RESET_POSITION);
+		drawImageButton("ui_box_move_left", true, posX - spacing, posY, imageSize, imageSize, "/assets/ui/left_arrow.png", CODE_MOVE_LEFT);
+		drawImageButton("ui_box_move_right", true, posX + spacing, posY, imageSize, imageSize, "/assets/ui/right_arrow.png", CODE_MOVE_RIGHT);
+		drawImageButton("ui_box_UI_ring", true, posX, posY, imageSize, imageSize, "/assets/ui/UI_ring.png", CODE_RESET_POSITION);
 		posY += spacing;
-		drawImageButton("ui_box_move_down", posX, posY, imageSize, imageSize, "/assets/ui/down_arrow.png", CODE_MOVE_DOWN);
+		drawImageButton("ui_box_move_down", true, posX, posY, imageSize, imageSize, "/assets/ui/down_arrow.png", CODE_MOVE_DOWN);
 		
-		drawImageButton("ui_box_popout", p.getWidth() - imageSize, imageSize, imageSize * 3 / 2, imageSize * 3 / 2, "/assets/ui/popout.png", CODE_POPOUT);
-		p.addRectangle("rect_ui_popout", 13, p.getWidth() - imageSize, imageSize, imageSize * 3 / 2, imageSize * 3 / 2, true, Color.white, Color.black);
+		drawImageButton("ui_box_popout", true, p.getWidth() - imageSize, imageSize, imageSize * 3 / 2, imageSize * 3 / 2, "/assets/ui/popout.png", CODE_POPOUT);
+		p.addRectangle("rect_ui_popout", 13, true, p.getWidth() - imageSize, imageSize, imageSize * 3 / 2, imageSize * 3 / 2, true, Color.white, Color.black);
 	}
 
 	private void addFraming() {
 		int width = p.getWidth();
 		int height = p.getHeight();
-		p.addLine("frame_line_3", 15, 0, 0, 0, height, 5, Color.BLACK);
-		p.addLine("frame_line_4", 15, 0, 1, width, 1, 2, Color.BLACK);
-		p.addLine("frame_line_5", 15, width, height, width, 0, 5, Color.BLACK);
-		p.addLine("frame_line_6", 15, width, height, 0, height, 5, Color.BLACK);
-		p.addRectangle("rect_ui", 13, originUIX, originUIY, (int)(width * (1 - UI_BOX_RATIO_X)), (int)(height * (1 - UI_BOX_RATIO_Y)), false, Color.white, Color.black);
+		p.addLine("frame_line_3", 15, true, 0, 0, 0, height, 5, Color.BLACK);
+		p.addLine("frame_line_4", 15, true,  0, 1, width, 1, 2, Color.BLACK);
+		p.addLine("frame_line_5", 15, true,  width, height, width, 0, 5, Color.BLACK);
+		p.addLine("frame_line_6", 15, true,  width, height, 0, height, 5, Color.BLACK);
+		p.addRectangle("rect_ui", 13, true,  originUIX, originUIY, (int)(width * (1 - UI_BOX_RATIO_X)), (int)(height * (1 - UI_BOX_RATIO_Y)), false, Color.white, Color.black);
 	}
 
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public void setCurrentImageIndex(int in) {
 		currentImageIndex = in;
+		p.removeElement("img");
+		refreshActiveImage();
 	}
 
 	public void increaseCurrentImageIndex() {
 		if(currentImageIndex + 1 < images.size()) {
-			currentImageIndex++;
+			setCurrentImageIndex(currentImageIndex + 1);
 		}
 	}
 	
 	public void decreaseCurrentImageIndex() {
 		if(currentImageIndex - 1 >= 0) {
-			currentImageIndex--;
+			setCurrentImageIndex(currentImageIndex - 1);
 		}
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public ArrayList<String> getImages(){
-		return images;
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 0; i < images.size(); i++) {
+			out.add(images.get(i).getImagePath());
+		}
+		return out;
 	}
 	
 	public int getCurrentImageIndex() {
 		return currentImageIndex;
 	}
 	
-	public Image getCurrentImage() {
-		if(currentImageIndex < imageReferences.size())
-			return imageReferences.get(currentImageIndex);
+	public ImageDisplay getCurrentImageDisplay() {
+		if(currentImageIndex < images.size())
+			return images.get(currentImageIndex);
 		return null;
 	}
 	
 //---  Composite   ----------------------------------------------------------------------------
 	
-	private void drawImageButton(String name, int x, int y, int wid, int hei, String path, int code) {
+	private void drawImageButton(String name, boolean frame, int x, int y, int wid, int hei, String path, int code) {
 		String imageName = name + "_image";
 		if(!p.moveElement(imageName, x, y)) {
 			double imgWid = p.retrieveImage(path).getWidth(null);
@@ -391,11 +305,11 @@ public class ImagePage {
 			if(imgWid != wid) {
 				zoom = wid / imgWid;
 			}
-			p.addImage(imageName, 15, x, y, true, path, zoom);
+			p.addImage(imageName,15, frame, x, y, true, path, zoom);
 		}
 		String buttonName = name + "_button";
 		if(!p.moveElement(buttonName, x, y)) {
-			p.addButton(buttonName, 15, x, y, wid, hei, code, true);
+			p.addButton(buttonName, 15, frame,  x, y, wid, hei, code, true);
 		}
 	}
 	
@@ -505,25 +419,25 @@ public class ImagePage {
 		}
 		
 		public void drawPopout() {
-			addImage("img", 5, 0, 0, false, display, zoom);
+			addImage("img", 5, false,  0, 0, false, display, zoom);
 			int imageSize = getWidth() / 20 > MAX_UI_SIZE ? MAX_UI_SIZE : getWidth() / 20;
 			int spacing = imageSize * 4 / 3;
-			int posX = -getOffsetX() + spacing * 5 / 3;// + (int)(getWidth() * (1 - UI_BOX_RATIO_X)) / 2;
-			int posY = -getOffsetY() + spacing * 3 / 4;
-			addRectangle("rect_ui", 13, posX - spacing * 3 / 2, posY - spacing * 2 / 3, spacing * 3, spacing * 9 / 2, false, Color.white, Color.black);
-			drawImageButton("ui_box_zoom_in", posX - spacing, posY, imageSize, imageSize, "/assets/ui/zoom_in.png", CODE_ZOOM_IN);
-			drawImageButton("ui_box_zoom_out", posX + spacing, posY, imageSize, imageSize, "/assets/ui/zoom_out.png", CODE_ZOOM_OUT);
+			int posX = spacing * 5 / 3;// + (int)(getWidth() * (1 - UI_BOX_RATIO_X)) / 2;
+			int posY = spacing * 3 / 4;
+			addRectangle("rect_ui", 13, true,  posX - spacing * 3 / 2, posY - spacing * 2 / 3, spacing * 3, spacing * 9 / 2, false, Color.white, Color.black);
+			drawImageButton("ui_box_zoom_in", true, posX - spacing, posY, imageSize, imageSize, "/assets/ui/zoom_in.png", CODE_ZOOM_IN);
+			drawImageButton("ui_box_zoom_out", true,posX + spacing, posY, imageSize, imageSize, "/assets/ui/zoom_out.png", CODE_ZOOM_OUT);
 			posY += spacing;
-			drawImageButton("ui_box_move_up", posX, posY, imageSize, imageSize, "/assets/ui/up_arrow.png", CODE_MOVE_UP);
+			drawImageButton("ui_box_move_up", true,posX, posY, imageSize, imageSize, "/assets/ui/up_arrow.png", CODE_MOVE_UP);
 			posY += spacing;
-			drawImageButton("ui_box_move_left", posX - spacing, posY, imageSize, imageSize, "/assets/ui/left_arrow.png", CODE_MOVE_LEFT);
-			drawImageButton("ui_box_move_right", posX + spacing, posY, imageSize, imageSize, "/assets/ui/right_arrow.png", CODE_MOVE_RIGHT);
-			drawImageButton("ui_box_UI_ring", posX, posY, imageSize, imageSize, "/assets/ui/UI_ring.png", CODE_RESET_POSITION);
+			drawImageButton("ui_box_move_left", true, posX - spacing, posY, imageSize, imageSize, "/assets/ui/left_arrow.png", CODE_MOVE_LEFT);
+			drawImageButton("ui_box_move_right", true, posX + spacing, posY, imageSize, imageSize, "/assets/ui/right_arrow.png", CODE_MOVE_RIGHT);
+			drawImageButton("ui_box_UI_ring", true, posX, posY, imageSize, imageSize, "/assets/ui/UI_ring.png", CODE_RESET_POSITION);
 			posY += spacing;
-			drawImageButton("ui_box_move_down", posX, posY, imageSize, imageSize, "/assets/ui/down_arrow.png", CODE_MOVE_DOWN);
+			drawImageButton("ui_box_move_down", true, posX, posY, imageSize, imageSize, "/assets/ui/down_arrow.png", CODE_MOVE_DOWN);
 		}
 		
-		private void drawImageButton(String name, int x, int y, int wid, int hei, String path, int code) {
+		private void drawImageButton(String name, boolean frame, int x, int y, int wid, int hei, String path, int code) {
 			String imageName = name + "_image";
 			if(!moveElement(imageName, x, y)) {
 				double imgWid = retrieveImage(path).getWidth(null);
@@ -531,15 +445,13 @@ public class ImagePage {
 				if(imgWid != wid) {
 					zoom = wid / imgWid;
 				}
-				addImage(imageName, 15, x, y, true, path, zoom);
+				addImage(imageName, 15, frame,  x, y, true, path, zoom);
 			}
 			String buttonName = name + "_button";
 			if(!moveElement(buttonName, x, y)) {
-				addButton(buttonName, 15, x, y, wid, hei, code, true);
+				addButton(buttonName, 15, frame,  x, y, wid, hei, code, true);
 			}
 		}
 		
-
 	}
-	
 }
