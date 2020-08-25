@@ -9,7 +9,7 @@ import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
 //TODO: There's something screwy with the zoom in and zoom out in keeping the image centered, fix it
-
+//TODO: Default zoomout range on creation so you can actually see the thing
 public class ImagePage {
 
 //---  Constants   ----------------------------------------------------------------------------

@@ -5,20 +5,22 @@ import java.awt.Font;
 import java.util.ArrayList;
 
 import ui.FSMUI;
-import visual.panel.ElementPanel;
+import ui.page.imagepage.ImagePage;
 
-public class ImageHeader extends ElementPanel{
+public class ImageHeader extends HeaderBase{
 
-	private final static int CODE_START_IMAGES_HEADER = 150;
 	private final static Font IMAGE_HEADER_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static Color COLOR_TRANSPARENT = new Color(0, 0, 0, 0);
 	
-	public ImageHeader(int x, int y, int wid, int hei) {
+	private ImagePage imagePage;
+	
+	public ImageHeader(int x, int y, int wid, int hei, ImagePage refer) {
 		super(x, y, wid, hei);
+		imagePage = refer;
 		setScrollBarVertical(false);
 		setScrollBarHorizontal(false);
-		addLine("line_3", 15, false, 0, 0, 0, hei, 2, Color.BLACK);
-		addLine("line_6", 15, false, wid, hei, 0, hei, 5, Color.BLACK);
+		addLine("line_3", 15, true, 0, 0, 0, hei, 2, Color.BLACK);
+		addLine("line_6", 15, true, wid, hei, 0, hei, 5, Color.BLACK);
 		
 	}
 
@@ -62,25 +64,13 @@ public class ImageHeader extends ElementPanel{
 
 	@Override
 	public void clickBehaviour(int code, int x, int y) {
-		int cod = code - CODE_START_IMAGES_HEADER;
-		if(cod < imagePage.getImages().size() && cod >= 0) {
-			imagePage.setCurrentImageIndex(cod);
-			updateImagePanel();
+		if(code < imagePage.getImages().size() && code >= 0) {
+			imagePage.setCurrentImageIndex(code);
+			imagePage.drawPage();
 		}
-		updateImageHeader();
+		update();
 	}
 	
-	@Override
-	public int getMinimumScreenX() {
-		return 0;
-	}
-	
-	@Override
-	public void mouseWheelBehaviour(int rotation) {
-		if(getMaximumScreenX() < getWidth()) {
-			return;
-		}
-		setOffsetXBounded(getOffsetX() + rotation * ROTATION_MULTIPLIER);
-	}
+
 
 }

@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import ui.page.optionpage.entryset.EntrySet;
 import visual.panel.ElementPanel;
 
 public class Category {
@@ -81,7 +82,6 @@ public class Category {
 	public String getContents(int code, int posit) {
 		for(EntrySet e : sets) {
 			if(e.getCode() == code) {
-				System.out.println(e.getContentAtIndex(posit));
 				return e.getContentAtIndex(posit);
 			}
 		}

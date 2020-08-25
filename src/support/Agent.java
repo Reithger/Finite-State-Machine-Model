@@ -1,7 +1,9 @@
 package support;
 
 import java.util.Collection;
-import support.map.EventMap;
+
+import support.component.Event;
+import support.component.map.EventMap;
 
 public class Agent {
 

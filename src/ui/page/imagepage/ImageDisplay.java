@@ -25,6 +25,7 @@ public class ImageDisplay {
 	public ImageDisplay(String path, ElementPanel in) {
 		imagePath = path;
 		p = in;
+		zoom = 1;
 		refresh();
 	}
 
@@ -34,7 +35,6 @@ public class ImageDisplay {
 		p.removeCachedImage(imagePath);
 		reference = p.retrieveImage(imagePath);
 		imageName = formatImageName(imagePath);
-		zoom = DEFAULT_ZOOM;
 	}
 	
 	public void clear() {
@@ -44,7 +44,7 @@ public class ImageDisplay {
 	public void resetPosition() {
 		p.setOffsetX(0);
 		p.setOffsetY(0);
-		refresh();
+		zoom = DEFAULT_ZOOM;
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------

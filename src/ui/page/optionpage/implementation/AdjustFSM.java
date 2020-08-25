@@ -2,15 +2,16 @@ package ui.page.optionpage.implementation;
 
 import java.util.Random;
 
-import fsm.NonDetObsContFSM;
 import graphviz.FSMToDot;
-import support.GenerateFSM;
+import support.meta.GenerateFSM;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
 
 /**
  * 
  * TODO: Allow editing a transition to become a Must transition, other types?
+ * TODO: Crashes if Make FSM and Make Complicated FSM are open at the same time
+ * TODO: Correction: It freezes if those two are open, naming collision? Infinite loop?
  * @author Borinor
  *
  */
@@ -141,6 +142,7 @@ public class AdjustFSM extends OptionPage{
 					break;
 				case CODE_RENAME_FSM:
 					getFSMUI().renameActiveFSM(getTextFromCode(CODE_RENAME_FSM, 0));
+					resetCodeEntries(code);
 					break;
 				case CODE_LOAD_SOURCE:
 					getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_LOAD_SOURCE, 0), getTextFromCode(CODE_LOAD_SOURCE, 0).replaceAll(".fsm", ""));
@@ -153,10 +155,12 @@ public class AdjustFSM extends OptionPage{
 				case CODE_ADD_STATE: 
 					getFSMUI().getActiveFSM().addState(this.getTextFromCode(CODE_ADD_STATE, 0));
 					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
 					break;
 				case CODE_REMOVE_STATE: 
 					getFSMUI().getActiveFSM().removeState(this.getTextFromCode(CODE_REMOVE_STATE, 0));
 					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
 					break;
 				case CODE_ADD_TRANSITION: 
 					getFSMUI().getActiveFSM().addTransition(this.getTextFromCode(CODE_ADD_TRANSITION, 0), this.getTextFromCode(CODE_ADD_TRANSITION, 1), this.getTextFromCode(CODE_ADD_TRANSITION, 2));
@@ -171,18 +175,22 @@ public class AdjustFSM extends OptionPage{
 				case CODE_SECRET_STATE:
 					getFSMUI().getActiveFSM().toggleSecretState(this.getTextFromCode(CODE_SECRET_STATE, 0));
 					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
 					break;
 				case CODE_INITIAL_STATE:
 					getFSMUI().getActiveFSM().addInitialState(this.getTextFromCode(CODE_INITIAL_STATE, 0));
 					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
 					break;
 				case CODE_MARKED_STATE:
 					getFSMUI().getActiveFSM().toggleMarkedState(this.getTextFromCode(CODE_MARKED_STATE, 0));
 					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
 					break;
 				case CODE_BAD_STATE:
 					getFSMUI().getActiveFSM().toggleBadState(this.getTextFromCode(CODE_BAD_STATE, 0));
 					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
 					break;
 				case CODE_CLOSE_FSM:
 					getFSMUI().removeActiveTransitionSystem();
@@ -203,6 +211,7 @@ public class AdjustFSM extends OptionPage{
 					}
 					String path = GenerateFSM.createNewFSM(numState, 0, numEvent, numTrans, 1, 0, 0, 0, 0, nonDet, name, FSMUI.ADDRESS_SOURCES);
 					getFSMUI().allotTransitionSystem(path, name);
+					resetCodeEntries(code);
 					break;
 				case CODE_GENERATE_COMPLEX_FSM:
 					int numStateC = getIntegerFromCode(CODE_ACCESS_COMPLEX_NUM_STATES, 0);
@@ -225,6 +234,7 @@ public class AdjustFSM extends OptionPage{
 					}
 					String pathC = GenerateFSM.createNewFSM(numStateC, numMarkedC, numEventC, numTransC, numInitC, numSecretC, numUnobservedC, numAttackerC, numControlledC, nonDetC, nameC, FSMUI.ADDRESS_SOURCES);
 					getFSMUI().allotTransitionSystem(pathC, nameC);
+					resetCodeEntries(code);
 					break;
 				default:
 					break;

@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import ui.FSMUI;
+import ui.page.optionpage.entryset.EntrySet;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
@@ -239,7 +240,6 @@ public abstract class OptionPage {
 	}
 	
 	public Boolean getCheckboxContentsFromCode(int code) {
-		System.out.println(code + " " + getCategoryFromCode(code) + " " + getTextFromCode(code, 0));
 		return getTextFromCode(code, 0).contentEquals(CHECKBOX_TRUE);
 	}
 	

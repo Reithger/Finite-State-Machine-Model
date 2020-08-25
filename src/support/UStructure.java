@@ -3,37 +3,39 @@ package support;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ArrayList;
-import fsm.DetObsContFSM;
-import support.Agent;
-import support.map.TransitionFunction;
-import support.transition.DetTransition;
+import fsm.FSM;
+import support.component.Event;
+import support.component.State;
+import support.component.Transition;
+import support.component.map.TransitionFunction;
+
 import java.util.HashMap;
 
 public class UStructure {
 
 	private static final String UNOBSERVED_EVENT = "w";
 	
-	private DetObsContFSM plantFSM;
+	private FSM plantFSM;
 	private Agent[] agents;
-	private HashMap<String, ArrayList<DetTransition>> badTransitions;
-	private DetObsContFSM uStructure;
+	private HashMap<String, ArrayList<Transition>> badTransitions;
+	private FSM uStructure;
 	private HashMap<State, State[]> compositeMapping;
 	private HashSet<State> goodBadStates;
 	private HashSet<State> badGoodStates;
 	
-	public UStructure(DetObsContFSM thePlant, TransitionFunction<DetTransition> theBadTransitions, Agent ... theAgents) {
+	public UStructure(FSM thePlant, TransitionFunction theBadTransitions, Agent ... theAgents) {
 		plantFSM = thePlant;
-		badTransitions = new HashMap<String, ArrayList<DetTransition>>();
+		badTransitions = new HashMap<String, ArrayList<Transition>>();
 		for(State s : theBadTransitions.getStates()) {
-			ArrayList<DetTransition> newTrans = new ArrayList<DetTransition>();
-			for(DetTransition t : theBadTransitions.getTransitions(s)) {
+			ArrayList<Transition> newTrans = new ArrayList<Transition>();
+			for(Transition t : theBadTransitions.getTransitions(s)) {
 				newTrans.add(t);
 			}
 			badTransitions.put(s.getStateName(), newTrans);
 		}
 		for(State s : thePlant.getStates()) {
 			if(badTransitions.get(s.getStateName()) == null)
-				badTransitions.put(s.getStateName(), new ArrayList<DetTransition>());
+				badTransitions.put(s.getStateName(), new ArrayList<Transition>());
 		}
 		agents = new Agent[theAgents.length + 1];
 		agents[0] = new Agent(thePlant.getEventMap().getEvents().toArray(new Event[thePlant.getEventMap().getEvents().size()]));
@@ -53,13 +55,13 @@ public class UStructure {
 	}
 	
 	public void createUStructure() {
-		uStructure = new DetObsContFSM();
+		uStructure = new FSM();
 		compositeMapping = new HashMap<State, State[]>();
 		LinkedList<BatchAgentStates> queue = new LinkedList<BatchAgentStates>();
 		HashSet<State> visited = new HashSet<State>();
 		State[] starting = new State[agents.length];
 		for(int i = 0; i < starting.length; i++)
-			starting[i] = plantFSM.getInitialState();
+			starting[i] = plantFSM.getInitialStates().get(0);
 		State init = uStructure.addState(starting);
 		uStructure.addInitialState(init);
 		compositeMapping.put(init, starting);
@@ -71,7 +73,7 @@ public class UStructure {
 			visited.add(stateSet.getIdentityState());
 			HashSet<String> viableEvents = new HashSet<String>();
 			for(State s : stateSet.getStates()) {
-				for(DetTransition t : plantFSM.getTransitions().getTransitions(s))
+				for(Transition t : plantFSM.getTransitions().getTransitions(s))
 					viableEvents.add(t.getTransitionEvent().getEventName());
 			}
 			for(String s : viableEvents) {
@@ -83,9 +85,9 @@ public class UStructure {
 						for(int j = 0; j < stateSet.getStates().length; j++) {
 							if(i == j) {
 								newSet[j] = stateSet.getStates()[j];
-								for(DetTransition t : plantFSM.getStateTransitions(stateSet.getStates()[j])) {
+								for(Transition t : plantFSM.getStateTransitions(stateSet.getStates()[j])) {
 									if(t.getTransitionEvent().getEventName().equals(s))
-										newSet[j] = t.getTransitionState();
+										newSet[j] = t.getTransitionStates().get(0);
 								}
 								eventName += s + (j + 1 < stateSet.getStates().length ? ", " : ">");
 							}
@@ -113,9 +115,9 @@ public class UStructure {
 				for(int i = 0; i < canAct.length; i++) {
 					if(canAct[i]) {
 						eventName += s + (i + 1 < canAct.length ? ", " : ">");
-						for(DetTransition t : plantFSM.getStateTransitions(stateSet.getStates()[i])) {
+						for(Transition t : plantFSM.getStateTransitions(stateSet.getStates()[i])) {
 							if(t.getTransitionEvent().getEventName().equals(s)){
-								newSet[i] = t.getTransitionState();
+								newSet[i] = t.getTransitionStates().get(0);
 							}
 						}
 					}
@@ -141,7 +143,7 @@ public class UStructure {
 		goodBadStates = new HashSet<State>();
 		badGoodStates = new HashSet<State>();
 		for(State s : uStructure.getStates()) {
-			for(DetTransition t : uStructure.getStateTransitions(s)) {
+			for(Transition t : uStructure.getStateTransitions(s)) {
 				Event e = t.getTransitionEvent();
 				String[] event = e.getEventName().substring(1, e.getEventName().length()-1).split(", ");
 				State[] states = compositeMapping.get(s);
@@ -149,7 +151,7 @@ public class UStructure {
 				for(int i = 0; i < states.length; i++) {
 					if(agents[i].getControllable(event[i])) {
 						legality[i] = true;
-						for(DetTransition bad : badTransitions.get(states[i].getStateName())) {
+						for(Transition bad : badTransitions.get(states[i].getStateName())) {
 							if(bad.getTransitionEvent().getEventName().equals(event[i])) {
 								legality[i] = false;
 							}
@@ -184,11 +186,11 @@ public class UStructure {
 		}
 	}
 	
-	public DetObsContFSM getUStructure() {
+	public FSM getUStructure() {
 		return uStructure;
 	}
 		
-	public DetObsContFSM getPlantFSM() {
+	public FSM getPlantFSM() {
 		return plantFSM;
 	}
 

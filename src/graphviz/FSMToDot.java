@@ -2,7 +2,7 @@ package graphviz;
 
 import java.io.File;
 import fsm.*;
-import support.SVGtoTikZ;
+import support.meta.SVGtoTikZ;
 
 /**
  * This class handles the transfer of an object from the fsm package to a .dot format
