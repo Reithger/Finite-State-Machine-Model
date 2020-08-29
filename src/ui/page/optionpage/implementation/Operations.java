@@ -82,7 +82,6 @@ public class Operations extends OptionPage{
 			{"Prune", ENTRY_EMPTY, CODE_PRUNE, true},
 		},
 		{
-			{},	//TODO: Generate Agents, BadTransition set; Need ImagePage to display these different structures
 			{"Generate U-Structure", ENTRY_SELECT_FSMS, CODE_U_STRUCTURE_SELECT, false},
 			{"", ENTRY_EMPTY, CODE_U_STRUCTURE, true},
 		},

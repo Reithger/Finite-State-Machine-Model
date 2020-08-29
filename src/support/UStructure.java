@@ -12,14 +12,18 @@ import support.component.map.TransitionFunction;
 import java.util.HashMap;
 
 public class UStructure {
-
+	
+	//TODO: Get subautomota representing the paths that can reach goodBad/badGood states (flip transition direction, set initial as marked, etc.)
+	//TODO: Integrate bad state analysis into the construction of the U-structure to save time
+	
 	private static final String UNOBSERVED_EVENT = "w";
 	
 	private FSM plantFSM;
 	private Agent[] agents;
 	private HashMap<String, ArrayList<Transition>> badTransitions;
-	private FSM uStructure;
 	private HashMap<State, State[]> compositeMapping;
+	
+	private FSM uStructure;
 	private HashSet<State> goodBadStates;
 	private HashSet<State> badGoodStates;
 	
@@ -57,34 +61,39 @@ public class UStructure {
 	public void createUStructure() {
 		uStructure = new FSM();
 		compositeMapping = new HashMap<State, State[]>();
-		LinkedList<BatchAgentStates> queue = new LinkedList<BatchAgentStates>();
+		LinkedList<BatchAgentStates> queue = new LinkedList<BatchAgentStates>();		//initialize
 		HashSet<State> visited = new HashSet<State>();
 		State[] starting = new State[agents.length];
+		
 		for(int i = 0; i < starting.length; i++)
 			starting[i] = plantFSM.getInitialStates().get(0);
-		State init = uStructure.addState(starting);
+		State init = uStructure.addState(starting);									//create first state, start queue
 		uStructure.addInitialState(init);
 		compositeMapping.put(init, starting);
 		queue.add(new BatchAgentStates(starting, uStructure.addState(starting)));
+		
 		while(!queue.isEmpty()) {
 			BatchAgentStates stateSet = queue.poll();
-			if(visited.contains(stateSet.getIdentityState()))
+			if(visited.contains(stateSet.getIdentityState()))					//access next state from queue, ensure it hasn't been processed yet
 				continue;
 			visited.add(stateSet.getIdentityState());
+			
 			HashSet<String> viableEvents = new HashSet<String>();
 			for(State s : stateSet.getStates()) {
-				for(Transition t : plantFSM.getTransitions().getTransitions(s))
+				for(Transition t : plantFSM.getTransitions().getTransitions(s))		//figure out what the legal moves are for the plant
 					viableEvents.add(t.getTransitionEvent().getEventName());
 			}
+			
 			for(String s : viableEvents) {
-				boolean[] canAct = new boolean[stateSet.getStates().length];
+				
+				boolean[] canAct = new boolean[stateSet.getStates().length];		//find out what each individual agent is able to do for the given event at the given state
 				for(int i = 0; i < stateSet.getStates().length; i++) {
-					if(!agents[i].getObservable(s)) {
+					if(!agents[i].getObservable(s)) {					//if the agent cannot see the event, it has to guess whether it happened
 						State[] newSet = new State[stateSet.getStates().length];
 						String eventName = "<";
 						for(int j = 0; j < stateSet.getStates().length; j++) {
+							newSet[j] = stateSet.getStates()[j];
 							if(i == j) {
-								newSet[j] = stateSet.getStates()[j];
 								for(Transition t : plantFSM.getStateTransitions(stateSet.getStates()[j])) {
 									if(t.getTransitionEvent().getEventName().equals(s))
 										newSet[j] = t.getTransitionStates().get(0);
@@ -92,10 +101,10 @@ public class UStructure {
 								eventName += s + (j + 1 < stateSet.getStates().length ? ", " : ">");
 							}
 							else {
-								newSet[j] = stateSet.getStates()[j];
 								eventName += "w" + (j + 1 < stateSet.getStates().length ? ", " : ">");
 							}
 						}
+						
 						boolean fail = false;
 						for(State state : newSet)
 							if(state == null)
@@ -136,6 +145,82 @@ public class UStructure {
 					compositeMapping.put(uStructure.addState(new State(newSet)), newSet);
 				}
 			}
+		}
+	}
+	
+	public void createUStructureAgain() {
+		uStructure = new FSM();
+		compositeMapping = new HashMap<State, State[]>();
+		LinkedList<BatchAgentStates> queue = new LinkedList<BatchAgentStates>();		//initialize
+		HashSet<State> visited = new HashSet<State>();
+		State[] starting = new State[agents.length];
+		
+		for(int i = 0; i < starting.length; i++)
+			starting[i] = plantFSM.getInitialStates().get(0);
+		State init = uStructure.addState(starting);									//create first state, start queue
+		uStructure.addInitialState(init);
+		compositeMapping.put(init, starting);
+		queue.add(new BatchAgentStates(starting, uStructure.addState(starting)));
+		
+		while(!queue.isEmpty()) {
+			BatchAgentStates stateSet = queue.poll();
+			if(visited.contains(stateSet.getIdentityState()))					//access next state from queue, ensure it hasn't been processed yet
+				continue;
+			visited.add(stateSet.getIdentityState());
+			
+			HashSet<String> viableEvents = new HashSet<String>();
+			for(State s : stateSet.getStates()) {
+				for(Transition t : plantFSM.getTransitions().getTransitions(s))		//figure out what the legal moves are for the plant
+					viableEvents.add(t.getTransitionEvent().getEventName());
+			}
+			
+			for(String s : viableEvents) {
+				/*
+				 * For each event, find out which agents can perform that event; generate the base-level vector <a, w, a, w, etc.> representing the plant's action
+				 * Then do the permutations on that for every possible way to guess events happening
+				 * Each permutation and the base are unique transitions, find the target states to make that state vector
+				 * Add the transitions to the U-Structure, add the new States to the queue
+				 * 
+				 * Extension: Once you have all the transitions for a State, do type-one bad state analysis (when controllability becomes a factor) and type-two, for that matter
+				 * 
+				 */
+				
+				
+				boolean[] agentVisible = new boolean[stateSet.getStates().length];
+				agentVisible[0] = true;
+				String plantVector = "<" + s;
+				for(int i = 0; i < stateSet.getStates().length; i++) {
+					agentVisible[i + 1] = agents[i].getObservable(s);
+					plantVector += ", " + (agentVisible[i + 1] ? s : UNOBSERVED_EVENT);
+				}
+				plantVector += ">";
+				HashSet<String> eventPaths = new HashSet<String>();
+				eventPaths.add(plantVector);
+				generateObservablePermutation(eventPaths, 0, "", agentVisible);
+				
+				for(String vec : eventPaths) {
+					
+				}
+			}
+		}
+	}
+	
+	private HashSet<String> generateObservablePermutation(HashSet<String> tags, int index,  String total, boolean[] sight){
+		if(index >= sight.length) {
+			tags.add(total);
+			return tags;
+		}
+		if(sight[index]) {
+			tags.addAll(generateObservablePermutation(tags, index + 1,  total + ", " + UNOBSERVED_EVENT, sight));
+			return tags;
+		}
+		else {
+			ArrayList<String> events = agents[index].getUnobservableEvents();
+			for(int i = 0; i < events.size(); i++) {
+				tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + events.get(i), sight));
+			}
+			tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + UNOBSERVED_EVENT, sight));
+			return tags;
 		}
 	}
 
