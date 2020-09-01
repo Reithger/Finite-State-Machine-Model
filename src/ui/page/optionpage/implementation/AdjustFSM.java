@@ -6,6 +6,7 @@ import graphviz.FSMToDot;
 import support.meta.GenerateFSM;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
+import ui.page.optionpage.entryset.EntrySet;
 
 /**
  * 
@@ -66,47 +67,47 @@ public class AdjustFSM extends OptionPage{
 	private final static String[] CATEGORIES = new String[] {"Generate FSM Simple", "Generate FSM Complicated", "Edit FSM States", "Edit FSM Transitions", "Admin"};
 	private final static Object[][][] DATA = new Object[][][] {
 		{
-			{"Number of States", ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_STATES, false},
-			{"Number of Events", ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_EVENTS, false},
-			{"Number of Transitions", ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_TRANS, false},
-			{"Non-Deterministic", ENTRY_CHECKBOX, CODE_ACCESS_NON_DETERMINISTIC, false},
-			{"Name", ENTRY_TEXT_LONG, CODE_ACCESS_FSM_NAME, false},
-			{"Generate", ENTRY_EMPTY,  CODE_GENERATE_FSM, true},
+			{"Number of States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_STATES, false},
+			{"Number of Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_EVENTS, false},
+			{"Number of Transitions", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_TRANS, false},
+			{"Non-Deterministic", EntrySet.ENTRY_CHECKBOX, CODE_ACCESS_NON_DETERMINISTIC, false},
+			{"Name", EntrySet.ENTRY_TEXT_LONG, CODE_ACCESS_FSM_NAME, false},
+			{"Generate", EntrySet.ENTRY_EMPTY,  CODE_GENERATE_FSM, true},
 		},
 		{
-			{"Number of States", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_STATES, false},
-			{"Number of Events", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_EVENTS, false},
-			{"Number of Transitions", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_TRANS, false},
-			{"Number of Initial States", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_INITIAL, false},
-			{"Number of Marked States", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_MARKED, false},
-			{"Number of Secret States", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_SECRET, false},
-			{"Number of Controlled Events", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_CONTROLLED, false},
-			{"Number of Unobservable Events", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_UNOBSERVED, false},
-			{"Number of Attacker Invisible Events", ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_ATTACKER, false},
-			{"Non-Deterministic", ENTRY_CHECKBOX, CODE_ACCESS_COMPLEX_NON_DETERMINISTIC, false},
-			{"Name", ENTRY_TEXT_LONG, CODE_ACCESS_COMPLEX_FSM_NAME, false},
-			{"Generate", ENTRY_EMPTY, CODE_GENERATE_COMPLEX_FSM, true},
+			{"Number of States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_STATES, false},
+			{"Number of Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_EVENTS, false},
+			{"Number of Transitions", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_TRANS, false},
+			{"Number of Initial States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_INITIAL, false},
+			{"Number of Marked States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_MARKED, false},
+			{"Number of Secret States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_SECRET, false},
+			{"Number of Controlled Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_CONTROLLED, false},
+			{"Number of Unobservable Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_UNOBSERVED, false},
+			{"Number of Attacker Invisible Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_ATTACKER, false},
+			{"Non-Deterministic", EntrySet.ENTRY_CHECKBOX, CODE_ACCESS_COMPLEX_NON_DETERMINISTIC, false},
+			{"Name", EntrySet.ENTRY_TEXT_LONG, CODE_ACCESS_COMPLEX_FSM_NAME, false},
+			{"Generate", EntrySet.ENTRY_EMPTY, CODE_GENERATE_COMPLEX_FSM, true},
 		},
 		{
-			{"Add State", ENTRY_TEXT_SINGLE, CODE_ADD_STATE, true},
-			{"Remove State", ENTRY_TEXT_SINGLE, CODE_REMOVE_STATE, true},
-			{"Add Initial State", ENTRY_TEXT_SINGLE, CODE_INITIAL_STATE, true},
-			{"Set State Marked", ENTRY_TEXT_SINGLE, CODE_MARKED_STATE, true},
-			{"Set State Secret", ENTRY_TEXT_SINGLE, CODE_SECRET_STATE, true},
-			{"Set State Bad", ENTRY_TEXT_SINGLE, CODE_BAD_STATE, true},
+			{"Add State", EntrySet.ENTRY_TEXT_SINGLE, CODE_ADD_STATE, true},
+			{"Remove State", EntrySet.ENTRY_TEXT_SINGLE, CODE_REMOVE_STATE, true},
+			{"Add Initial State", EntrySet.ENTRY_TEXT_SINGLE, CODE_INITIAL_STATE, true},
+			{"Set State Marked", EntrySet.ENTRY_TEXT_SINGLE, CODE_MARKED_STATE, true},
+			{"Set State Secret", EntrySet.ENTRY_TEXT_SINGLE, CODE_SECRET_STATE, true},
+			{"Set State Bad", EntrySet.ENTRY_TEXT_SINGLE, CODE_BAD_STATE, true},
 		},
 		{
-			{"Add Transition", ENTRY_TEXT_TRIPLE, CODE_ADD_TRANSITION, true},
-			{"Remove Transition", ENTRY_TEXT_TRIPLE, CODE_REMOVE_TRANSITION, true},
+			{"Add Transition", EntrySet.ENTRY_TEXT_TRIPLE, CODE_ADD_TRANSITION, true},
+			{"Remove Transition", EntrySet.ENTRY_TEXT_TRIPLE, CODE_REMOVE_TRANSITION, true},
 		},
 		{
-			{"Save Source", ENTRY_EMPTY, CODE_SAVE_FSM, true},
-			{"Save Image", ENTRY_EMPTY, CODE_SAVE_IMG, true},
-			{"Load Source", ENTRY_TEXT_LONG, CODE_LOAD_SOURCE, true},
-			{"Rename FSM", ENTRY_TEXT_LONG, CODE_RENAME_FSM, true},
-			{"Generate Copy", ENTRY_TEXT_LONG, CODE_DUPLICATE_FSM, true},
-			{"Close FSM", ENTRY_EMPTY, CODE_CLOSE_FSM, true},
-			{"Delete Source", ENTRY_EMPTY, CODE_DELETE_SOURCE, true},
+			{"Save Source", EntrySet.ENTRY_EMPTY, CODE_SAVE_FSM, true},
+			{"Save Image", EntrySet.ENTRY_EMPTY, CODE_SAVE_IMG, true},
+			{"Load Source", EntrySet.ENTRY_TEXT_LONG, CODE_LOAD_SOURCE, true},
+			{"Rename FSM", EntrySet.ENTRY_TEXT_LONG, CODE_RENAME_FSM, true},
+			{"Generate Copy", EntrySet.ENTRY_TEXT_LONG, CODE_DUPLICATE_FSM, true},
+			{"Close FSM", EntrySet.ENTRY_EMPTY, CODE_CLOSE_FSM, true},
+			{"Delete Source", EntrySet.ENTRY_EMPTY, CODE_DELETE_SOURCE, true},
 		},
 	};
 	private final static String HELP = 

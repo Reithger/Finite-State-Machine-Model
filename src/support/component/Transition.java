@@ -23,7 +23,7 @@ public class Transition implements Comparable<Transition> {
 	private ArrayList<State> states;
 	
 //--- Constructors   --------------------------------------------------------------------------
-	
+
 	/**
 	 * Constructor for a Transition object, assigning a single Event object and a list of States which the event can lead to.
 	 * 

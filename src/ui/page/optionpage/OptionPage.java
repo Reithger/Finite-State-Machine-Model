@@ -25,19 +25,6 @@ public abstract class OptionPage {
 	
 	protected final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
 	
-	public final static String ENTRY_TEXT_SINGLE = "S";
-	public final static String ENTRY_TEXT_DOUBLE = "D";
-	public final static String ENTRY_TEXT_TRIPLE = "T";
-	public final static String ENTRY_TEXT_QUARTET = "Q";
-	public final static String ENTRY_TEXT_LONG = "L";
-	public final static String ENTRY_CHECKBOX = "C";
-	public final static String ENTRY_EMPTY = "E";
-	public final static String ENTRY_SELECT_FSM = "F";
-	public final static String ENTRY_SELECT_FSMS = "FS";
-	
-	private final static String CHECKBOX_TRUE = "t";
-	private final static String CHECKBOX_FALSE = "f";
-	
 //---  Instance Variables   -------------------------------------------------------------------
 
 	private String header;
@@ -92,6 +79,7 @@ public abstract class OptionPage {
 		EntrySet set = new EntrySet(label, type, activeButton, code);
 		getCategory(category).addEntrySet(set);
 	}
+	
 	//---  Operations   ---------------------------------------------------------------------------
 	
 	public void drawPage() {
@@ -240,7 +228,7 @@ public abstract class OptionPage {
 	}
 	
 	public Boolean getCheckboxContentsFromCode(int code) {
-		return getTextFromCode(code, 0).contentEquals(CHECKBOX_TRUE);
+		return getTextFromCode(code, 0).contentEquals(EntrySet.CHECKBOX_TRUE);
 	}
 	
 	public String getTypeFromCode(int code) {

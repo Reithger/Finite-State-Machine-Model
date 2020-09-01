@@ -12,6 +12,7 @@ import support.UStructure;
 import support.component.map.TransitionFunction;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
+import ui.page.optionpage.entryset.EntrySet;
 
 /**
  * 
@@ -44,8 +45,6 @@ public class Operations extends OptionPage{
 	private final static int CODE_PRUNE = 116;
 	private final static int CODE_BLOCKING = 117;
 	private final static int CODE_STATE_EXISTS = 118;
-	private final static int CODE_U_STRUCTURE_SELECT = 119;
-	private final static int CODE_U_STRUCTURE = 120;
 	
 	private final static String ERROR_TEXT_ONE = "Error accessing some of the FSM objects, please check that their files exist in "
 			+ "\"Finite State Machine Model\"/sources.";
@@ -56,38 +55,34 @@ public class Operations extends OptionPage{
 	//-- Scripts  ---------------------------------------------
 	
 	private final static String HEADER = "Operations";
-	private final static String[] CATEGORIES = new String[] {"Transition Systems", "FSM", "Modal - WIP", "U-Structure", "Queries"};
+	private final static String[] CATEGORIES = new String[] {"Transition Systems", "FSM", "Modal - WIP", "Queries"};
 	private final static Object[][][] DATA = new Object[][][] {
 		{
-			{"Trim", ENTRY_EMPTY, CODE_TRIM, true},
-			{"Make Accessible", ENTRY_EMPTY, CODE_ACCESSIBLE, true},
-			{"Make Co-Accessible", ENTRY_EMPTY, CODE_CO_ACCESSIBLE, true},
+			{"Trim", EntrySet.ENTRY_EMPTY, CODE_TRIM, true},
+			{"Make Accessible", EntrySet.ENTRY_EMPTY, CODE_ACCESSIBLE, true},
+			{"Make Co-Accessible", EntrySet.ENTRY_EMPTY, CODE_CO_ACCESSIBLE, true},
 		},
 		{
-			{"Build Observer", ENTRY_EMPTY, CODE_OBSERVER, true},
-			{"Product", ENTRY_SELECT_FSMS, CODE_PRODUCT_SELECT, false},
-			{"", ENTRY_EMPTY, CODE_PRODUCT, true},
-			{"Parallel Composition", ENTRY_SELECT_FSMS, CODE_PARALLEL_COMPOSITION_SELECT, false},
-			{"", ENTRY_EMPTY, CODE_PARALLEL_COMPOSITION, true},
-			{"Generate Supremal Controllable Sublanguage", ENTRY_SELECT_FSM, CODE_SUP_CNT_SBL_SELECT, false},
-			{"", ENTRY_EMPTY, CODE_SUP_CNT_SBL, true},
+			{"Build Observer", EntrySet.ENTRY_EMPTY, CODE_OBSERVER, true},
+			{"Product", EntrySet.ENTRY_SELECT_FSMS, CODE_PRODUCT_SELECT, false},
+			{"", EntrySet.ENTRY_EMPTY, CODE_PRODUCT, true},
+			{"Parallel Composition", EntrySet.ENTRY_SELECT_FSMS, CODE_PARALLEL_COMPOSITION_SELECT, false},
+			{"", EntrySet.ENTRY_EMPTY, CODE_PARALLEL_COMPOSITION, true},
+			{"Generate Supremal Controllable Sublanguage", EntrySet.ENTRY_SELECT_FSM, CODE_SUP_CNT_SBL_SELECT, false},
+			{"", EntrySet.ENTRY_EMPTY, CODE_SUP_CNT_SBL, true},
 		},
 		{
-			{"Get Underlying FSM", ENTRY_EMPTY, CODE_UNDER_FSM, true},
-			{"Build Optimal Opaque Controller", ENTRY_EMPTY, CODE_OPT_OPQ_CONTROLLER, true},
-			{"Make Optimal Supervisor", ENTRY_SELECT_FSM, CODE_OPT_SPVR_SELECT, false},
-			{"", ENTRY_EMPTY, CODE_OPT_SPVR, true},
-			{"Get Greatest Lower Bound", ENTRY_SELECT_FSM, CODE_GRT_LWR_BND_SELECT, false},
-			{"", ENTRY_EMPTY, CODE_GRT_LWR_BND, true},
-			{"Prune", ENTRY_EMPTY, CODE_PRUNE, true},
+			{"Get Underlying FSM", EntrySet.ENTRY_EMPTY, CODE_UNDER_FSM, true},
+			{"Build Optimal Opaque Controller", EntrySet.ENTRY_EMPTY, CODE_OPT_OPQ_CONTROLLER, true},
+			{"Make Optimal Supervisor", EntrySet.ENTRY_SELECT_FSM, CODE_OPT_SPVR_SELECT, false},
+			{"", EntrySet.ENTRY_EMPTY, CODE_OPT_SPVR, true},
+			{"Get Greatest Lower Bound", EntrySet.ENTRY_SELECT_FSM, CODE_GRT_LWR_BND_SELECT, false},
+			{"", EntrySet.ENTRY_EMPTY, CODE_GRT_LWR_BND, true},
+			{"Prune", EntrySet.ENTRY_EMPTY, CODE_PRUNE, true},
 		},
 		{
-			{"Generate U-Structure", ENTRY_SELECT_FSMS, CODE_U_STRUCTURE_SELECT, false},
-			{"", ENTRY_EMPTY, CODE_U_STRUCTURE, true},
-		},
-		{
-			{"Is Blocking", ENTRY_EMPTY, CODE_BLOCKING, true},
-			{"State Exists", ENTRY_TEXT_SINGLE, CODE_STATE_EXISTS, true},
+			{"Is Blocking", EntrySet.ENTRY_EMPTY, CODE_BLOCKING, true},
+			{"State Exists", EntrySet.ENTRY_TEXT_SINGLE, CODE_STATE_EXISTS, true},
 		},
 
 	};
@@ -100,7 +95,6 @@ public class Operations extends OptionPage{
 	
 	public Operations(int x, int y, int wid, int hei) {
 		super(HEADER, HELP, CATEGORIES, DATA);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -181,24 +175,6 @@ public class Operations extends OptionPage{
 				case CODE_STATE_EXISTS: 
 					String state = this.getTextFromCode(CODE_STATE_EXISTS, 0);
 					getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().stateExists(state) ? state + " exists" : state + " does not exist");
-					break;
-				case CODE_U_STRUCTURE:
-					try {
-						FSM[] fsms = getFSMArray(CODE_U_STRUCTURE_SELECT);
-						try {
-							UStructure uS = new UStructure(getFSMUI().getActiveFSM(), new TransitionFunction(), new Agent[] {});
-							getFSMUI().allotTransitionSystem(uS.getUStructure(), getFSMUI().getActiveFSM().getId() + "_ustruct");
-						}
-						catch(Exception e1) {
-							e1.printStackTrace();
-							getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
-						}
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
-					}
 					break;
 					/* TODO: Figure out what ModalSpecification is supposed to look like before integrating
 				case CODE_UNDER_FSM: 

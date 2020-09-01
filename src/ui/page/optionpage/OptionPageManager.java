@@ -3,6 +3,7 @@ package ui.page.optionpage;
 import ui.FSMUI;
 import ui.page.optionpage.implementation.AdjustFSM;
 import ui.page.optionpage.implementation.Operations;
+import ui.page.optionpage.implementation.UStructurePage;
 import visual.panel.ElementPanel;
 
 public class OptionPageManager {
@@ -12,6 +13,7 @@ public class OptionPageManager {
 	private final static OptionPage[] OPTION_PAGES = new OptionPage[] {
 			new AdjustFSM(0, 0, FSMUI.WINDOW_WIDTH/2, (int)(FSMUI.WINDOW_HEIGHT * FSMUI.PANEL_RATIO_VERTICAL)),
 			new Operations(0, 0, FSMUI.WINDOW_WIDTH/2, (int)(FSMUI.WINDOW_HEIGHT * FSMUI.PANEL_RATIO_VERTICAL)),
+			new UStructurePage(0, 0, FSMUI.WINDOW_WIDTH/2, (int)(FSMUI.WINDOW_HEIGHT * FSMUI.PANEL_RATIO_VERTICAL)),
 	};
 	private static int currentOptionPageIndex;
 	private ElementPanel p;

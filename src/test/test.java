@@ -18,8 +18,8 @@ public class test {
 	private final static String SOURCEC = "./Finite State Machine Model/settings/config.txt";
 
 	public static void main(String[] args) {
-		//FSMUI screen = new FSMUI();
-		testB();
+		FSMUI screen = new FSMUI();
+		//testB();
 	}
 	
 	public static void testA() {
