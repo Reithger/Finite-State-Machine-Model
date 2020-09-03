@@ -1,6 +1,5 @@
 package fsm;
 
-import java.util.LinkedList;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -607,6 +606,9 @@ public abstract class TransitionSystem {
 	
 	public void addStateTransitions(State state, ArrayList<Transition> newTransitions) {
 		transitions.putTransitions(state, newTransitions);
+		for(Transition t : newTransitions) {
+			events.addEvent(t.getTransitionEvent());
+		}
 	}
 	
 	/**

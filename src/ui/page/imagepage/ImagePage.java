@@ -20,6 +20,8 @@ public class ImagePage {
 	private static final int DEFAULT_POPOUT_WIDTH = 800;
 	private static final int DEFAULT_POPOUT_HEIGHT = 800;
 	
+	protected static final String IMAGE_NAME = "img";
+	
 	//-- Codes  -----------------------------------------------
 	private static final int CODE_MOVE_RIGHT = 10;
 	private static final int CODE_MOVE_DOWN = 11;
@@ -221,9 +223,9 @@ public class ImagePage {
 	//-- Drawing  ---------------------------------------------
 	
 	public void drawPage() {
-		if(images.size() > 0) {
+		if(images.size() > 0 && p.getElement(IMAGE_NAME) == null) {
 			ImageDisplay img = images.get(currentImageIndex);
-			p.addImage("img", 10, false, 0, 0, false, img.getImage(), img.getZoom());
+			p.addImage(IMAGE_NAME, 10, false, 0, 0, false, img.getImage(), img.getZoom());
 		}
 		addFraming();
 		int imageSize = p.getWidth() / 20;
@@ -337,6 +339,8 @@ public class ImagePage {
 		private static final double MOVEMENT_FACTOR = .1;
 		private static final double ZOOM_FACTOR = 1.1;
 		
+		private static final String POPOUT_IMAGE_NAME = "img";
+		
 		private static final int MAX_UI_SIZE = 30;
 		
 	//---  Instance Variables   ---------------------------------------------------------------
@@ -371,14 +375,17 @@ public class ImagePage {
 					break;
 				case KEY_ZOOM_IN:
 					zoom *= ZOOM_FACTOR;
+					removeElement(POPOUT_IMAGE_NAME);
 					break;
 				case KEY_ZOOM_OUT:
 					zoom /= ZOOM_FACTOR;
+					removeElement(POPOUT_IMAGE_NAME);
 					break;
 				case KEY_RESET_POSITION:
 					setOffsetX(0);
 					setOffsetY(0);
 					zoom = 1;
+					removeElement(POPOUT_IMAGE_NAME);
 					break;
 			}
 			drawPopout();
@@ -400,13 +407,16 @@ public class ImagePage {
 					break;
 				case CODE_ZOOM_IN:
 					zoom *= ZOOM_FACTOR;
+					removeElement(POPOUT_IMAGE_NAME);
 					break;
 				case CODE_ZOOM_OUT:
 					zoom /= ZOOM_FACTOR;
+					removeElement(POPOUT_IMAGE_NAME);
 					break;
 				case CODE_RESET_POSITION:
 					setOffsetX(0);
 					setOffsetY(0);
+					removeElement(POPOUT_IMAGE_NAME);
 					zoom = 1;
 					break;
 			}
@@ -419,7 +429,8 @@ public class ImagePage {
 		}
 		
 		public void drawPopout() {
-			addImage("img", 5, false,  0, 0, false, display, zoom);
+			if(getElement(POPOUT_IMAGE_NAME) == null)
+				addImage(POPOUT_IMAGE_NAME, 5, false,  0, 0, false, display, zoom);
 			int imageSize = getWidth() / 20 > MAX_UI_SIZE ? MAX_UI_SIZE : getWidth() / 20;
 			int spacing = imageSize * 4 / 3;
 			int posX = spacing * 5 / 3;// + (int)(getWidth() * (1 - UI_BOX_RATIO_X)) / 2;

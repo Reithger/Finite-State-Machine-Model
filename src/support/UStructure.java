@@ -58,6 +58,37 @@ public class UStructure {
 		findIllegalStates();
 	}
 	
+	public UStructure(FSM thePlant, TransitionFunction theBadTransitions, ArrayList<Agent> theAgents) {
+		plantFSM = thePlant;
+		badTransitions = new HashMap<String, ArrayList<Transition>>();
+		for(State s : theBadTransitions.getStates()) {
+			ArrayList<Transition> newTrans = new ArrayList<Transition>();
+			for(Transition t : theBadTransitions.getTransitions(s)) {
+				newTrans.add(t);
+			}
+			badTransitions.put(s.getStateName(), newTrans);
+		}
+		for(State s : thePlant.getStates()) {
+			if(badTransitions.get(s.getStateName()) == null)
+				badTransitions.put(s.getStateName(), new ArrayList<Transition>());
+		}
+		agents = new Agent[theAgents.size() + 1];
+		agents[0] = new Agent(thePlant.getEventMap().getEvents().toArray(new Event[thePlant.getEventMap().getEvents().size()]));
+		for(int i = 0; i < theAgents.size(); i++)
+			agents[i+1] = theAgents.get(i);
+		HashSet<String> allEvents = new HashSet<String>();
+		allEvents.add(UNOBSERVED_EVENT);
+		for(Agent a : agents)									//Bad habits! But it's so small...
+			for(Event e : a.getAgentEvents())
+				allEvents.add(e.getEventName());
+		for(Agent a : agents)
+			for(String e : allEvents)
+				if(!a.contains(e))
+					a.addNonPresentEvent(e);
+		createUStructure();
+		findIllegalStates();
+	}
+	
 	public void createUStructure() {
 		uStructure = new FSM();
 		compositeMapping = new HashMap<State, State[]>();
@@ -85,15 +116,14 @@ public class UStructure {
 			}
 			
 			for(String s : viableEvents) {
-				
 				boolean[] canAct = new boolean[stateSet.getStates().length];		//find out what each individual agent is able to do for the given event at the given state
 				for(int i = 0; i < stateSet.getStates().length; i++) {
 					if(!agents[i].getObservable(s)) {					//if the agent cannot see the event, it has to guess whether it happened
 						State[] newSet = new State[stateSet.getStates().length];
 						String eventName = "<";
 						for(int j = 0; j < stateSet.getStates().length; j++) {
-							newSet[j] = stateSet.getStates()[j];
 							if(i == j) {
+								newSet[j] = stateSet.getStates()[j];
 								for(Transition t : plantFSM.getStateTransitions(stateSet.getStates()[j])) {
 									if(t.getTransitionEvent().getEventName().equals(s))
 										newSet[j] = t.getTransitionStates().get(0);
@@ -101,6 +131,7 @@ public class UStructure {
 								eventName += s + (j + 1 < stateSet.getStates().length ? ", " : ">");
 							}
 							else {
+								newSet[j] = stateSet.getStates()[j];
 								eventName += "w" + (j + 1 < stateSet.getStates().length ? ", " : ">");
 							}
 						}

@@ -49,6 +49,12 @@ public class test {
 		fsm.addTransition("5", "c", "7");
 		fsm.addInitialState("1");
 		
+		fsm.toTextFile(SOURCE, "_test_initial");
+		try {
+		fsm = new FSM(new File(SOURCE + "_test_initial.fsm"), "test_initial");
+		}
+		catch(Exception e) {}
+		
 		FSMToDot.createImgFromFSM(fsm, SOURCEB + "_in1", SOURCEB, SOURCEC);
 		
 		TransitionFunction bad = new TransitionFunction();

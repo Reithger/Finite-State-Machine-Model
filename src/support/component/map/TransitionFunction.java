@@ -341,6 +341,10 @@ public class TransitionFunction {
 		}
 	}
 	
+	public void addTransition(String state, String event, String outState) {
+		addTransitionState(new State(state), new Event(event), new State(outState));
+	}
+	
 	/**
 	 * This method removes entries in the <<r>S, ArrayList<<r>Transition>> Map that correspond to the provided State.
 	 * 

@@ -32,6 +32,7 @@ import visual.frame.WindowFrame;
  * TODO: Rename states
  * TODO: Adding a 'new' fsm of the same name should replace the previous one to avoid collision issue (especially image display)
  * TODO: Seriously, fix that ^^ double image name issue
+ * TODO: Auto-load some FSMs on start up (settings menu?)
  * 
  * @author Borinor
  *

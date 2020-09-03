@@ -45,6 +45,7 @@ public class ImageDisplay {
 		p.setOffsetX(0);
 		p.setOffsetY(0);
 		zoom = DEFAULT_ZOOM;
+		p.removeElement(ImagePage.IMAGE_NAME);
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -73,10 +74,12 @@ public class ImageDisplay {
 	
 	public void increaseZoom() {
 		zoom *= ZOOM_FACTOR;
+		p.removeElement(ImagePage.IMAGE_NAME);
 	}
 	
 	public void decreaseZoom() {
 		zoom /= ZOOM_FACTOR;
+		p.removeElement(ImagePage.IMAGE_NAME);
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------

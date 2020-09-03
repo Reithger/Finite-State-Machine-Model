@@ -13,7 +13,13 @@ public class Agent {
 	public Agent(Event ... eventsProvided) {
 		events = new EventMap();
 		for(Event e : eventsProvided)
-			events.addEvent(e);
+			events.addEvent(new Event(e));
+	}
+	
+	public Agent(Collection<Event> eventsProvided) {
+		events = new EventMap();
+		for(Event e : eventsProvided)
+			events.addEvent(new Event(e));
 	}
 	
 	public void addObservableEvents(String ... names) {
@@ -78,6 +84,14 @@ public class Agent {
 	
 	public boolean getObservable(String eventName) {
 		return events.getEvent(eventName).getEventObservability();
+	}
+	
+	public void setObservable(String eventName, boolean in) {
+		events.getEvent(eventName).setEventObservability(in);
+	}
+	
+	public void setControllable(String eventName, boolean in) {
+		events.getEvent(eventName).setEventControllability(in);
 	}
 	
 	public ArrayList<String> getUnobservableEvents(){

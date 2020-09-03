@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 
+import input.Communication;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
 import visual.frame.WindowFrame;
@@ -31,8 +32,8 @@ public class EntrySet {
 	public final static String ENTRY_EMPTY = "E";
 	public final static String ENTRY_SELECT_FSM = "F";
 	public final static String ENTRY_SELECT_FSMS = "FS";
-	public final static String ENTRY_AGENTS = "A";
 	public final static String TEXT_DISPLAY = "ET";
+	
 	private final static String DEFAULT_TEXT_ENTRY_CONTENTS = "";
 	public final static String CHECKBOX_TRUE = "t";
 	public final static String CHECKBOX_FALSE = "f";
@@ -78,9 +79,6 @@ public class EntrySet {
 		ElementPanel p = OptionPage.getElementPanel();
 		OptionPage.handleText(getElementPrefix() + "label_text", p.getWidth() / 3 / 2, posY, p.getWidth() / 3, p.getHeight() / 20, DEFAULT_FONT, label);
 		switch(type) {
-			case ENTRY_AGENTS:
-				
-				break;
 			case TEXT_DISPLAY:
 				posX = p.getWidth() / 3;
 				for(int i = 0; i < contents.length; i++) {
@@ -192,9 +190,7 @@ public class EntrySet {
 			case ENTRY_SELECT_FSMS:
 				new MultiFSMSelection(this);
 				break;
-			case ENTRY_AGENTS:
-				new AgentSelection(this, contents[0]);
-				break;
+
 			default:
 				break;
 		}
@@ -224,8 +220,6 @@ public class EntrySet {
 		switch(in) {
 			case TEXT_DISPLAY:
 				return 64;
-			case ENTRY_AGENTS:
-				return 1;	//TODO: More spots probably; need file path for Plant fsm
 			case ENTRY_TEXT_QUARTET:
 				return 4;
 			case ENTRY_TEXT_TRIPLE:

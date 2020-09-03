@@ -1,8 +1,15 @@
 package ui.page.optionpage.implementation;
 
+import java.io.File;
 import java.util.ArrayList;
 
+import fsm.FSM;
+import input.Communication;
+import support.Agent;
+import support.UStructure;
 import support.component.Transition;
+import support.component.map.TransitionFunction;
+import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
 import ui.page.optionpage.entryset.EntrySet;
 
@@ -16,6 +23,7 @@ public class UStructurePage extends OptionPage{
 	private final static int CODE_ADD_BAD_TRANS = 101;
 	private final static int CODE_BUILD_AGENTS = 102;
 	private final static int CODE_BUILD_USTRUCT = 103;
+	private final static int CODE_TOGGLE_USTRUCT = 104;
 	private final static int CODE_DISPLAY_BAD_TRANS_START = 500;
 	
 	//-- Scripts  ---------------------------------------------
@@ -27,7 +35,8 @@ public class UStructurePage extends OptionPage{
 			{"Plant", EntrySet.ENTRY_SELECT_FSM, CODE_SELECT_PLANT, false},
 			{"Bad Transitions", EntrySet.ENTRY_TEXT_TRIPLE, CODE_ADD_BAD_TRANS, true},		//Need ENTRY_TEXT_TRIPLE but allows repeated entry
 			{"", EntrySet.TEXT_DISPLAY, CODE_DISPLAY_BAD_TRANS_START, false},
-			{"Agents", EntrySet.ENTRY_AGENTS, CODE_BUILD_AGENTS, false},			//Pop-up window for defining visible/controllable events for n agents
+			{"Agents", EntrySet.TEXT_DISPLAY, CODE_BUILD_AGENTS, true},			//Pop-up window for defining visible/controllable events for n agents
+			{"Display UStructure?", EntrySet.ENTRY_CHECKBOX, CODE_TOGGLE_USTRUCT, false},
 			{"Build U-Structure", EntrySet.ENTRY_EMPTY, CODE_BUILD_USTRUCT, true},
 		},
 
@@ -43,6 +52,8 @@ public class UStructurePage extends OptionPage{
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	ArrayList<String> badTransitions;
+	ArrayList<Agent> agents;
+	UStructure built;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -64,11 +75,6 @@ public class UStructurePage extends OptionPage{
 				drawPage();
 			}
 			switch(code) {
-				case CODE_SELECT_PLANT:
-					//TODO: Make sure plant gets reset so 0'th index always contains desired url path
-					//TODO: Remember to use your static Communication object
-					getEntrySetFromCode(CODE_BUILD_AGENTS).appendItem(getTextFromCode(CODE_SELECT_PLANT, 0));
-					break;
 				case CODE_ADD_BAD_TRANS:
 					String a = this.getTextFromCode(code, 0);
 					String b = this.getTextFromCode(code, 1);
@@ -78,14 +84,37 @@ public class UStructurePage extends OptionPage{
 					resetCodeEntries(code);
 					break;
 				case CODE_BUILD_AGENTS:
-					
+					new AgentSelection(this, FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_SELECT_PLANT, 0));
 					break;
 				case CODE_BUILD_USTRUCT:
-					
+					TransitionFunction tF = new TransitionFunction();
+					for(String s : badTransitions) {
+						String[] dat = s.split(SEPARATOR);
+						tF.addTransition(dat[0], dat[1], dat[2]);
+					}
+					System.out.println(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_SELECT_PLANT, 0));
+					FSM fs = null;
+					try {
+						fs = new FSM(new File(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_SELECT_PLANT, 0)), getTextFromCode(CODE_SELECT_PLANT, 0) + "_ustruct");
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+					System.out.println(fs.getInitialStates());
+					built = new UStructure(fs, tF, agents);
+					if(this.getCheckboxContentsFromCode(CODE_TOGGLE_USTRUCT)) {
+						this.getFSMUI().allotTransitionSystem(built.getUStructure(), fs.getId());
+					}
 					break;
 			}
 		}
 		drawPage();
+	}
+	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
+	public void setAgents(ArrayList<Agent> in) {
+		agents = in;
 	}
 
 }
