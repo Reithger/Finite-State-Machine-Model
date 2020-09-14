@@ -1,18 +1,22 @@
 package ui.page.optionpage.implementation;
 
+import java.io.File;
 import java.util.Random;
 
-import graphviz.FSMToDot;
+import input.Communication;
 import support.meta.GenerateFSM;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
 import ui.page.optionpage.entryset.EntrySet;
+import ui.page.popups.PopoutSelectList;
+import ui.page.popups.PopoutAlert;
 
 /**
  * 
  * TODO: Allow editing a transition to become a Must transition, other types?
  * TODO: Crashes if Make FSM and Make Complicated FSM are open at the same time
  * TODO: Correction: It freezes if those two are open, naming collision? Infinite loop?
+ * TODO: Selecting a .fsm should be a selection menu from sources folder
  * @author Borinor
  *
  */
@@ -103,7 +107,7 @@ public class AdjustFSM extends OptionPage{
 		{
 			{"Save Source", EntrySet.ENTRY_EMPTY, CODE_SAVE_FSM, true},
 			{"Save Image", EntrySet.ENTRY_EMPTY, CODE_SAVE_IMG, true},
-			{"Load Source", EntrySet.ENTRY_TEXT_LONG, CODE_LOAD_SOURCE, true},
+			{"Load Source", EntrySet.ENTRY_EMPTY, CODE_LOAD_SOURCE, true},
 			{"Rename FSM", EntrySet.ENTRY_TEXT_LONG, CODE_RENAME_FSM, true},
 			{"Generate Copy", EntrySet.ENTRY_TEXT_LONG, CODE_DUPLICATE_FSM, true},
 			{"Close FSM", EntrySet.ENTRY_EMPTY, CODE_CLOSE_FSM, true},
@@ -146,8 +150,16 @@ public class AdjustFSM extends OptionPage{
 					resetCodeEntries(code);
 					break;
 				case CODE_LOAD_SOURCE:
-					getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_LOAD_SOURCE, 0), getTextFromCode(CODE_LOAD_SOURCE, 0).replaceAll(".fsm", ""));
-					getFSMUI().refreshActiveImage();	//TODO: Add actual file selecting thing, relying on exact names is bad form (file select from SVI?)
+					File f = new File(FSMUI.ADDRESS_SOURCES);
+					PopoutSelectList fs = new PopoutSelectList(f.list()) {
+						@Override
+						public void dispose() {
+							String outcome = Communication.get(PopoutSelectList.STATIC_ACCESS);
+							getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + outcome, outcome.replaceAll(".fsm", ""));
+							getFSMUI().refreshActiveImage();	//TODO: Add actual file selecting thing, relying on exact names is bad form (file select from SVI?)
+							super.dispose();
+						}
+					};
 					resetCodeEntries(code);				//TODO: Loads only from source folder, so add display for those entries
 					break;
 				case CODE_DELETE_SOURCE:

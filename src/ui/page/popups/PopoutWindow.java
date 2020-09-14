@@ -12,18 +12,21 @@ public abstract class PopoutWindow {
 	protected final static int DEFAULT_POPUP_HEIGHT = 250;
 	protected final static Font DEFAULT_FONT = new Font("Serif", Font.BOLD, 16);
 	protected final static Font ENTRY_FONT = new Font("Serif", Font.BOLD, 12);
+	private final static int ROTATION_MULTIPLIER = 10;
 	
 	private WindowFrame frame;
 	private ElementPanel panel;
 	
 	public PopoutWindow() {
+		panel = null;
 		frame = new WindowFrame(DEFAULT_POPUP_WIDTH, DEFAULT_POPUP_HEIGHT) {
 			@Override
 			public void reactToResize() {
-				
+				panel.resize(frame.getWidth(), frame.getHeight());
 			}
 		};
 		frame.setName("Popup Window");
+		frame.setResizable(true);
 		frame.setExitOnClose(false);
 		panel = new ElementPanel(0, 0, DEFAULT_POPUP_WIDTH, DEFAULT_POPUP_HEIGHT) {
 			@Override
@@ -36,10 +39,21 @@ public abstract class PopoutWindow {
 				keyAction(code);
 			}
 			
+			@Override
+			public void mouseWheelBehaviour(int scroll) {
+				this.setOffsetYBounded(this.getOffsetY() + scroll * ROTATION_MULTIPLIER);
+				scrollAction(scroll);
+			}
+			
 		};
-		panel.setScrollBarVertical(false);
 		frame.reserveWindow("default");
 		frame.reservePanel("default", "pan", panel);
+	}
+
+	public void resize(int wid, int hei) {
+		frame.resize(wid, hei);
+		panel.resize(wid, hei);
+		frame.repaint();
 	}
 	
 	public void setTitle(String in) {
@@ -50,12 +64,25 @@ public abstract class PopoutWindow {
 		frame.disposeFrame();
 	}
 	
+	protected void allowScrollbars(boolean set) {
+		panel.setScrollBarVertical(set);
+		panel.setScrollBarHorizontal(set);
+	}
+	
 	public abstract void clickAction(int code, int x, int y);
 	
 	public abstract void keyAction(char code);
 	
+	public abstract void scrollAction(int scroll);
+	
 	public String getStoredText(String ref) {
 		return panel.getElementStoredText(ref);
+	}
+	
+	public void handleTextButton(String nom, int x, int y, int wid, int hei, Font font, String phr, int code, Color col, Color col2) {
+		handleRectangle(nom + "_rect", 10, x, y, wid, hei, col, col2);
+		handleText(nom + "_text", x, y, wid, hei, font, phr);
+		handleButton(nom + "_butt", x, y, wid, hei, code);
 	}
 	
 	public void handleText(String nom, int x, int y, int wid, int hei, Font font, String phr) {

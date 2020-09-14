@@ -12,6 +12,10 @@ public class PopoutConfig extends PopoutWindow{
 	
 	public PopoutConfig() {
 		super();
+		drawPage();
+	}
+	
+	private void drawPage() {
 		int posX = DEFAULT_POPUP_WIDTH / 2;
 		int posY = DEFAULT_POPUP_HEIGHT / 5;
 		int heightSmall = DEFAULT_POPUP_HEIGHT / 6;
@@ -46,6 +50,12 @@ public class PopoutConfig extends PopoutWindow{
 	
 	public void success() {
 		dispose();
+	}
+
+	@Override
+	public void scrollAction(int scroll) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
