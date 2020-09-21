@@ -32,13 +32,14 @@ public class ImageDisplay {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public void refresh() {
-		p.removeCachedImage(imagePath);
+		clear();
 		reference = p.retrieveImage(imagePath);
 		imageName = formatImageName(imagePath);
 	}
 	
 	public void clear() {
 		p.removeCachedImage(imagePath);
+		p.removeElement(ImagePage.IMAGE_NAME);
 	}
 	
 	public void resetPosition() {

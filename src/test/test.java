@@ -3,12 +3,12 @@ package test;
 import java.io.File;
 
 import fsm.FSM;
-import graphviz.FSMToDot;
 import support.Agent;
 import support.UStructure;
 import support.component.Event;
 import support.component.State;
 import support.component.map.TransitionFunction;
+import support.meta.FormatConversion;
 import ui.FSMUI;
 
 public class test {
@@ -19,6 +19,7 @@ public class test {
 
 	public static void main(String[] args) {
 		FSMUI screen = new FSMUI();
+		FormatConversion.assignPaths(SOURCEB, SOURCEC);
 		//testB();
 	}
 	
@@ -35,7 +36,7 @@ public class test {
 			e.printStackTrace();
 		}
 		FSM c = a.product(b);
-		FSMToDot.createImgFromFSM(c, SOURCEB + "/test", SOURCEB, SOURCEC);
+		FormatConversion.createImgFromFSM(c, SOURCEB + "/test");
 	}
 
 	public static void testB() {
@@ -55,7 +56,7 @@ public class test {
 		}
 		catch(Exception e) {}
 		
-		FSMToDot.createImgFromFSM(fsm, SOURCEB + "_in1", SOURCEB, SOURCEC);
+		FormatConversion.createImgFromFSM(fsm, SOURCEB + "_in1");
 		
 		TransitionFunction bad = new TransitionFunction();
 		bad.addTransitionState(new State("5"), new Event("c"), new State("7"));
@@ -73,9 +74,9 @@ public class test {
 		
 		UStructure uStruc = new UStructure(fsm, bad, ag1, ag2);
 		
-		FSMToDot.createImgFromFSM(uStruc.getPlantFSM(), SOURCEB + "_out1", SOURCEB, SOURCEC);
+		FormatConversion.createImgFromFSM(uStruc.getPlantFSM(), SOURCEB + "_out1");
 		
-		FSMToDot.createImgFromFSM(uStruc.getUStructure(), SOURCEB + "_out2", SOURCEB, SOURCEC);
+		FormatConversion.createImgFromFSM(uStruc.getUStructure(), SOURCEB + "_out2");
 		
 		System.out.println(uStruc.getIllegalConfigOneStates());
 		System.out.println(uStruc.getIllegalConfigTwoStates());
@@ -105,7 +106,7 @@ public class test {
 		//fsm.addTransition("14", "w", "19");
 		fsm.addInitialState("0");
 
-		FSMToDot.createImgFromFSM(fsm, SOURCEB + "_in1", SOURCEB, SOURCEC);
+		FormatConversion.createImgFromFSM(fsm, SOURCEB + "_in1");
 
 		TransitionFunction bad = new TransitionFunction();
 		bad.addTransitionState(new State("13"), new Event("w"), new State("18"));
@@ -176,12 +177,12 @@ public class test {
 		
 		UStructure uStruc = new UStructure(fsm, bad, a, b, c);
 		
-		FSMToDot.createImgFromFSM(uStruc.getPlantFSM(), SOURCEB + "_out1", SOURCEB, SOURCEC);
+		FormatConversion.createImgFromFSM(uStruc.getPlantFSM(), SOURCEB + "_out1");
 		
 		System.out.println(uStruc.getIllegalConfigOneStates());
 		System.out.println(uStruc.getIllegalConfigTwoStates());
 		
-		FSMToDot.createImgFromFSM(uStruc.getUStructure(), SOURCEB + "_out2", SOURCEB, SOURCEC);
+		FormatConversion.createImgFromFSM(uStruc.getUStructure(), SOURCEB + "_out2");
 	}
 	
 }

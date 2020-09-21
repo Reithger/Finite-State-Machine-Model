@@ -56,6 +56,18 @@ public class StateMap {
 	}
 	
 	/**
+	 * This method renames a state from its former String oldName to a provided String newName.
+	 * 
+	 * @param state - String object representing the State that needs to be renamed.
+	 * @param newName - String object representing the State's new name.
+	 * @return - Returns a boolean value; true if the State was successfully renamed, false otherwise.
+	 */
+	
+	public boolean renameState(String oldName, String newName) {
+		return renameState(this.getState(oldName), newName);
+	}
+	
+	/**
 	 * This method renames all the states in the set of states in the FSM so that states are named sequentially ("0", "1", "2"...).
 	 * 
 	 */

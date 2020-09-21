@@ -7,6 +7,8 @@ import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
 public abstract class PopoutWindow {
+
+//---  Constant Values   ----------------------------------------------------------------------
 	
 	protected final static int DEFAULT_POPUP_WIDTH = 400;
 	protected final static int DEFAULT_POPUP_HEIGHT = 250;
@@ -14,8 +16,12 @@ public abstract class PopoutWindow {
 	protected final static Font ENTRY_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int ROTATION_MULTIPLIER = 10;
 	
+//---  Instance Variables   -------------------------------------------------------------------
+	
 	private WindowFrame frame;
 	private ElementPanel panel;
+	
+//---  Constructors   -------------------------------------------------------------------------
 	
 	public PopoutWindow() {
 		panel = null;
@@ -41,7 +47,7 @@ public abstract class PopoutWindow {
 			
 			@Override
 			public void mouseWheelBehaviour(int scroll) {
-				this.setOffsetYBounded(this.getOffsetY() + scroll * ROTATION_MULTIPLIER);
+				this.setOffsetYBounded(this.getOffsetY() - scroll * ROTATION_MULTIPLIER);
 				scrollAction(scroll);
 			}
 			
@@ -50,16 +56,15 @@ public abstract class PopoutWindow {
 		frame.reservePanel("default", "pan", panel);
 	}
 
+//---  Operations   ---------------------------------------------------------------------------
+	
 	public void resize(int wid, int hei) {
 		frame.resize(wid, hei);
 		panel.resize(wid, hei);
 		frame.repaint();
+		panel.repaint();
 	}
-	
-	public void setTitle(String in) {
-		frame.setName(in);
-	}
-	
+
 	public void dispose() {
 		frame.disposeFrame();
 	}
@@ -75,9 +80,23 @@ public abstract class PopoutWindow {
 	
 	public abstract void scrollAction(int scroll);
 	
+	protected void removeElementPrefixed(String in) {
+		panel.removeElementPrefixed(in);
+	}
+	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
+	public void setTitle(String in) {
+		frame.setName(in);
+	}
+	
+//---  Getter Methods   -----------------------------------------------------------------------
+	
 	public String getStoredText(String ref) {
 		return panel.getElementStoredText(ref);
 	}
+	
+//---  Drawing Support   ----------------------------------------------------------------------
 	
 	public void handleTextButton(String nom, int x, int y, int wid, int hei, Font font, String phr, int code, Color col, Color col2) {
 		handleRectangle(nom + "_rect", 10, x, y, wid, hei, col, col2);
@@ -114,4 +133,5 @@ public abstract class PopoutWindow {
 			panel.addRectangle(nom, prior, false, x, y, wid, hei, true, col, col2);
 		}
 	}
+
 }

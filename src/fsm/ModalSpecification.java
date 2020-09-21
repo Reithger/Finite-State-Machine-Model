@@ -6,9 +6,9 @@ import support.component.Transition;
 import support.component.map.EventMap;
 import support.component.map.StateMap;
 import support.component.map.TransitionFunction;
+import support.meta.FormatConversion;
 import support.meta.ReadWrite;
 import support.DisabledEvents;
-import graphviz.FSMToDot;
 
 import java.io.File;
 import java.util.*;

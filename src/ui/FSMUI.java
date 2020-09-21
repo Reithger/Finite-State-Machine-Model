@@ -12,9 +12,9 @@ import java.util.Scanner;
 import fsm.FSM;
 import fsm.ModalSpecification;
 import fsm.FSM;
-import graphviz.FSMToDot;
 import graphviz.GraphViz;
 import input.Communication;
+import support.meta.FormatConversion;
 import ui.page.headers.ImageHeader;
 import ui.page.headers.OptionsHeader;
 import ui.page.imagepage.ImagePage;
@@ -25,16 +25,16 @@ import visual.frame.WindowFrame;
 
 /**
  * 
- * TODO: Display type of FSM, as much as possible anyways, backend needs some rearranging but type is important right now
- * TODO: Factory for reading in files and generating the correct type of FSM
  * TODO: Add States (can add like 15 really quickly)
  * TODO: Convert to .tkz
  * TODO: Rename states
  * TODO: Adding a 'new' fsm of the same name should replace the previous one to avoid collision issue (especially image display)
  * TODO: Seriously, fix that ^^ double image name issue
- * TODO: Auto-load some FSMs on start up (settings menu?)
+ * TODO: Auto-load some FSMs on start up (settings menu?) (as an option to the user)
+ * TODO: Weird crash on opening the two generate tabs at the same time
+ * TODO: Memory usage goes wild during runtime when tabs are opened, figure out why and clean it up
  * 
- * @author Borinor
+ * @author Reithger
  *
  */
 
@@ -81,6 +81,7 @@ public class FSMUI {
 	
 	public FSMUI() {
 		fileConfiguration();
+		FormatConversion.assignPaths(ADDRESS_SOURCES, ADDRESS_CONFIG);
 		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT) {
 			@Override
 			public void reactToResize() {
@@ -231,6 +232,8 @@ public class FSMUI {
 	
 //---  Operations   ---------------------------------------------------------------------------
 
+	//-- In-program Manipulation  -----------------------------
+	
 	public void allotImage(String path) {
 		imagePage.allotImage(path);
 		imagePage.increaseCurrentImageIndex();
@@ -252,7 +255,7 @@ public class FSMUI {
 		cre.toTextFile(FSMUI.ADDRESS_SOURCES, name);
 		fsmPaths.add(in);
 		fsms.add(cre);
-		String imgPath = FSMToDot.createImgFromFSM(cre, ADDRESS_IMAGES + cre.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		String imgPath = FormatConversion.createImgFromFSM(cre, cre.getId());
 		allotImage(imgPath);
 	}
 	
@@ -261,7 +264,7 @@ public class FSMUI {
 		fsmPaths.add(ADDRESS_SOURCES + name);
 		fsms.add(in);
 		in.toTextFile(FSMUI.ADDRESS_SOURCES, name);
-		String imgPath = FSMToDot.createImgFromFSM(in, ADDRESS_IMAGES + in.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
+		String imgPath = FormatConversion.createImgFromFSM(in, in.getId());
 		allotImage(imgPath);
 	}
 	
@@ -282,12 +285,35 @@ public class FSMUI {
 		removeTransitionSystem(imagePage.getCurrentImageIndex());
 	}
 	
+	public void refreshActiveImage() {
+		FSM tS = getActiveFSM();
+		if(tS != null) {
+			FormatConversion.createImgFromFSM(tS, tS.getId());
+		}
+		imagePage.refreshActiveImage();
+	}
+		
+	//-- File Manipulation  -----------------------------------
+	
 	public void saveActiveFSMSource() {
 		getActiveFSM().toTextFile(FSMUI.ADDRESS_SOURCES, getActiveFSM().getId());
 	}
 	
-	public void saveActiveFSMImage() {
-		FSMToDot.createImgFromFSM(getActiveFSM(), FSMUI.ADDRESS_IMAGES + getActiveFSM().getId(), FSMUI.ADDRESS_IMAGES, FSMUI.ADDRESS_CONFIG);
+	public String saveActiveFSMImage() {
+		return FormatConversion.createImgFromFSM(getActiveFSM(), getActiveFSM().getId());
+	}
+	
+	public String saveActiveTikZ() {
+		return FormatConversion.createTikZFromFSM(getActiveFSM(), getActiveFSM().getId());
+	}
+	
+	public void renameActiveFSM(String newName) {
+		deleteFSMFromMemory(newName);
+		getActiveFSM().setId(newName);
+		getActiveFSM().toTextFile(ADDRESS_SOURCES, newName);
+		FormatConversion.createImgFromFSM(getActiveFSM(), getActiveFSM().getId());
+		imagePage.replaceActiveImage(newName);
+		updateImageHeader();
 	}
 	
 	public void deleteActiveFSM() {
@@ -302,24 +328,7 @@ public class FSMUI {
 		f = new File(ADDRESS_IMAGES + name + ".jpg");
 		f.delete();
 	}
-	
-	public void renameActiveFSM(String newName) {
-		deleteFSMFromMemory(newName);
-		getActiveFSM().setId(newName);
-		getActiveFSM().toTextFile(ADDRESS_SOURCES, newName);
-		FSMToDot.createImgFromFSM(getActiveFSM(), ADDRESS_IMAGES + getActiveFSM().getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
-		imagePage.replaceActiveImage(newName);
-		updateImageHeader();
-	}
-	
-	public void refreshActiveImage() {
-		FSM tS = getActiveFSM();
-		if(tS != null) {
-			FSMToDot.createImgFromFSM(tS, ADDRESS_IMAGES + tS.getId(), ADDRESS_IMAGES, ADDRESS_CONFIG);
-		}
-		imagePage.refreshActiveImage();
-	}
-			
+
 	//-- Update ElementPanels  --------------------------------
 	
 	public void updateDisplay() {

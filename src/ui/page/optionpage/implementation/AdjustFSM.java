@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Random;
 
 import input.Communication;
+import support.meta.FormatConversion;
 import support.meta.GenerateFSM;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
@@ -16,7 +17,6 @@ import ui.page.popups.PopoutAlert;
  * TODO: Allow editing a transition to become a Must transition, other types?
  * TODO: Crashes if Make FSM and Make Complicated FSM are open at the same time
  * TODO: Correction: It freezes if those two are open, naming collision? Infinite loop?
- * TODO: Selecting a .fsm should be a selection menu from sources folder
  * @author Borinor
  *
  */
@@ -48,21 +48,25 @@ public class AdjustFSM extends OptionPage{
 	private final static int CODE_GENERATE_COMPLEX_FSM = 117;
 	//
 	private final static int CODE_ADD_STATE = 118;
-	private final static int CODE_REMOVE_STATE = 119;	//TODO rename a state, add many states at once
+	private final static int CODE_REMOVE_STATE = 119;	
+	private final static int CODE_RENAME_STATE = 134;
+	private final static int CODE_ADD_STATES = 133;
 	private final static int CODE_INITIAL_STATE = 120;
 	private final static int CODE_MARKED_STATE = 121;
 	private final static int CODE_SECRET_STATE = 122;
 	private final static int CODE_BAD_STATE = 123;
 	//--
 	private final static int CODE_ADD_TRANSITION = 124;
-	private final static int CODE_REMOVE_TRANSITION = 125;	//TODO make a must transition
+	private final static int CODE_TOGGLE_MUST = 135;
+	private final static int CODE_REMOVE_TRANSITION = 125;	
 	//--
 	private final static int CODE_SAVE_FSM = 126;
 	private final static int CODE_SAVE_IMG = 127;
+	private final static int CODE_SAVE_TKZ = 136;	//TODO: SVG
 	private final static int CODE_LOAD_SOURCE = 128;
 	private final static int CODE_DELETE_SOURCE = 129;
 	private final static int CODE_RENAME_FSM = 130;
-	private final static int CODE_DUPLICATE_FSM = 131;	//TODO convert to .tikz
+	private final static int CODE_DUPLICATE_FSM = 131;
 	private final static int CODE_CLOSE_FSM = 132;
 	
 	//-- Scripts  ---------------------------------------------
@@ -94,7 +98,9 @@ public class AdjustFSM extends OptionPage{
 		},
 		{
 			{"Add State", EntrySet.ENTRY_TEXT_SINGLE, CODE_ADD_STATE, true},
+			{"Add Many States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ADD_STATES, true},
 			{"Remove State", EntrySet.ENTRY_TEXT_SINGLE, CODE_REMOVE_STATE, true},
+			{"Rename State", EntrySet.ENTRY_TEXT_DOUBLE, CODE_RENAME_STATE, true},
 			{"Add Initial State", EntrySet.ENTRY_TEXT_SINGLE, CODE_INITIAL_STATE, true},
 			{"Set State Marked", EntrySet.ENTRY_TEXT_SINGLE, CODE_MARKED_STATE, true},
 			{"Set State Secret", EntrySet.ENTRY_TEXT_SINGLE, CODE_SECRET_STATE, true},
@@ -102,11 +108,13 @@ public class AdjustFSM extends OptionPage{
 		},
 		{
 			{"Add Transition", EntrySet.ENTRY_TEXT_TRIPLE, CODE_ADD_TRANSITION, true},
+			//{"Mark Must Transition", EntrySet.ENTRY_CHECKBOX, CODE_TOGGLE_MUST, false},
 			{"Remove Transition", EntrySet.ENTRY_TEXT_TRIPLE, CODE_REMOVE_TRANSITION, true},
 		},
 		{
 			{"Save Source", EntrySet.ENTRY_EMPTY, CODE_SAVE_FSM, true},
 			{"Save Image", EntrySet.ENTRY_EMPTY, CODE_SAVE_IMG, true},
+			{"Generate Tikz", EntrySet.ENTRY_EMPTY, CODE_SAVE_TKZ, true},
 			{"Load Source", EntrySet.ENTRY_EMPTY, CODE_LOAD_SOURCE, true},
 			{"Rename FSM", EntrySet.ENTRY_TEXT_LONG, CODE_RENAME_FSM, true},
 			{"Generate Copy", EntrySet.ENTRY_TEXT_LONG, CODE_DUPLICATE_FSM, true},
@@ -134,6 +142,30 @@ public class AdjustFSM extends OptionPage{
 	public void applyCode(int code) {
 		if(!toggleCategory(code)) {
 			switch(code) {
+				case CODE_ADD_STATES:
+					int id = 1;
+					int added = 0;
+					int toAdd = this.getIntegerFromCode(CODE_ADD_STATES, 0);
+					while(added != toAdd) {
+						while(getFSMUI().getActiveFSM().stateExists(""+id)) {
+							id++;
+						}
+						getFSMUI().getActiveFSM().addState(""+id++);
+						added++;
+					}
+					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
+					break;
+				case CODE_RENAME_STATE:
+					String oldName = getTextFromCode(CODE_RENAME_STATE, 0);
+					String newName = getTextFromCode(CODE_RENAME_STATE, 1);
+					getFSMUI().getActiveFSM().getStateMap().renameState(oldName, newName);
+					getFSMUI().refreshActiveImage();
+					resetCodeEntries(code);
+					break;
+				case CODE_SAVE_TKZ:
+					PopoutAlert pA = new PopoutAlert("Saved at: " + getFSMUI().saveActiveTikZ());
+					break;
 				case CODE_SAVE_FSM:
 					getFSMUI().saveActiveFSMSource();
 					break;
@@ -151,7 +183,7 @@ public class AdjustFSM extends OptionPage{
 					break;
 				case CODE_LOAD_SOURCE:
 					File f = new File(FSMUI.ADDRESS_SOURCES);
-					PopoutSelectList fs = new PopoutSelectList(f.list()) {
+					PopoutSelectList fs = new PopoutSelectList(f.list(), true) {
 						@Override
 						public void dispose() {
 							String outcome = Communication.get(PopoutSelectList.STATIC_ACCESS);
@@ -175,10 +207,10 @@ public class AdjustFSM extends OptionPage{
 					getFSMUI().refreshActiveImage();
 					resetCodeEntries(code);
 					break;
-				case CODE_ADD_TRANSITION: 
+				case CODE_ADD_TRANSITION: 	//TODO: Integrate Must transition boolean at CODE_TOGGLE_MUST
 					getFSMUI().getActiveFSM().addTransition(this.getTextFromCode(CODE_ADD_TRANSITION, 0), this.getTextFromCode(CODE_ADD_TRANSITION, 1), this.getTextFromCode(CODE_ADD_TRANSITION, 2));
 					getFSMUI().refreshActiveImage();
-					resetCodeEntries(code);	//TODO: Let user decide whether or not to clear entries
+					resetCodeEntries(code);	//TODO: Let user decide whether or not to clear entries, in settings
 					break;
 				case CODE_REMOVE_TRANSITION: 
 					getFSMUI().getActiveFSM().removeTransition(this.getTextFromCode(CODE_REMOVE_TRANSITION, 0), this.getTextFromCode(CODE_REMOVE_TRANSITION, 1), this.getTextFromCode(CODE_REMOVE_TRANSITION, 2));

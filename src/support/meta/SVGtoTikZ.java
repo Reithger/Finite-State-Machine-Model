@@ -9,15 +9,15 @@ import java.util.*;
  * format, usable with programs such as LaTEX for its inclusion and manipulation.
  * 
  * It was originally created as a supplement to the FSMtA software developed at Mount
- * Allison University in the summer of 2018 by Mac Clevinger and Graeme Zinck, but is
+ * Allison University in the summer of 2018 by Ada Clevinger and Graeme Zinck, but is
  * usable independent from that software.
  * 
  * For the needs described by that software this works fine, however there are cases of
  * input that need to be handled to ensure its robustness with varied usage. If you happen
  * to have documentation on SVG and TikZ file formats, please send those resources to
- * Mac Clevinger (aka: Reithger).
+ * Ada Clevinger (aka: Reithger).
  * 
- * @author Mac Clevinger and Graeme Zinck
+ * @author Ada Clevinger and Graeme Zinck
  *
  */
 
@@ -146,7 +146,7 @@ public class SVGtoTikZ {
 	 * @return - Returns a String object representing the .tikz formatted version of the node described by the input.
 	 */
 	
-	public static String drawCircleNode(double x, double y, double rad, boolean mark, String name, String color) {
+	private static String drawCircleNode(double x, double y, double rad, boolean mark, String name, String color) {
 		return (mark ? "\\filldraw [" + color + ", very thick, fill=white] (" + x + "," + y + ") circle [radius=" + (rad*1.2) + "] node {" + name + "};\n" : "")
 				+ "\\filldraw [" + color + ", very thick, fill=" + (name.equals("") ? "black" : "white") + "] (" + x + "," + y + ") circle [radius=" + rad + "] node {" + name + "};\n";
 	}
@@ -163,7 +163,7 @@ public class SVGtoTikZ {
 	 * @return - Returns a String object representing the .tikz formatted version of the edge described by the input.
 	 */
 	
-	public static String drawEdges(ArrayList<Double> path, String color, boolean dotted) {
+	private static String drawEdges(ArrayList<Double> path, String color, boolean dotted) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\\draw [color = " + color + ", thick, " + (dotted ? "dash dot" : "") + "] (" + path.get(0) + "," + path.get(1) + ")\n ");
 		for(int i = 2; i < path.size(); i+=2) 
@@ -181,7 +181,7 @@ public class SVGtoTikZ {
 	 * @return - Returns a String object representing the .tikz formatted version of the polygon described by the input.
 	 */
 	
-	public static String drawPolygon(ArrayList<Double> path, String color) {
+	private static String drawPolygon(ArrayList<Double> path, String color) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\\draw [color = " + color + ", thick, fill=" + color + "] (" + path.get(0) + "," + path.get(1) + ")\n ");
 		for(int i = 2; i < path.size(); i+=2)
@@ -199,7 +199,7 @@ public class SVGtoTikZ {
 	 * @return - Returns a String object representing the .tikz formatted version of the label described by the input.
 	 */
 	
-	public static String drawLabel(double x, double y, String name) {
+	private static String drawLabel(double x, double y, String name) {
 		return "\\draw [black](" + x + "," + y + ") node {" + name + "}; \n";
 	}
 	

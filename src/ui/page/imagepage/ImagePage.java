@@ -161,6 +161,7 @@ public class ImagePage {
 	
 	public void refreshActiveImage() {
 		getCurrentImageDisplay().refresh();
+		drawPage();
 	}
 	
 	public void allotImage(String path) {
