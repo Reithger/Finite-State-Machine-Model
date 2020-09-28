@@ -22,5 +22,24 @@ public class PopoutAlert extends PopoutWindow{
 		// TODO Auto-generated method stub
 		
 	}
+
+
+	@Override
+	public void clickPressAction(int code, int x, int y) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void clickReleaseAction(int code, int x, int y) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void dragAction(int code, int x, int y) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

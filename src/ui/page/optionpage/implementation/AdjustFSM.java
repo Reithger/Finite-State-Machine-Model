@@ -13,11 +13,11 @@ import ui.page.popups.PopoutSelectList;
 import ui.page.popups.PopoutAlert;
 
 /**
- * 
+ * TODO: SVG is not displaying correctly, despite the produced TikZ functioning correctly
  * TODO: Allow editing a transition to become a Must transition, other types?
  * TODO: Crashes if Make FSM and Make Complicated FSM are open at the same time
  * TODO: Correction: It freezes if those two are open, naming collision? Infinite loop?
- * @author Borinor
+ * @author Reithger
  *
  */
 
@@ -63,6 +63,7 @@ public class AdjustFSM extends OptionPage{
 	private final static int CODE_SAVE_FSM = 126;
 	private final static int CODE_SAVE_IMG = 127;
 	private final static int CODE_SAVE_TKZ = 136;	//TODO: SVG
+	private final static int CODE_SAVE_SVG = 137;
 	private final static int CODE_LOAD_SOURCE = 128;
 	private final static int CODE_DELETE_SOURCE = 129;
 	private final static int CODE_RENAME_FSM = 130;
@@ -115,6 +116,7 @@ public class AdjustFSM extends OptionPage{
 			{"Save Source", EntrySet.ENTRY_EMPTY, CODE_SAVE_FSM, true},
 			{"Save Image", EntrySet.ENTRY_EMPTY, CODE_SAVE_IMG, true},
 			{"Generate Tikz", EntrySet.ENTRY_EMPTY, CODE_SAVE_TKZ, true},
+			{"Generate SVG", EntrySet.ENTRY_EMPTY, CODE_SAVE_SVG, true},
 			{"Load Source", EntrySet.ENTRY_EMPTY, CODE_LOAD_SOURCE, true},
 			{"Rename FSM", EntrySet.ENTRY_TEXT_LONG, CODE_RENAME_FSM, true},
 			{"Generate Copy", EntrySet.ENTRY_TEXT_LONG, CODE_DUPLICATE_FSM, true},
@@ -163,6 +165,9 @@ public class AdjustFSM extends OptionPage{
 					getFSMUI().refreshActiveImage();
 					resetCodeEntries(code);
 					break;
+				case CODE_SAVE_SVG:
+					PopoutAlert pSVG = new PopoutAlert("Saved at: " + getFSMUI().saveActiveSVG());
+					break;
 				case CODE_SAVE_TKZ:
 					PopoutAlert pA = new PopoutAlert("Saved at: " + getFSMUI().saveActiveTikZ());
 					break;
@@ -188,11 +193,11 @@ public class AdjustFSM extends OptionPage{
 						public void dispose() {
 							String outcome = Communication.get(PopoutSelectList.STATIC_ACCESS);
 							getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + outcome, outcome.replaceAll(".fsm", ""));
-							getFSMUI().refreshActiveImage();	//TODO: Add actual file selecting thing, relying on exact names is bad form (file select from SVI?)
+							getFSMUI().refreshActiveImage();
 							super.dispose();
 						}
 					};
-					resetCodeEntries(code);				//TODO: Loads only from source folder, so add display for those entries
+					resetCodeEntries(code);
 					break;
 				case CODE_DELETE_SOURCE:
 					getFSMUI().deleteActiveFSM();

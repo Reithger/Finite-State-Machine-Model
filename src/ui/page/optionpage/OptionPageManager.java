@@ -40,13 +40,15 @@ public class OptionPageManager {
 			public int getMinimumScreenY() {
 				return 0;
 			}
+			
 			@Override
 			public void mouseWheelBehaviour(int rotation) {
 				if(getMaximumScreenY() < getHeight()) {
 					return;
 				}
-				setOffsetYBounded(getOffsetY() + rotation * ROTATION_MULTIPLIER);
+				setOffsetYBounded(getOffsetY() - rotation * ROTATION_MULTIPLIER);
 			}
+
 		};
 		OptionPage.assignElementPanel(p);
 		return p;

@@ -51,6 +51,18 @@ public abstract class PopoutWindow {
 				scrollAction(scroll);
 			}
 			
+			public void clickPressBehaviour(int code, int x, int y) {
+				clickPressAction(code, x, y);
+			}
+			
+			public void clickReleasedBehaviour(int code, int x, int y) {
+				clickReleaseAction(code, x, y);
+			}
+			
+			public void dragBehaviour(int code, int x, int y) {
+				dragAction(code, x, y);
+			}
+			
 		};
 		frame.reserveWindow("default");
 		frame.reservePanel("default", "pan", panel);
@@ -76,9 +88,15 @@ public abstract class PopoutWindow {
 	
 	public abstract void clickAction(int code, int x, int y);
 	
+	public abstract void clickPressAction(int code, int x, int y);
+	
+	public abstract void clickReleaseAction(int code, int x, int y);
+	
 	public abstract void keyAction(char code);
 	
 	public abstract void scrollAction(int scroll);
+	
+	public abstract void dragAction(int code, int x, int y);
 	
 	protected void removeElementPrefixed(String in) {
 		panel.removeElementPrefixed(in);
@@ -94,6 +112,10 @@ public abstract class PopoutWindow {
 	
 	public String getStoredText(String ref) {
 		return panel.getElementStoredText(ref);
+	}
+	
+	protected ElementPanel getElementPanel() {
+		return panel;
 	}
 	
 //---  Drawing Support   ----------------------------------------------------------------------

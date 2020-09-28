@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import fsm.FSM;
-import fsm.ModalSpecification;
-import fsm.FSM;
 import graphviz.GraphViz;
 import input.Communication;
 import support.meta.FormatConversion;
@@ -25,11 +23,6 @@ import visual.frame.WindowFrame;
 
 /**
  * 
- * TODO: Add States (can add like 15 really quickly)
- * TODO: Convert to .tkz
- * TODO: Rename states
- * TODO: Adding a 'new' fsm of the same name should replace the previous one to avoid collision issue (especially image display)
- * TODO: Seriously, fix that ^^ double image name issue
  * TODO: Auto-load some FSMs on start up (settings menu?) (as an option to the user)
  * TODO: Weird crash on opening the two generate tabs at the same time
  * TODO: Memory usage goes wild during runtime when tabs are opened, figure out why and clean it up
@@ -252,14 +245,13 @@ public class FSMUI {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		cre.toTextFile(FSMUI.ADDRESS_SOURCES, name);
-		fsmPaths.add(in);
-		fsms.add(cre);
-		String imgPath = FormatConversion.createImgFromFSM(cre, cre.getId());
-		allotImage(imgPath);
+		allotTransitionSystem(cre, name);
 	}
 	
 	public void allotTransitionSystem(FSM in, String name) {
+		if(fsmPaths.contains(ADDRESS_SOURCES + name)) {
+			removeTransitionSystem(fsmPaths.indexOf(ADDRESS_SOURCES + name));
+		}
 		in.setId(name);
 		fsmPaths.add(ADDRESS_SOURCES + name);
 		fsms.add(in);
@@ -305,6 +297,10 @@ public class FSMUI {
 	
 	public String saveActiveTikZ() {
 		return FormatConversion.createTikZFromFSM(getActiveFSM(), getActiveFSM().getId());
+	}
+	
+	public String saveActiveSVG() {
+		return FormatConversion.createSVGFromFSM(getActiveFSM(), getActiveFSM().getId());
 	}
 	
 	public void renameActiveFSM(String newName) {
@@ -376,7 +372,6 @@ public class FSMUI {
 	public ArrayList<String> getFSMList(){
 		return fsmPaths;
 	}
-	
 	public String getFSMPath(int index) {
 		return fsmPaths.get(index);
 	}
