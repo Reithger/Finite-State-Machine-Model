@@ -24,10 +24,8 @@ import visual.frame.WindowFrame;
 /**
  * 
  * TODO: Auto-load some FSMs on start up (settings menu?) (as an option to the user)
- * TODO: Weird crash on opening the two generate tabs at the same time
- * TODO: Memory usage goes wild during runtime when tabs are opened, figure out why and clean it up
  * 
- * @author Reithger
+ * @author Ada Clevinger
  *
  */
 

@@ -4,14 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 
 import fsm.FSM;
-import input.Communication;
 import support.Agent;
 import support.UStructure;
-import support.component.Transition;
 import support.component.map.TransitionFunction;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
 import ui.page.optionpage.entryset.EntrySet;
+import ui.page.popups.PopoutAgentSelection;
 
 public class UStructurePage extends OptionPage{
 
@@ -66,49 +65,44 @@ public class UStructurePage extends OptionPage{
 
 	@Override
 	public void applyCode(int code) {
-		if(!toggleCategory(code)) {
-			if(code >= CODE_DISPLAY_BAD_TRANS_START) {
-				int ind = code - CODE_DISPLAY_BAD_TRANS_START;
-				badTransitions.remove(ind);
-				getEntrySetFromCode(CODE_DISPLAY_BAD_TRANS_START).removeItem(ind);
-				getElementPanel().removeElementPrefixed("");
-				drawPage();
-			}
-			switch(code) {
-				case CODE_ADD_BAD_TRANS:
-					String a = this.getTextFromCode(code, 0);
-					String b = this.getTextFromCode(code, 1);
-					String c = this.getTextFromCode(code, 2);
-					badTransitions.add(a + SEPARATOR + b + SEPARATOR + c);
-					getEntrySetFromCode(CODE_DISPLAY_BAD_TRANS_START).appendItem(a + " -- " + b + " --> " + c);
-					resetCodeEntries(code);
-					break;
-				case CODE_BUILD_AGENTS:
-					new AgentSelection(this, FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_SELECT_PLANT, 0));
-					break;
-				case CODE_BUILD_USTRUCT:
-					TransitionFunction tF = new TransitionFunction();
-					for(String s : badTransitions) {
-						String[] dat = s.split(SEPARATOR);
-						tF.addTransition(dat[0], dat[1], dat[2]);
-					}
-					System.out.println(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_SELECT_PLANT, 0));
-					FSM fs = null;
-					try {
-						fs = new FSM(new File(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_SELECT_PLANT, 0)), getTextFromCode(CODE_SELECT_PLANT, 0) + "_ustruct");
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-					System.out.println(fs.getInitialStates());
-					built = new UStructure(fs, tF, agents);
-					if(this.getCheckboxContentsFromCode(CODE_TOGGLE_USTRUCT)) {
-						this.getFSMUI().allotTransitionSystem(built.getUStructure(), fs.getId());
-					}
-					break;
-			}
+		if(code >= CODE_DISPLAY_BAD_TRANS_START) {
+			int ind = code - CODE_DISPLAY_BAD_TRANS_START;
+			badTransitions.remove(ind);
+			getEntrySetFromCode(CODE_DISPLAY_BAD_TRANS_START).removeItem(ind);
+			getElementPanel().removeElementPrefixed("");
+			drawPage();
 		}
-		drawPage();
+		switch(code) {
+			case CODE_ADD_BAD_TRANS:
+				String a = this.getTextFromCode(code, 0);
+				String b = this.getTextFromCode(code, 1);
+				String c = this.getTextFromCode(code, 2);
+				badTransitions.add(a + SEPARATOR + b + SEPARATOR + c);
+				getEntrySetFromCode(CODE_DISPLAY_BAD_TRANS_START).appendItem(a + " -- " + b + " --> " + c);
+				resetCodeEntries(code);
+				break;
+			case CODE_BUILD_AGENTS:
+				new PopoutAgentSelection(this, FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_SELECT_PLANT, 0));
+				break;
+			case CODE_BUILD_USTRUCT:
+				TransitionFunction tF = new TransitionFunction();
+				for(String s : badTransitions) {
+					String[] dat = s.split(SEPARATOR);
+					tF.addTransition(dat[0], dat[1], dat[2]);
+				}
+				FSM fs = null;
+				try {
+					fs = new FSM(new File(FSMUI.ADDRESS_SOURCES + getTextFromCode(CODE_SELECT_PLANT, 0)), getTextFromCode(CODE_SELECT_PLANT, 0) + "_ustruct");
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
+				built = new UStructure(fs, tF, agents);
+				if(this.getCheckboxContentsFromCode(CODE_TOGGLE_USTRUCT)) {
+					getFSMUI().allotTransitionSystem(built.getUStructure(), fs.getId());
+				}
+				break;
+		}
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------

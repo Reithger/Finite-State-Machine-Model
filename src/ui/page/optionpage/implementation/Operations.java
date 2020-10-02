@@ -99,147 +99,146 @@ public class Operations extends OptionPage{
 
 	@Override
 	public void applyCode(int code) {
-		if(!toggleCategory(code)) {
-			switch(code) {
-				case CODE_TRIM:
-					getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().trim(), getFSMUI().getActiveFSM().getId() + "_trim");
+		switch(code) {
+			case CODE_TRIM:
+				getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().trim(), getFSMUI().getActiveFSM().getId() + "_trim");
+				getFSMUI().refreshActiveImage();
+				break;
+			case CODE_ACCESSIBLE:
+				getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().makeAccessible(), getFSMUI().getActiveFSM().getId() + "_accessible");
+				getFSMUI().refreshActiveImage();
+				break;
+			case CODE_CO_ACCESSIBLE:
+				getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().makeCoAccessible(), getFSMUI().getActiveFSM().getId() + "_coaccessible");
+				getFSMUI().refreshActiveImage();
+				break;
+			case CODE_OBSERVER:
+				FSM fsm = (FSM)(getFSMUI().getActiveFSM());
+				getFSMUI().allotTransitionSystem(fsm.buildObserver(), getFSMUI().getActiveFSM().getId() + "_observer");
+				getFSMUI().refreshActiveImage();
+				break;
+			case CODE_PRODUCT:
+				try {
+					FSM[] fsms = getFSMArray(CODE_PRODUCT_SELECT);
+					try {
+						getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().product(fsms), getFSMUI().getActiveFSM().getId() + "_product");
+					}
+					catch(Exception e1) {
+						e1.printStackTrace();
+						getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
+					}
 					getFSMUI().refreshActiveImage();
-					break;
-				case CODE_ACCESSIBLE:
-					getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().makeAccessible(), getFSMUI().getActiveFSM().getId() + "_accessible");
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
+				}
+				break;
+			case CODE_PARALLEL_COMPOSITION:
+				try {
+					FSM[] fsms = getFSMArray(CODE_PARALLEL_COMPOSITION_SELECT);
+					try {
+						getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().parallelComposition(fsms), getFSMUI().getActiveFSM().getId() + "_parallelcomp");
+					}
+					catch(Exception e1) {
+						e1.printStackTrace();
+						getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
+					}
 					getFSMUI().refreshActiveImage();
-					break;
-				case CODE_CO_ACCESSIBLE:
-					getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().makeCoAccessible(), getFSMUI().getActiveFSM().getId() + "_coaccessible");
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
+				}
+				break;
+			case CODE_SUP_CNT_SBL:
+				try {
+					FSM nfsm = getFSM(CODE_SUP_CNT_SBL_SELECT);
+					try {
+						getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().getSupremalControllableSublanguage(nfsm), getFSMUI().getActiveFSM().getId() + "_supcntsublng");
+					}
+					catch(Exception e1) {
+						e1.printStackTrace();
+						getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
+					}
 					getFSMUI().refreshActiveImage();
-					break;
-				case CODE_OBSERVER:
-					FSM fsm = (FSM)(getFSMUI().getActiveFSM());
-					getFSMUI().allotTransitionSystem(fsm.buildObserver(), getFSMUI().getActiveFSM().getId() + "_observer");
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
+				}
+				break;
+			case CODE_BLOCKING:
+				getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().isBlocking() ? "Is Blocking" : "Is Not Blocking");
+				break;
+			case CODE_STATE_EXISTS: 
+				String state = this.getTextFromCode(CODE_STATE_EXISTS, 0);
+				getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().stateExists(state) ? state + " exists" : state + " does not exist");
+				break;
+				/* TODO: Figure out what ModalSpecification is supposed to look like before integrating
+			case CODE_UNDER_FSM: 
+				try {
+					ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
+					getFSMUI().allotTransitionSystem(mod.getUnderlyingFSM(), mod.getId() + "_underFSM");
 					getFSMUI().refreshActiveImage();
-					break;
-				case CODE_PRODUCT:
-					try {
-						FSM[] fsms = getFSMArray(CODE_PRODUCT_SELECT);
-						try {
-							getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().product(fsms), getFSMUI().getActiveFSM().getId() + "_product");
-						}
-						catch(Exception e1) {
-							e1.printStackTrace();
-							getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
-						}
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
-					}
-					break;
-				case CODE_PARALLEL_COMPOSITION:
-					try {
-						FSM[] fsms = getFSMArray(CODE_PARALLEL_COMPOSITION_SELECT);
-						try {
-							getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().parallelComposition(fsms), getFSMUI().getActiveFSM().getId() + "_parallelcomp");
-						}
-						catch(Exception e1) {
-							e1.printStackTrace();
-							getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
-						}
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
-					}
-					break;
-				case CODE_SUP_CNT_SBL:
-					try {
-						FSM nfsm = getFSM(CODE_SUP_CNT_SBL_SELECT);
-						try {
-							getFSMUI().allotTransitionSystem(getFSMUI().getActiveFSM().getSupremalControllableSublanguage(nfsm), getFSMUI().getActiveFSM().getId() + "_supcntsublng");
-						}
-						catch(Exception e1) {
-							e1.printStackTrace();
-							getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
-						}
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
-					}
-					break;
-				case CODE_BLOCKING:
-					getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().isBlocking() ? "Is Blocking" : "Is Not Blocking");
-					break;
-				case CODE_STATE_EXISTS: 
-					String state = this.getTextFromCode(CODE_STATE_EXISTS, 0);
-					getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().stateExists(state) ? state + " exists" : state + " does not exist");
-					break;
-					/* TODO: Figure out what ModalSpecification is supposed to look like before integrating
-				case CODE_UNDER_FSM: 
-					try {
-						ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
-						getFSMUI().allotTransitionSystem(mod.getUnderlyingFSM(), mod.getId() + "_underFSM");
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_MODAL_CASTING);
-					}
-					break;
-				case CODE_OPT_OPQ_CONTROLLER:
-					try {
-						ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
-						getFSMUI().allotTransitionSystem(mod.buildOptimalOpaqueController(), mod.getId() + "_optopqcnt");
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_MODAL_CASTING);
-					}
-					break;
-				case CODE_OPT_SPVR: 
-					try {
-						ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
-						FSM nfsm = getFSM(code);
-						getFSMUI().allotTransitionSystem(mod.makeOptimalSupervisor(nfsm), mod.getId() + "_optspvr");
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
-					}
-					break;
-				case CODE_GRT_LWR_BND: 
-					try {
-						ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
-						ModalSpecification nfsm = getModal(code);
-						getFSMUI().allotTransitionSystem(mod.getGreatestLowerBound(nfsm), mod.getId() + "_grtlwrbnd");
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
-					}
-					break;
-				case CODE_PRUNE: 
-					try {
-						ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
-						getFSMUI().allotTransitionSystem(mod.prune(), mod.getId() + "_prune");
-						getFSMUI().refreshActiveImage();
-					}
-					catch(Exception e) {
-						getFSMUI().popupDisplayText(ERROR_MODAL_CASTING);
-					}
-					break;
-					*/
-				default:
-					break;
-			}
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					getFSMUI().popupDisplayText(ERROR_MODAL_CASTING);
+				}
+				break;
+			case CODE_OPT_OPQ_CONTROLLER:
+				try {
+					ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
+					getFSMUI().allotTransitionSystem(mod.buildOptimalOpaqueController(), mod.getId() + "_optopqcnt");
+					getFSMUI().refreshActiveImage();
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					getFSMUI().popupDisplayText(ERROR_MODAL_CASTING);
+				}
+				break;
+			case CODE_OPT_SPVR: 
+				try {
+					ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
+					FSM nfsm = getFSM(code);
+					getFSMUI().allotTransitionSystem(mod.makeOptimalSupervisor(nfsm), mod.getId() + "_optspvr");
+					getFSMUI().refreshActiveImage();
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
+				}
+				break;
+			case CODE_GRT_LWR_BND: 
+				try {
+					ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
+					ModalSpecification nfsm = getModal(code);
+					getFSMUI().allotTransitionSystem(mod.getGreatestLowerBound(nfsm), mod.getId() + "_grtlwrbnd");
+					getFSMUI().refreshActiveImage();
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
+				}
+				break;
+			case CODE_PRUNE: 
+				try {
+					ModalSpecification mod = (ModalSpecification)(getFSMUI().getActiveFSM());
+					getFSMUI().allotTransitionSystem(mod.prune(), mod.getId() + "_prune");
+					getFSMUI().refreshActiveImage();
+				}
+				catch(Exception e) {
+					getFSMUI().popupDisplayText(ERROR_MODAL_CASTING);
+				}
+				break;
+				*/
+			default:
+				break;
 		}
-		drawPage();
 	}
+	
+//---  Helper Functions   ---------------------------------------------------------------------
 	
 	private FSM[] getFSMArray(int code) throws Exception{
 		String[] fsmPaths = getContentFromCode(code);

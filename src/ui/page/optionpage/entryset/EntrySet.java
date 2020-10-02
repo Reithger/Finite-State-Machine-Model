@@ -76,77 +76,79 @@ public class EntrySet {
 	public int drawEntrySet(int y) {
 		int posX = 0;
 		int posY = y;
-		ElementPanel p = OptionPage.getElementPanel();
-		OptionPage.handleText(getElementPrefix() + "label_text", p.getWidth() / 3 / 2, posY, p.getWidth() / 3, p.getHeight() / 20, DEFAULT_FONT, label);
+		int wid = OptionPage.getElementPanel().getWidth();
+		int hei = OptionPage.getElementPanel().getHeight();
+		String pref = getElementPrefix();
+		OptionPage.handleText(pref + "label_text", wid / 3 / 2, posY, wid / 3, hei / 20, DEFAULT_FONT, label);
 		switch(type) {
 			case TEXT_DISPLAY:
-				posX = p.getWidth() / 3;
+				posX = wid / 3;
 				for(int i = 0; i < contents.length; i++) {
 					String starr = contents[i];
 					if(starr == null || starr.contentEquals("")) {
 						break;
 					}
 					if(i != 0)
-						posY += p.getHeight() / 18;
-					OptionPage.handleRectangle(getElementPrefix() + "_text_display_rect_" + i, posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
-					OptionPage.handleText(getElementPrefix() + "_text_display_" + i, posX, posY, p.getWidth() / 3, p.getHeight() / 30, DEFAULT_FONT, starr);
-					OptionPage.handleButton(getElementPrefix() + "_text_display_button_" + i, posX, posY, p.getWidth() / 3, p.getHeight() / 30, code + i);
+						posY += hei / 18;
+					OptionPage.handleRectangle(pref + "_text_display_rect_" + i, posX, posY, wid / 3, hei / 30, Color.white, Color.gray);
+					OptionPage.handleText(pref + "_text_display_" + i, posX, posY, wid / 3, hei / 30, DEFAULT_FONT, starr);
+					OptionPage.handleButton(pref + "_text_display_button_" + i, posX, posY, wid / 3, hei / 30, code + i);
 				}
 				break;
 			case ENTRY_SELECT_FSM:
-				posX = p.getWidth() / 3 + p.getWidth() / 3 ;
+				posX = wid / 3 + wid / 3 ;
 				String choze = contents[0] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[0];
-		  		OptionPage.handleRectangle(getElementPrefix() + "_rect_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
-		  		OptionPage.handleText(getElementPrefix() + "_text_entry_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, DEFAULT_FONT, choze);
-		  		OptionPage.handleButton(getElementPrefix() + "_butt_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, code);
+		  		OptionPage.handleRectangle(pref + "_rect_fsm_entry", posX, posY, wid / 3, hei / 30, Color.white, Color.gray);
+		  		OptionPage.handleText(pref + "_text_entry_fsm_entry", posX, posY, wid / 3, hei / 30, DEFAULT_FONT, choze);
+		  		OptionPage.handleButton(pref + "_butt_fsm_entry", posX, posY, wid / 3, hei / 30, code);
 				break;
 			case ENTRY_SELECT_FSMS:
-				posX = p.getWidth() / 3 + p.getWidth() / 3;
+				posX = wid / 3 + wid / 3;
 				for(int a = 0; a < MultiFSMSelection.MAX_SELECT_FSMS; a++) {
 					String chozes = contents[a] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[a];
 					if((chozes == null || chozes.equals(""))) {
-						OptionPage.handleRectangle(getElementPrefix() + "_rect_fsm_entry_" + a, posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
-						OptionPage.handleButton(getElementPrefix() + "_butt_fsm_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, code);
+						OptionPage.handleRectangle(pref + "_rect_fsm_entry_" + a, posX, posY, wid / 3, hei / 30, Color.white, Color.gray);
+						OptionPage.handleButton(pref + "_butt_fsm_entry", posX, posY, wid / 3, hei / 30, code);
 						break;
 					}
-					posY += p.getHeight() / 18;
-					OptionPage.handleRectangle(getElementPrefix() + "_rect_fsm_entry_" + a, posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
-					OptionPage.handleText(getElementPrefix() + "_text_entry_fsm_entry_" + a, posX, posY, p.getWidth() / 3, p.getHeight() / 30, DEFAULT_FONT, chozes);
-					OptionPage.handleButton(getElementPrefix() + "_butt_fsm_entry_" + a, posX, posY, p.getWidth() / 3, p.getHeight() / 30, code);
+					posY += hei / 18;
+					OptionPage.handleRectangle(pref + "_rect_fsm_entry_" + a, posX, posY, wid / 3, hei / 30, Color.white, Color.gray);
+					OptionPage.handleText(pref + "_text_entry_fsm_entry_" + a, posX, posY, wid / 3, hei / 30, DEFAULT_FONT, chozes);
+					OptionPage.handleButton(pref + "_butt_fsm_entry_" + a, posX, posY, wid / 3, hei / 30, code);
 				}
 				break;
 		  	case ENTRY_TEXT_LONG:
-				posX = p.getWidth() / 3 + p.getWidth() / 3 ;
+				posX = wid / 3 + wid / 3 ;
 				String starr = contents[0] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[0];
-				OptionPage.handleRectangle(getElementPrefix() + "_rect_entry", posX, posY, p.getWidth() / 3, p.getHeight() / 30, Color.white, Color.gray);
-				OptionPage.handleTextEntry(getElementNameTextEntry(0), posX, posY, p.getWidth() / 3, p.getHeight() / 30, subsystemCode, starr);
+				OptionPage.handleRectangle(pref + "_rect_entry", posX, posY, wid / 3, hei / 30, Color.white, Color.gray);
+				OptionPage.handleTextEntry(getElementNameTextEntry(0), posX, posY, wid / 3, hei / 30, subsystemCode, starr);
 				break;
 			case ENTRY_CHECKBOX:
-				posX = p.getWidth() / 3 + p.getWidth() / 3 / 4;
-				OptionPage.handleRectangle(getElementPrefix() + "_checkbox_rect", posX, posY, p.getHeight() / 30, p.getHeight() / 30, (contents[0].equals(CHECKBOX_FALSE) ? Color.white : Color.gray), Color.black);
-				OptionPage.handleButton(getElementPrefix() + "_checkbox_button", posX, posY, p.getHeight() / 30, p.getHeight() / 30, code);
+				posX = wid / 3 + wid / 3 / 4;
+				OptionPage.handleRectangle(pref + "_checkbox_rect", posX, posY, hei / 30, hei / 30, (contents[0].equals(CHECKBOX_FALSE) ? Color.white : Color.gray), Color.black);
+				OptionPage.handleButton(pref + "_checkbox_button", posX, posY, hei / 30, hei / 30, code);
 				break;
 			default:
 				int num = getEntryContentSize(type);
 				for(int k = 0; k < num; k++) {
 					//Draws text entries and iterates to next position
 					String star = contents[k] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[k];
-					posX = p.getWidth() / 3 + p.getWidth() / 3 / 4 * (k + 1);
-					OptionPage.handleRectangle(getElementPrefix() + "_rect_" + k, posX, posY, p.getWidth() / 3 / (5), p.getHeight() / 30, Color.white, Color.gray);
-					OptionPage.handleTextEntry(getElementNameTextEntry(k), posX, posY, p.getWidth() / 3 / (5), p.getHeight() / 30, subsystemCode - k, star);
+					posX = wid / 3 + wid / 3 / 4 * (k + 1);
+					OptionPage.handleRectangle(pref + "_rect_" + k, posX, posY, wid / 3 / (5), hei / 30, Color.white, Color.gray);
+					OptionPage.handleTextEntry(getElementNameTextEntry(k), posX, posY, wid / 3 / (5), hei / 30, subsystemCode - k, star);
 				}
 		}
 		//Submission button
-		posX = p.getWidth() - p.getWidth() / 3 / 4;
+		posX = wid - wid / 3 / 4;
 		if(button) {
-			OptionPage.handleRectangle(getElementPrefix() + "_" + code + "_rect", posX, posY, p.getHeight() / 30, p.getHeight() / 30, Color.black, Color.gray);
-			OptionPage.handleButton(getElementPrefix() + "_" + code + "_butt", posX, posY, p.getHeight() / 30, p.getHeight() / 30, code);
-			OptionPage.handleLine(getElementPrefix() + "_" + code + "_line", p.getWidth() / 20, posY + p.getHeight() / 40, p.getWidth() * 19 / 20, posY + p.getHeight() / 40, 1, Color.black);
+			OptionPage.handleRectangle(pref + "_" + code + "_rect", posX, posY, hei / 30, hei / 30, Color.black, Color.gray);
+			OptionPage.handleButton(pref + "_" + code + "_butt", posX, posY, hei / 30, hei / 30, code);
+			OptionPage.handleLine(pref + "_" + code + "_line", wid / 20, posY + hei / 40, wid * 19 / 20, posY + hei / 40, 1, Color.black);
 		}
 		else {
-			OptionPage.handleLine(getElementPrefix() + "_" + code + "_line", p.getWidth() / 20, posY + p.getHeight() / 40, p.getWidth() * 17 / 20, posY + p.getHeight() / 40, 1, Color.gray);
+			OptionPage.handleLine(pref + "_" + code + "_line", wid / 20, posY + hei / 40, wid * 17 / 20, posY + hei / 40, 1, Color.gray);
 		}
-		posY += p.getHeight() / 18;
+		posY += hei / 18;
 		return posY;
 	}
 	
@@ -190,7 +192,6 @@ public class EntrySet {
 			case ENTRY_SELECT_FSMS:
 				new MultiFSMSelection(this);
 				break;
-
 			default:
 				break;
 		}
@@ -208,7 +209,7 @@ public class EntrySet {
 	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
-	private String getElementPrefix() {
+	public String getElementPrefix() {
 		return "category_" + category + "_" + label + "_" + type;
 	}
 	

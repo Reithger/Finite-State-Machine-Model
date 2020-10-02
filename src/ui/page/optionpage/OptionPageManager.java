@@ -17,7 +17,7 @@ public class OptionPageManager {
 	};
 	private static int currentOptionPageIndex;
 	private ElementPanel p;
-	private final static int ROTATION_MULTIPLIER = 10;
+	private final static int ROTATION_MULTIPLIER = 15;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -29,16 +29,30 @@ public class OptionPageManager {
 	
 	public ElementPanel generateElementPanel(int x, int y, int width, int height) {
 		p = new ElementPanel(x, y, width, height) {
+			@Override
 			public void keyBehaviour(char code) {
 				
 			}
-			
+
+			@Override
 			public void clickBehaviour(int code, int x, int y) {
 				OPTION_PAGES[currentOptionPageIndex].handleMouseInput(code, x, y);
 			}
 			
+			@Override
+			public int getMinimumScreenX() {
+				return 0;
+			}
+			
+			@Override
 			public int getMinimumScreenY() {
 				return 0;
+			}
+			
+			@Override
+			public int getMaximumScreenY() {
+				int max = super.getMaximumScreenY();
+				return max + (max > getHeight() ? 15 : 0);
 			}
 			
 			@Override

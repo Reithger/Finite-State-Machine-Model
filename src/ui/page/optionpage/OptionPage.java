@@ -56,27 +56,7 @@ public abstract class OptionPage {
 			}
 		}
 	}
-	
-	public void addCategory(String title) {
-		Category out = new Category(title);
-		out.setCode(categories.size());
-		categories.add(out);
-	}
-	
-	public Category getCategory(String title) {
-		for(Category c : categories) {
-			if(c.getTitle().equals(title)) {
-				return c;
-			}
-		}
-		return null;
-	}
-	
-	public void addEntrySet(String category, String label, String type, int code, boolean activeButton) {
-		EntrySet set = new EntrySet(label, type, activeButton, code);
-		getCategory(category).addEntrySet(set);
-	}
-	
+
 	//---  Operations   ---------------------------------------------------------------------------
 	
 	public void drawPage() {
@@ -89,13 +69,16 @@ public abstract class OptionPage {
 	}
 	
 	public void drawNormalPage() {
-		int startY = p.getHeight() / 20;
+		int wid = p.getWidth();
+		int hei = p.getHeight();
+		int startY = hei / 20;
 		int codeStart = categories.size();
 		helpKey = codeStart;
+		settingsKey = ++codeStart;
 		codeStart++;
-		handleRectangle("help_rect", p.getWidth() - p.getWidth() / 15, p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, Color.gray, Color.black);
-		handleButton("help_button", p.getWidth() - p.getWidth() / 15,  p.getWidth() / 20, p.getWidth() / 20, p.getWidth() / 20, helpKey);
-		handleImage("help_img", p.getWidth() - p.getWidth() / 15, p.getWidth() / 20, "/assets/ui/question_mark.png", 3);
+		handleRectangle("help_rect", wid - wid / 15, wid / 20, wid / 20, wid / 20, Color.gray, Color.black);
+		handleButton("help_button", wid - wid / 15,  wid / 20, wid / 20, wid / 20, helpKey);
+		handleImage("help_img", wid - wid / 15, wid / 20, "/assets/ui/question_mark.png", 3);
 		for(int i = 0; i < categories.size(); i++) {
 			Category cat = categories.get(i);
 			startY = cat.drawCategoryHeader(startY);
@@ -105,7 +88,7 @@ public abstract class OptionPage {
 				}
 			}
 			else {
-				p.moveElementPrefixed("category_" + cat.getTitle(), -100, -100);
+				cat.hideContents();
 			}
 		}
 	}
@@ -116,16 +99,19 @@ public abstract class OptionPage {
 	
 	public void handleMouseInput(int code, int x, int y) {
 		if(code == helpKey || showHelp == true) {
-			showHelp = ! showHelp;
+			showHelp = !showHelp;
 			p.removeElementPrefixed("");
 			drawPage();
 			return;
 		}
 		EntrySet e = getEntrySetFromCode(code);
-		if(e != null)
+		if(e != null) {
 			e.processEvent();
+		}
+		if(!toggleCategory(code)) {
+			applyCode(code);
+		}
 		drawPage();
-		applyCode(code);
 	}
 
 	public abstract void applyCode(int code);
@@ -139,6 +125,17 @@ public abstract class OptionPage {
 	
 	public static void assignFSMUI(FSMUI fsm) {
 		reference = fsm;
+	}
+
+	public void addCategory(String title) {
+		Category out = new Category(title);
+		out.setCode(categories.size());
+		categories.add(out);
+	}
+
+	public void addEntrySet(String category, String label, String type, int code, boolean activeButton) {
+		EntrySet set = new EntrySet(label, type, activeButton, code);
+		getCategory(category).addEntrySet(set);
 	}
 	
 	public void resetCodeEntries(int code) {
@@ -180,6 +177,15 @@ public abstract class OptionPage {
 	
 	public static ElementPanel getElementPanel() {
 		return p;
+	}
+	
+	public Category getCategory(String title) {
+		for(Category c : categories) {
+			if(c.getTitle().equals(title)) {
+				return c;
+			}
+		}
+		return null;
 	}
 	
 	public Category getCategoryFromCode(int code) {

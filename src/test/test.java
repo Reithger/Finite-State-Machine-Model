@@ -10,6 +10,7 @@ import support.component.State;
 import support.component.map.TransitionFunction;
 import support.meta.FormatConversion;
 import ui.FSMUI;
+import ui.page.popups.PopoutAgentSelection;
 
 public class test {
 	
@@ -18,8 +19,9 @@ public class test {
 	private final static String SOURCEC = "./Finite State Machine Model/settings/config.txt";
 
 	public static void main(String[] args) {
-		FSMUI screen = new FSMUI();
-		FormatConversion.assignPaths(SOURCEB, SOURCEC);
+		//FSMUI screen = new FSMUI();
+		PopoutAgentSelection pA = new PopoutAgentSelection(null, SOURCE + "plant");
+		//FormatConversion.assignPaths(SOURCEB, SOURCEC);
 		//testB();
 	}
 	
