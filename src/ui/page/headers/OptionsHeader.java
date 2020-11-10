@@ -3,7 +3,6 @@ package ui.page.headers;
 import java.awt.Color;
 import java.awt.Font;
 
-import ui.FSMUI;
 import ui.page.optionpage.OptionPageManager;
 
 public class OptionsHeader extends HeaderBase{

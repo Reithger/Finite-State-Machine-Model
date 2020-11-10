@@ -5,20 +5,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Scanner;
 
+import filemeta.FileChooser;
+import filemeta.config.Config;
 import fsm.FSM;
-import graphviz.GraphViz;
-import input.Communication;
 import support.meta.FormatConversion;
 import ui.page.headers.ImageHeader;
 import ui.page.headers.OptionsHeader;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.OptionPageManager;
-import ui.page.popups.PopoutAlert;
-import ui.page.popups.PopoutConfig;
+import visual.composite.popout.PopoutAlert;
 import visual.frame.WindowFrame;
 
 /**
@@ -39,11 +36,17 @@ public class FSMUI {
 	
 	//-- Config  ----------------------------------------------
 	private final static String OS = System.getProperty("os.name");
-	private final static String DOT_ADDRESS_VAR = "dotAddress";
+	public final static String DOT_ADDRESS_VAR = "dotAddress";
 	public final static String ADDRESS_SETTINGS = "./Finite State Machine Model/settings/";
 	public final static String ADDRESS_IMAGES = "./Finite State Machine Model/images/";
 	public final static String ADDRESS_SOURCES = "./Finite State Machine Model/sources/";
 	public final static String ADDRESS_CONFIG = ADDRESS_SETTINGS + "/config.txt";
+	
+	private final static String DEFAULT_CONFIG_COMMENT = "##############################################################\r\n" + 
+			"#                       Configurations                       #\r\n" + 
+			"##############################################################\r\n" + 
+			"# Format as 'name = address', the \" = \" spacing is necessary\r\n" + 
+			"# It's awkward but it makes the file reading easier and I'm telling you this directly";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -65,8 +68,6 @@ public class FSMUI {
 	private ArrayList<String> fsmPaths;
 	
 	private ArrayList<FSM> fsms;
-	
-	private volatile String dotAddress;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -90,135 +91,44 @@ public class FSMUI {
 
 	private void createPages() {
 		frame.reserveWindow("Home");
-		imagePage = new ImagePage(this);
+		frame.showActiveWindow("Home");
+		imagePage = new ImagePage();	//TODO: Need to have headers refresh automatically
 		optionPageManager = new OptionPageManager(this);
 		optionHeader = new OptionsHeader(0, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), optionPageManager);
 		imageHeader = new ImageHeader(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), imagePage); 
-		frame.reservePanel("Home", "optionHeader", optionHeader);
-		frame.reservePanel("Home", "imageHeader", imageHeader);
-		frame.reservePanel("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
-		frame.reservePanel("Home", "imageSpace", imagePage.generateElementPanel(WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
+		frame.addPanelToWindow("Home", "optionHeader", optionHeader);
+		frame.addPanelToWindow("Home", "imageHeader", imageHeader);
+		frame.addPanelToWindow("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
+		frame.addPanelToWindow("Home", "imageSpace", imagePage.generateElementPanel(WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 	}
 	
 	//-- File Configuration  ----------------------------------
 	
 	private void fileConfiguration() {
-		File settings = new File(ADDRESS_SETTINGS);
-		File images = new File(ADDRESS_IMAGES);
-		File source = new File(ADDRESS_SOURCES);
-		images.mkdirs();
-		source.mkdirs();
-		settings.mkdirs();
-		File config = new File(ADDRESS_CONFIG);
-		if(!config.exists() || !verifyConfigFile(config)){
-			createConfigurationFile(config);
-		}
-		readDirectories(config);
-	}
-	
-	private boolean verifyConfigFile(File f) {
-		try {
-			Scanner sc = new Scanner(f);
-			String line;
-			while(sc.hasNextLine()) {
-				line = sc.nextLine();
-				if(!line.matches("#.*")) { //TODO: This is a bad verification, doesn't extend
-					if(!line.matches(DOT_ADDRESS_VAR + " = .*")) {
-						sc.close();
-						return false;
-					}
-				}
+		Config c = new Config("", new UMLConfigValidation());
+		c.addFilePath("Diagram");
+		c.addFilePath("Diagram/settings");
+		c.addFilePath("Diagram/images");
+		c.addFilePath("Diagram/sources");
+		c.addFile("Diagram/settings", "config.txt", DEFAULT_CONFIG_COMMENT);
+		c.addFileEntry("Diagram/settings", "config.txt", DOT_ADDRESS_VAR, "Where is your dot program located? It will be called externally.", "?");
+		
+		c.softWriteConfig();
+		
+		while(!c.verifyConfig()) {
+			switch(c.getErrorCode()) {
+				case UMLConfigValidation.CODE_FAILURE_DOT_ADDRESS:
+					PopoutAlert pA = new PopoutAlert(400, 250, "Please navigate to and select the path for your graphviz/bin/dot.exe file in the following navigation tool");
+					c.setConfigFileEntry("Diagram/settings/config.txt", DOT_ADDRESS_VAR, FileChooser.promptSelectFile("C:/", true, true).getAbsolutePath());
+					pA.dispose();
+					break;
+				case UMLConfigValidation.CODE_FAILURE_FILE_MISSING:
+					c.initializeDefaultConfig();
+					break;
+				default:
+					break;
 			}
-			sc.close();
 		}
-		catch(Exception e) {
-			e.printStackTrace();
-			//TODO: Error window popup
-		}
-		return true;
-	}
-	
-	private void createConfigurationFile(File config) {
-		try {
-			if(config.exists()) {
-				config.delete();
-			}
-			config.createNewFile();
-			BufferedReader defaultConfig = retrieveFileReader("/assets/config/config.properties");
-			RandomAccessFile write = new RandomAccessFile(config, "rw");
-			int c = defaultConfig.read();
-			while(c != -1) {
-				write.write(c);
-				c = defaultConfig.read();
-			}
-			write.close();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-			//TODO: Error window popup
-		}
-	}
-	
-	private void readDirectories(File config) {
-		try {
-			Scanner sc = new Scanner(config);
-			String line;
-			while(sc.hasNextLine()) {
-				line = sc.nextLine();
-				if(line.matches(DOT_ADDRESS_VAR + " = .*")) {
-					dotAddress = line.substring((DOT_ADDRESS_VAR + " = ").length());
-					if(dotAddress.contentEquals("?") || !verifyDotAddress(dotAddress)) {
-						PopoutConfig pop = new PopoutConfig();
-						while(!verifyDotAddress(dotAddress)) {
-							dotAddress = null;
-							while(Communication.get("dot") == null) {}
-							dotAddress = Communication.get("dot");
-							Communication.set("dot", null);
-							pop.failure();
-						}
-						pop.success();
-						writeConfigEntry(DOT_ADDRESS_VAR, dotAddress);
-					}
-				}
-			}
-			sc.close();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-			//TODO: Error window popup
-		}
-	}
-	
-	private void writeConfigEntry(String entry, String contents) {
-		try {
-			File config = new File(ADDRESS_CONFIG);
-			Scanner sc = new Scanner(config);
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while(sc.hasNextLine()) {
-				line = sc.nextLine();
-				if(line.matches(entry + ".*")) {
-					sb.append(entry + " = " + contents + "\n");
-				}
-				else {
-					sb.append(line + "\n");
-				}
-			}
-			sc.close();
-			config.delete();
-			config.createNewFile();
-			RandomAccessFile write = new RandomAccessFile(config, "rw");
-			write.writeBytes(sb.toString());
-			write.close();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-			//TODO: Error window popup
-		}
-	}
-	
-	private boolean verifyDotAddress(String path) {
-		return GraphViz.verifyDotPath(path);
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -404,8 +314,4 @@ public class FSMUI {
 		return out.substring(in.lastIndexOf("\\") + 1);
 	}
 
-	public void popupDisplayText(String text) {
-		new PopoutAlert(text);
-	}
-	
 }

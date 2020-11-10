@@ -1,18 +1,13 @@
 package ui.page.optionpage.implementation;
 
-
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import fsm.FSM;
 import fsm.ModalSpecification;
-import support.Agent;
-import support.UStructure;
-import support.component.map.TransitionFunction;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
-import ui.page.optionpage.entryset.EntrySet;
+import ui.page.optionpage.implementation.popup.MultiFSMSelection;
+import visual.composite.popout.PopoutAlert;
 
 /**
  * 
@@ -58,31 +53,31 @@ public class Operations extends OptionPage{
 	private final static String[] CATEGORIES = new String[] {"Transition Systems", "FSM", "Modal - WIP", "Queries"};
 	private final static Object[][][] DATA = new Object[][][] {
 		{
-			{"Trim", EntrySet.ENTRY_EMPTY, CODE_TRIM, true},
-			{"Make Accessible", EntrySet.ENTRY_EMPTY, CODE_ACCESSIBLE, true},
-			{"Make Co-Accessible", EntrySet.ENTRY_EMPTY, CODE_CO_ACCESSIBLE, true},
+			{"Trim", OptionPage.ENTRY_EMPTY, CODE_TRIM, true},
+			{"Make Accessible", OptionPage.ENTRY_EMPTY, CODE_ACCESSIBLE, true},
+			{"Make Co-Accessible", OptionPage.ENTRY_EMPTY, CODE_CO_ACCESSIBLE, true},
 		},
 		{
-			{"Build Observer", EntrySet.ENTRY_EMPTY, CODE_OBSERVER, true},
-			{"Product", EntrySet.ENTRY_SELECT_FSMS, CODE_PRODUCT_SELECT, false},
-			{"", EntrySet.ENTRY_EMPTY, CODE_PRODUCT, true},
-			{"Parallel Composition", EntrySet.ENTRY_SELECT_FSMS, CODE_PARALLEL_COMPOSITION_SELECT, false},
-			{"", EntrySet.ENTRY_EMPTY, CODE_PARALLEL_COMPOSITION, true},
-			{"Generate Supremal Controllable Sublanguage", EntrySet.ENTRY_SELECT_FSM, CODE_SUP_CNT_SBL_SELECT, false},
-			{"", EntrySet.ENTRY_EMPTY, CODE_SUP_CNT_SBL, true},
+			{"Build Observer", OptionPage.ENTRY_EMPTY, CODE_OBSERVER, true},
+			{"Product", OptionPage.ENTRY_BUTTON_LIST, CODE_PRODUCT_SELECT, true},	//H, respond to input to make MultiFSMSelection
+			{"", OptionPage.ENTRY_EMPTY, CODE_PRODUCT, true},
+			{"Parallel Composition", OptionPage.ENTRY_BUTTON_LIST, CODE_PARALLEL_COMPOSITION_SELECT, true},	//H
+			{"", OptionPage.ENTRY_EMPTY, CODE_PARALLEL_COMPOSITION, true},
+			{"Generate Supremal Controllable Sublanguage", OptionPage.ENTRY_BUTTON_LIST, CODE_SUP_CNT_SBL_SELECT, true},	//H
+			{"", OptionPage.ENTRY_EMPTY, CODE_SUP_CNT_SBL, true},
 		},
 		{
-			{"Get Underlying FSM", EntrySet.ENTRY_EMPTY, CODE_UNDER_FSM, true},
-			{"Build Optimal Opaque Controller", EntrySet.ENTRY_EMPTY, CODE_OPT_OPQ_CONTROLLER, true},
-			{"Make Optimal Supervisor", EntrySet.ENTRY_SELECT_FSM, CODE_OPT_SPVR_SELECT, false},
-			{"", EntrySet.ENTRY_EMPTY, CODE_OPT_SPVR, true},
-			{"Get Greatest Lower Bound", EntrySet.ENTRY_SELECT_FSM, CODE_GRT_LWR_BND_SELECT, false},
-			{"", EntrySet.ENTRY_EMPTY, CODE_GRT_LWR_BND, true},
-			{"Prune", EntrySet.ENTRY_EMPTY, CODE_PRUNE, true},
+			{"Get Underlying FSM", OptionPage.ENTRY_EMPTY, CODE_UNDER_FSM, true},
+			{"Build Optimal Opaque Controller", OptionPage.ENTRY_EMPTY, CODE_OPT_OPQ_CONTROLLER, true},
+			{"Make Optimal Supervisor", OptionPage.ENTRY_BUTTON_LIST, CODE_OPT_SPVR_SELECT, true},	//H
+			{"", OptionPage.ENTRY_EMPTY, CODE_OPT_SPVR, true},
+			{"Get Greatest Lower Bound", OptionPage.ENTRY_BUTTON_LIST, CODE_GRT_LWR_BND_SELECT, true},	//H
+			{"", OptionPage.ENTRY_EMPTY, CODE_GRT_LWR_BND, true},
+			{"Prune", OptionPage.ENTRY_EMPTY, CODE_PRUNE, true},
 		},
 		{
-			{"Is Blocking", EntrySet.ENTRY_EMPTY, CODE_BLOCKING, true},
-			{"State Exists", EntrySet.ENTRY_TEXT_SINGLE, CODE_STATE_EXISTS, true},
+			{"Is Blocking", OptionPage.ENTRY_EMPTY, CODE_BLOCKING, true},
+			{"State Exists", OptionPage.ENTRY_TEXT_SINGLE, CODE_STATE_EXISTS, true},
 		},
 
 	};
@@ -117,6 +112,21 @@ public class Operations extends OptionPage{
 				getFSMUI().allotTransitionSystem(fsm.buildObserver(), getFSMUI().getActiveFSM().getId() + "_observer");
 				getFSMUI().refreshActiveImage();
 				break;
+			case CODE_PRODUCT_SELECT:
+				new MultiFSMSelection(OptionPage.getFSMUI().getFSMList(), getEntrySetFromCode(code));
+				break;
+			case CODE_PARALLEL_COMPOSITION_SELECT:
+				new MultiFSMSelection(OptionPage.getFSMUI().getFSMList(), getEntrySetFromCode(code));
+				break;
+			case CODE_SUP_CNT_SBL_SELECT:
+				new MultiFSMSelection(OptionPage.getFSMUI().getFSMList(), getEntrySetFromCode(code));
+				break;
+			case CODE_OPT_SPVR_SELECT:
+				new MultiFSMSelection(OptionPage.getFSMUI().getFSMList(), getEntrySetFromCode(code));
+				break;
+			case CODE_GRT_LWR_BND_SELECT:
+				new MultiFSMSelection(OptionPage.getFSMUI().getFSMList(), getEntrySetFromCode(code));
+				break;
 			case CODE_PRODUCT:
 				try {
 					FSM[] fsms = getFSMArray(CODE_PRODUCT_SELECT);
@@ -125,13 +135,13 @@ public class Operations extends OptionPage{
 					}
 					catch(Exception e1) {
 						e1.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
+						new PopoutAlert(250, 250, ERROR_TEXT_TWO);
 					}
 					getFSMUI().refreshActiveImage();
 				}
 				catch(Exception e) {
 					e.printStackTrace();
-					getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
+					new PopoutAlert(250, 250, ERROR_TEXT_ONE);
 				}
 				break;
 			case CODE_PARALLEL_COMPOSITION:
@@ -142,13 +152,13 @@ public class Operations extends OptionPage{
 					}
 					catch(Exception e1) {
 						e1.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
+						new PopoutAlert(250, 250, ERROR_TEXT_TWO);
 					}
 					getFSMUI().refreshActiveImage();
 				}
 				catch(Exception e) {
 					e.printStackTrace();
-					getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
+					new PopoutAlert(250, 250, ERROR_TEXT_ONE);
 				}
 				break;
 			case CODE_SUP_CNT_SBL:
@@ -159,21 +169,21 @@ public class Operations extends OptionPage{
 					}
 					catch(Exception e1) {
 						e1.printStackTrace();
-						getFSMUI().popupDisplayText(ERROR_TEXT_TWO);
+						new PopoutAlert(250, 250, ERROR_TEXT_TWO);
 					}
 					getFSMUI().refreshActiveImage();
 				}
 				catch(Exception e) {
 					e.printStackTrace();
-					getFSMUI().popupDisplayText(ERROR_TEXT_ONE);
+					new PopoutAlert(250, 250, ERROR_TEXT_ONE);
 				}
 				break;
 			case CODE_BLOCKING:
-				getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().isBlocking() ? "Is Blocking" : "Is Not Blocking");
+				new PopoutAlert(250, 250, getFSMUI().getActiveFSM().isBlocking() ? "Is Blocking" : "Is Not Blocking");
 				break;
 			case CODE_STATE_EXISTS: 
 				String state = this.getTextFromCode(CODE_STATE_EXISTS, 0);
-				getFSMUI().popupDisplayText(getFSMUI().getActiveFSM().stateExists(state) ? state + " exists" : state + " does not exist");
+				new PopoutAlert(250, 250, getFSMUI().getActiveFSM().stateExists(state) ? state + " exists" : state + " does not exist");
 				break;
 				/* TODO: Figure out what ModalSpecification is supposed to look like before integrating
 			case CODE_UNDER_FSM: 

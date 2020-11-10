@@ -5,7 +5,7 @@ import java.io.File;
 import fsm.TransitionSystem;
 import graphviz.GraphViz;
 import ui.FSMUI;
-import ui.page.popups.PopoutAlert;
+import visual.composite.popout.PopoutAlert;
 
 /**
  * This class handles the transfer of an object from the fsm package to a .dot format
@@ -140,7 +140,7 @@ public class FormatConversion {
 			return true;
 		}
 		else {
-			PopoutAlert pA = new PopoutAlert("Error: Have not initialized nameings for Format Conversions");
+			PopoutAlert pA = new PopoutAlert(250, 250, "Error: Have not initialized namings for Format Conversions");
 			return false;
 		}
 	}

@@ -3,14 +3,12 @@ package ui.page.optionpage.implementation;
 import java.io.File;
 import java.util.Random;
 
-import input.Communication;
-import support.meta.FormatConversion;
+import input.Callback;
 import support.meta.GenerateFSM;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
-import ui.page.optionpage.entryset.EntrySet;
-import ui.page.popups.PopoutSelectList;
-import ui.page.popups.PopoutAlert;
+import visual.composite.popout.PopoutAlert;
+import visual.composite.popout.PopoutSelectList;
 
 /**
  * TODO: SVG is not displaying correctly, despite the produced TikZ functioning correctly
@@ -76,54 +74,54 @@ public class AdjustFSM extends OptionPage{
 	private final static String[] CATEGORIES = new String[] {"Generate FSM Simple", "Generate FSM Complicated", "Edit FSM States", "Edit FSM Transitions", "Admin"};
 	private final static Object[][][] DATA = new Object[][][] {
 		{
-			{"Number of States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_STATES, false},
-			{"Number of Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_EVENTS, false},
-			{"Number of Transitions", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_TRANS, false},
-			{"Non-Deterministic", EntrySet.ENTRY_CHECKBOX, CODE_ACCESS_NON_DETERMINISTIC, false},
-			{"Name", EntrySet.ENTRY_TEXT_LONG, CODE_ACCESS_FSM_NAME, false},
-			{"Generate", EntrySet.ENTRY_EMPTY,  CODE_GENERATE_FSM, true},
+			{"Number of States", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_STATES, false},
+			{"Number of Events", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_EVENTS, false},
+			{"Number of Transitions", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_NUM_TRANS, false},
+			{"Non-Deterministic", OptionPage.ENTRY_CHECKBOX, CODE_ACCESS_NON_DETERMINISTIC, false},
+			{"Name", OptionPage.ENTRY_TEXT_LONG, CODE_ACCESS_FSM_NAME, false},
+			{"Generate", OptionPage.ENTRY_EMPTY,  CODE_GENERATE_FSM, true},
 		},
 		{
-			{"Number of States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_STATES, false},
-			{"Number of Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_EVENTS, false},
-			{"Number of Transitions", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_TRANS, false},
+			{"Number of States", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_STATES, false},
+			{"Number of Events", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_EVENTS, false},
+			{"Number of Transitions", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_NUM_TRANS, false},
 			
-			{"Number of Initial States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_INITIAL, false},
-			{"Number of Marked States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_MARKED, false},
-			{"Number of Secret States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_SECRET, false},
-			{"Number of Controlled Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_CONTROLLED, false},
-			{"Number of Unobservable Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_UNOBSERVED, false},
-			{"Number of Attacker Invisible Events", EntrySet.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_ATTACKER, false},
+			{"Number of Initial States", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_INITIAL, false},
+			{"Number of Marked States", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_MARKED, false},
+			{"Number of Secret States", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_SECRET, false},
+			{"Number of Controlled Events", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_CONTROLLED, false},
+			{"Number of Unobservable Events", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_UNOBSERVED, false},
+			{"Number of Attacker Invisible Events", OptionPage.ENTRY_TEXT_SINGLE, CODE_ACCESS_COMPLEX_ATTACKER, false},
 			
-			{"Non-Deterministic", EntrySet.ENTRY_CHECKBOX, CODE_ACCESS_COMPLEX_NON_DETERMINISTIC, false},
-			{"Name", EntrySet.ENTRY_TEXT_LONG, CODE_ACCESS_COMPLEX_FSM_NAME, false},
-			{"Generate", EntrySet.ENTRY_EMPTY, CODE_GENERATE_COMPLEX_FSM, true},
+			{"Non-Deterministic", OptionPage.ENTRY_CHECKBOX, CODE_ACCESS_COMPLEX_NON_DETERMINISTIC, false},
+			{"Name", OptionPage.ENTRY_TEXT_LONG, CODE_ACCESS_COMPLEX_FSM_NAME, false},
+			{"Generate", OptionPage.ENTRY_EMPTY, CODE_GENERATE_COMPLEX_FSM, true},
 		},
 		{
-			{"Add State", EntrySet.ENTRY_TEXT_SINGLE, CODE_ADD_STATE, true},
-			{"Add Many States", EntrySet.ENTRY_TEXT_SINGLE, CODE_ADD_STATES, true},
-			{"Remove State", EntrySet.ENTRY_TEXT_SINGLE, CODE_REMOVE_STATE, true},
-			{"Rename State", EntrySet.ENTRY_TEXT_DOUBLE, CODE_RENAME_STATE, true},
-			{"Add Initial State", EntrySet.ENTRY_TEXT_SINGLE, CODE_INITIAL_STATE, true},
-			{"Set State Marked", EntrySet.ENTRY_TEXT_SINGLE, CODE_MARKED_STATE, true},
-			{"Set State Secret", EntrySet.ENTRY_TEXT_SINGLE, CODE_SECRET_STATE, true},
-			{"Set State Bad", EntrySet.ENTRY_TEXT_SINGLE, CODE_BAD_STATE, true},
+			{"Add State", OptionPage.ENTRY_TEXT_SINGLE, CODE_ADD_STATE, true},
+			{"Add Many States", OptionPage.ENTRY_TEXT_SINGLE, CODE_ADD_STATES, true},
+			{"Remove State", OptionPage.ENTRY_TEXT_SINGLE, CODE_REMOVE_STATE, true},
+			{"Rename State", OptionPage.ENTRY_TEXT_DOUBLE, CODE_RENAME_STATE, true},
+			{"Add Initial State", OptionPage.ENTRY_TEXT_SINGLE, CODE_INITIAL_STATE, true},
+			{"Set State Marked", OptionPage.ENTRY_TEXT_SINGLE, CODE_MARKED_STATE, true},
+			{"Set State Secret", OptionPage.ENTRY_TEXT_SINGLE, CODE_SECRET_STATE, true},
+			{"Set State Bad", OptionPage.ENTRY_TEXT_SINGLE, CODE_BAD_STATE, true},
 		},
 		{
-			{"Add Transition", EntrySet.ENTRY_TEXT_TRIPLE, CODE_ADD_TRANSITION, true},
-			//{"Mark Must Transition", EntrySet.ENTRY_CHECKBOX, CODE_TOGGLE_MUST, false},
-			{"Remove Transition", EntrySet.ENTRY_TEXT_TRIPLE, CODE_REMOVE_TRANSITION, true},
+			{"Add Transition", OptionPage.ENTRY_TEXT_TRIPLE, CODE_ADD_TRANSITION, true},
+			//{"Mark Must Transition", OptionPage.ENTRY_CHECKBOX, CODE_TOGGLE_MUST, false},
+			{"Remove Transition", OptionPage.ENTRY_TEXT_TRIPLE, CODE_REMOVE_TRANSITION, true},
 		},
 		{
-			{"Save Source", EntrySet.ENTRY_EMPTY, CODE_SAVE_FSM, true},
-			{"Save Image", EntrySet.ENTRY_EMPTY, CODE_SAVE_IMG, true},
-			{"Generate Tikz", EntrySet.ENTRY_EMPTY, CODE_SAVE_TKZ, true},
-			{"Generate SVG", EntrySet.ENTRY_EMPTY, CODE_SAVE_SVG, true},
-			{"Load Source", EntrySet.ENTRY_EMPTY, CODE_LOAD_SOURCE, true},
-			{"Rename FSM", EntrySet.ENTRY_TEXT_LONG, CODE_RENAME_FSM, true},
-			{"Generate Copy", EntrySet.ENTRY_TEXT_LONG, CODE_DUPLICATE_FSM, true},
-			{"Close FSM", EntrySet.ENTRY_EMPTY, CODE_CLOSE_FSM, true},
-			{"Delete Source", EntrySet.ENTRY_EMPTY, CODE_DELETE_SOURCE, true},
+			{"Save Source", OptionPage.ENTRY_EMPTY, CODE_SAVE_FSM, true},
+			{"Save Image", OptionPage.ENTRY_EMPTY, CODE_SAVE_IMG, true},
+			{"Generate Tikz", OptionPage.ENTRY_EMPTY, CODE_SAVE_TKZ, true},
+			{"Generate SVG", OptionPage.ENTRY_EMPTY, CODE_SAVE_SVG, true},
+			{"Load Source", OptionPage.ENTRY_EMPTY, CODE_LOAD_SOURCE, true},
+			{"Rename FSM", OptionPage.ENTRY_TEXT_LONG, CODE_RENAME_FSM, true},
+			{"Generate Copy", OptionPage.ENTRY_TEXT_LONG, CODE_DUPLICATE_FSM, true},
+			{"Close FSM", OptionPage.ENTRY_EMPTY, CODE_CLOSE_FSM, true},
+			{"Delete Source", OptionPage.ENTRY_EMPTY, CODE_DELETE_SOURCE, true},
 		},
 	};
 	private final static String HELP = 
@@ -167,10 +165,10 @@ public class AdjustFSM extends OptionPage{
 				resetCodeEntries(code);
 				break;
 			case CODE_SAVE_SVG:
-				PopoutAlert pSVG = new PopoutAlert("Saved at: " + getFSMUI().saveActiveSVG());
+				PopoutAlert pSVG = new PopoutAlert(250, 150, "Saved at: " + getFSMUI().saveActiveSVG());
 				break;
 			case CODE_SAVE_TKZ:
-				PopoutAlert pA = new PopoutAlert("Saved at: " + getFSMUI().saveActiveTikZ());
+				PopoutAlert pA = new PopoutAlert(250, 150, "Saved at: " + getFSMUI().saveActiveTikZ());
 				break;
 			case CODE_SAVE_FSM:
 				getFSMUI().saveActiveFSMSource();
@@ -189,15 +187,16 @@ public class AdjustFSM extends OptionPage{
 				break;
 			case CODE_LOAD_SOURCE:
 				File f = new File(FSMUI.ADDRESS_SOURCES);
-				PopoutSelectList fs = new PopoutSelectList(f.list(), true) {
+				PopoutSelectList fs = new PopoutSelectList(300, 600, f.list(), true, "correspond");
+				Callback.setCallback("correspond", new Callback() {
 					@Override
-					public void dispose() {
-						String outcome = Communication.get(PopoutSelectList.STATIC_ACCESS);
+					public void callbackFunction() {
+						String outcome = fs.getSelected();
 						getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + outcome, outcome.replaceAll(".fsm", ""));
 						getFSMUI().refreshActiveImage();
-						super.dispose();
+						fs.dispose();
 					}
-				};
+				});
 				resetCodeEntries(code);
 				break;
 			case CODE_DELETE_SOURCE:
@@ -267,7 +266,7 @@ public class AdjustFSM extends OptionPage{
 				}
 				catch(Exception e) {
 					e.printStackTrace();
-					PopoutAlert pa3 =  new PopoutAlert("Failed to generate FSM, please check your input again.");
+					PopoutAlert pa3 =  new PopoutAlert(250, 250, "Failed to generate FSM, please check your input again.");
 				}
 				break;
 			case CODE_GENERATE_COMPLEX_FSM:
@@ -296,7 +295,7 @@ public class AdjustFSM extends OptionPage{
 				}
 				catch(Exception e) {
 					e.printStackTrace();
-					PopoutAlert pa3 =  new PopoutAlert("Failed to generate FSM, please check your input again.");
+					PopoutAlert pa3 =  new PopoutAlert(250, 250, "Failed to generate FSM, please check your input again.");
 				}
 				break;
 			default:

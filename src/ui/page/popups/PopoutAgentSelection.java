@@ -9,10 +9,8 @@ import java.util.Collection;
 import fsm.FSM;
 import support.Agent;
 import support.component.Event;
-import support.component.map.EventMap;
 import ui.page.optionpage.implementation.UStructurePage;
-import visual.frame.WindowFrame;
-import visual.panel.ElementPanel;
+import visual.composite.popout.PopoutWindow;
 
 public class PopoutAgentSelection extends PopoutWindow{
 
@@ -32,8 +30,7 @@ public class PopoutAgentSelection extends PopoutWindow{
 	UStructurePage reference;
 	
 	public PopoutAgentSelection(UStructurePage context, String ref) {
-		super();
-		resize(WIDTH, HEIGHT);
+		super(WIDTH, HEIGHT);
 		setTitle("Configure Agents");
 		FSM fs = null;
 		ref = (ref.contains("\\.fsm") ? ref : (ref + ".fsm"));
@@ -59,35 +56,35 @@ public class PopoutAgentSelection extends PopoutWindow{
 		removeElementPrefixed("");
 		for(int i = 0; i < events.size(); i++) {
 			posX += spacing;
-			handleText("event_name_" + i, posX, posY, spacing, height, DEFAULT_FONT, events.get(i).getEventName());
-			handleText("event_name_tag_obs_" + i, posX - spacing / 4, posY + spacing / 3, spacing / 2, height, SMALLER_FONT, "Observability");
-			handleText("event_name_tag_cnt_" + i, posX + spacing / 4, posY + spacing / 3, spacing / 2, height, SMALLER_FONT, "Controllable");
-			handleRectangle("event_border_" + i, 5, posX, posY, spacing, height, Color.white, Color.black);
+			handleText("event_name_" + i, false, posX, posY, spacing, height, DEFAULT_FONT, events.get(i).getEventName());
+			handleText("event_name_tag_obs_" + i, false,  posX - spacing / 4, posY + spacing / 3, spacing / 2, height, SMALLER_FONT, "Observability");
+			handleText("event_name_tag_cnt_" + i, false,  posX + spacing / 4, posY + spacing / 3, spacing / 2, height, SMALLER_FONT, "Controllable");
+			handleRectangle("event_border_" + i, false,  5, posX, posY, spacing, height, Color.white, Color.black);
 		}
 		posY += height * 3 / 2;
 		for(int i = 0; i < agents.size(); i++) {
 			posX = spacing / 2;
 			//Draw name (plant or i'th agent)
-			handleText("agent_name_" + i, posX, posY, spacing, height, DEFAULT_FONT, i == 0 ? "Plant" : ("Agent " + i));
+			handleText("agent_name_" + i, false,  posX, posY, spacing, height, DEFAULT_FONT, i == 0 ? "Plant" : ("Agent " + i));
 			Agent a = agents.get(i);
 			for(int j = 0; j < events.size(); j++) {
 				posX += spacing;
 				String e = events.get(j).getEventName();
-				handleText("agent_event_obs_" + i + "_" + j, posX - spacing / 4, posY, spacing / 2, height,  SMALL_FONT,""+a.getObservable(e));
-				handleText("agent_event_con_" + i + "_" + j, posX + spacing / 4, posY, spacing / 2, height, SMALL_FONT, ""+a.getControllable(e));
-				handleButton("agent_event_toggle_" + i + "_" + j, posX, posY, spacing, height, CODE_TOGGLE_EVENT + i * events.size() + j);
-				handleRectangle("agent_event_border_" + i + "_" + j, 5, posX, posY, spacing, height, Color.white, Color.black);
+				handleText("agent_event_obs_" + i + "_" + j, false,  posX - spacing / 4, posY, spacing / 2, height,  SMALL_FONT,""+a.getObservable(e));
+				handleText("agent_event_con_" + i + "_" + j, false,  posX + spacing / 4, posY, spacing / 2, height, SMALL_FONT, ""+a.getControllable(e));
+				handleButton("agent_event_toggle_" + i + "_" + j, false,  posX, posY, spacing, height, CODE_TOGGLE_EVENT + i * events.size() + j);
+				handleRectangle("agent_event_border_" + i + "_" + j, false,  5, posX, posY, spacing, height, Color.white, Color.black);
 			}
 			posY += spacing;
 		}
 		posX = height / 2;
-		handleText("agent_name_add", posX, posY, spacing, height, DEFAULT_FONT, "+");
-		handleButton("agent_add_button",  posX, posY, spacing, height, CODE_ADD_AGENT);
+		handleText("agent_name_add", false,  posX, posY, spacing, height, DEFAULT_FONT, "+");
+		handleButton("agent_add_button", false, posX, posY, spacing, height, CODE_ADD_AGENT);
 		posX += events.size() * height;
-		handleText("submit", posX, posY, spacing, height, DEFAULT_FONT, "Submit");
-		handleButton("submit_button", posX, posY, spacing, height, CODE_SUBMIT);
+		handleText("submit", false,  posX, posY, spacing, height, DEFAULT_FONT, "Submit");
+		handleButton("submit_button", false,  posX, posY, spacing, height, CODE_SUBMIT);
 		posY += height;
-		handleText("buffer", 0, posY, 1, 1, DEFAULT_FONT, "");
+		handleText("buffer", false,  0, posY, 1, 1, DEFAULT_FONT, "");
 	}
 	
 	@Override

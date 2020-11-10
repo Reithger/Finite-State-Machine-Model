@@ -9,7 +9,7 @@ import support.UStructure;
 import support.component.map.TransitionFunction;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
-import ui.page.optionpage.entryset.EntrySet;
+import ui.page.optionpage.implementation.popup.SingleFSMSelection;
 import ui.page.popups.PopoutAgentSelection;
 
 public class UStructurePage extends OptionPage{
@@ -31,12 +31,12 @@ public class UStructurePage extends OptionPage{
 	private final static String[] CATEGORIES = new String[] {"Build U-Structure"};
 	private final static Object[][][] DATA = new Object[][][] {
 		{
-			{"Plant", EntrySet.ENTRY_SELECT_FSM, CODE_SELECT_PLANT, false},
-			{"Bad Transitions", EntrySet.ENTRY_TEXT_TRIPLE, CODE_ADD_BAD_TRANS, true},		//Need ENTRY_TEXT_TRIPLE but allows repeated entry
-			{"", EntrySet.TEXT_DISPLAY, CODE_DISPLAY_BAD_TRANS_START, false},
-			{"Agents", EntrySet.TEXT_DISPLAY, CODE_BUILD_AGENTS, true},			//Pop-up window for defining visible/controllable events for n agents
-			{"Display UStructure?", EntrySet.ENTRY_CHECKBOX, CODE_TOGGLE_USTRUCT, false},
-			{"Build U-Structure", EntrySet.ENTRY_EMPTY, CODE_BUILD_USTRUCT, true},
+			{"Plant", OptionPage.ENTRY_BUTTON_LIST, CODE_SELECT_PLANT, true},
+			{"Bad Transitions", OptionPage.ENTRY_TEXT_TRIPLE, CODE_ADD_BAD_TRANS, true},		//Need ENTRY_TEXT_TRIPLE but allows repeated entry
+			{"", OptionPage.TEXT_DISPLAY, CODE_DISPLAY_BAD_TRANS_START, false},
+			{"Agents", OptionPage.TEXT_DISPLAY, CODE_BUILD_AGENTS, true},			//Pop-up window for defining visible/controllable events for n agents
+			{"Display UStructure?", OptionPage.ENTRY_CHECKBOX, CODE_TOGGLE_USTRUCT, false},
+			{"Build U-Structure", OptionPage.ENTRY_EMPTY, CODE_BUILD_USTRUCT, true},
 		},
 
 	};
@@ -73,6 +73,9 @@ public class UStructurePage extends OptionPage{
 			drawPage();
 		}
 		switch(code) {
+			case CODE_SELECT_PLANT:
+				new SingleFSMSelection(getEntrySetFromCode(code));
+				break;
 			case CODE_ADD_BAD_TRANS:
 				String a = this.getTextFromCode(code, 0);
 				String b = this.getTextFromCode(code, 1);

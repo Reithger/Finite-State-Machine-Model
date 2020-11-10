@@ -1,10 +1,9 @@
 package ui.page.imagepage;
 
 import java.awt.Color;
-import java.awt.Image;
 import java.util.ArrayList;
 
-import ui.FSMUI;
+import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
@@ -17,17 +16,11 @@ public class ImagePage {
 	private ElementPanel p;
 	private ArrayList<ImageDisplay> images;
 	private int currentImageIndex;
-	private FSMUI reference;
-	
-	private int dragStartX;
-	private int dragStartY;
-	private boolean dragState;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public ImagePage(FSMUI ref) {
+	public ImagePage() {
 		images = new ArrayList<ImageDisplay>();
-		reference = ref;
 		currentImageIndex = 0;
 	}
 	
@@ -47,33 +40,24 @@ public class ImagePage {
 
 			@Override
 			public void mouseWheelBehaviour(int scroll) {
-				if(scroll < 0) {
-					getCurrentImageDisplay().increaseZoom();
-				}
-				else {
-					getCurrentImageDisplay().decreaseZoom();
-				}
+				getCurrentImageDisplay().processMouseWheelInput(scroll);
 				drawPage();
 			}
 			
 			public void clickPressBehaviour(int code, int x, int y) {
-				dragStartX = x;
-				dragStartY = y;
-				dragState = true;
+				getCurrentImageDisplay().processPressInput(code, x, y);
+				drawPage();
 			}
 			
 			public void clickReleaseBehaviour(int code, int x, int y) {
-				dragState = false;
+				getCurrentImageDisplay().processReleaseInput(code, x, y);
+				drawPage();
 			}
 			
 			@Override
 			public void dragBehaviour(int code, int x, int y) {
-				if(dragState) {
-					getCurrentImageDisplay().dragOriginX(x - dragStartX);
-					getCurrentImageDisplay().dragOriginY(y - dragStartY);
-					dragStartX = x;
-					dragStartY = y;
-				}
+				getCurrentImageDisplay().processDragInput(code, x, y);
+				drawPage();
 			}
 		};
 
@@ -84,12 +68,15 @@ public class ImagePage {
 	}
 
 	public void generatePopout() {
-		getCurrentImageDisplay().generatePopout();
+		WindowFrame newF = new WindowFrame(800, 800);
+		ElementPanel p2 = new ElementPanel(0, 0, 800, 800);
+		new ImageDisplay(getCurrentImageDisplay().getImagePath(), p2);
+		newF.addPanel("p2", p2);
 	}
 
-	public void replaceActiveImage(String newName) {
+	public void replaceActiveImage(String newPath) {
 		p.removeElement(getCurrentImageDisplay().getImagePath());
-		getCurrentImageDisplay().setImagePath(FSMUI.ADDRESS_IMAGES + newName + ".jpg");
+		getCurrentImageDisplay().setImagePath(newPath + (newPath.contains(".jpg") ? "" : ".jpg"));
 	}
 	
 	public void refreshActiveImage() {
@@ -99,7 +86,6 @@ public class ImagePage {
 	
 	public void allotImage(String path) {
 		images.add(new ImageDisplay(path, p));
-		reference.updateImageHeader();
 	}
 	
 	public void removeImage(int ind){

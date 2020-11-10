@@ -19,8 +19,8 @@ public class test {
 	private final static String SOURCEC = "./Finite State Machine Model/settings/config.txt";
 
 	public static void main(String[] args) {
-		//FSMUI screen = new FSMUI();
-		PopoutAgentSelection pA = new PopoutAgentSelection(null, SOURCE + "plant");
+		FSMUI screen = new FSMUI();
+		//PopoutAgentSelection pA = new PopoutAgentSelection(null, SOURCE + "plant");
 		//FormatConversion.assignPaths(SOURCEB, SOURCEC);
 		//testB();
 	}

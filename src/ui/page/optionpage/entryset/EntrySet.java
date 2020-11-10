@@ -2,13 +2,7 @@ package ui.page.optionpage.entryset;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.util.ArrayList;
-
-import input.Communication;
-import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
-import visual.frame.WindowFrame;
-import visual.panel.ElementPanel;
 
 /**
  * TODO: Probably wanna break this up with an interface or abstract class?
@@ -22,6 +16,7 @@ public class EntrySet {
 //---  Constant Values   ----------------------------------------------------------------------
 	
 	private final static Font DEFAULT_FONT = new Font("Serif", Font.BOLD, 12);
+	private final static int MAX_DISPLAY_LIST = 8;	//TODO: Arbitrary, once EntrySet objects allow custom set
 	
 	public final static String ENTRY_TEXT_SINGLE = "S";
 	public final static String ENTRY_TEXT_DOUBLE = "D";
@@ -30,8 +25,7 @@ public class EntrySet {
 	public final static String ENTRY_TEXT_LONG = "L";
 	public final static String ENTRY_CHECKBOX = "C";
 	public final static String ENTRY_EMPTY = "E";
-	public final static String ENTRY_SELECT_FSM = "F";
-	public final static String ENTRY_SELECT_FSMS = "FS";
+	public final static String ENTRY_BUTTON_LIST = "BL"; //No low-level input response, associated set of Strings to display (set max)
 	public final static String TEXT_DISPLAY = "ET";
 	
 	private final static String DEFAULT_TEXT_ENTRY_CONTENTS = "";
@@ -58,10 +52,10 @@ public class EntrySet {
 		button = butt;
 		contents = new String[getEntryContentSize(ty)];
 		for(int i = 0; i < contents.length; i++) {
-			contents[i] = type.contentEquals(ENTRY_CHECKBOX) ? CHECKBOX_FALSE : DEFAULT_TEXT_ENTRY_CONTENTS;
+			contents[i] = type.equals(ENTRY_CHECKBOX) ? CHECKBOX_FALSE : DEFAULT_TEXT_ENTRY_CONTENTS;
 		}
 		subsystemCode = OptionPage.SUBSYSTEM_CODE;
-		OptionPage.SUBSYSTEM_CODE -= contents.length;
+		OptionPage.SUBSYSTEM_CODE -= contents.length;	//TODO Probably want a function to assign that returns the new value to the caller
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -73,11 +67,9 @@ public class EntrySet {
 	 * @return - Returns an int value representing the change in y position after drawing this object
 	 */
 	
-	public int drawEntrySet(int y) {
+	public int drawEntrySet(int y, int wid, int hei) {
 		int posX = 0;
 		int posY = y;
-		int wid = OptionPage.getElementPanel().getWidth();
-		int hei = OptionPage.getElementPanel().getHeight();
 		String pref = getElementPrefix();
 		OptionPage.handleText(pref + "label_text", wid / 3 / 2, posY, wid / 3, hei / 20, DEFAULT_FONT, label);
 		switch(type) {
@@ -95,16 +87,10 @@ public class EntrySet {
 					OptionPage.handleButton(pref + "_text_display_button_" + i, posX, posY, wid / 3, hei / 30, code + i);
 				}
 				break;
-			case ENTRY_SELECT_FSM:
+			case ENTRY_BUTTON_LIST:
 				posX = wid / 3 + wid / 3 ;
-				String choze = contents[0] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[0];
-		  		OptionPage.handleRectangle(pref + "_rect_fsm_entry", posX, posY, wid / 3, hei / 30, Color.white, Color.gray);
-		  		OptionPage.handleText(pref + "_text_entry_fsm_entry", posX, posY, wid / 3, hei / 30, DEFAULT_FONT, choze);
-		  		OptionPage.handleButton(pref + "_butt_fsm_entry", posX, posY, wid / 3, hei / 30, code);
-				break;
-			case ENTRY_SELECT_FSMS:
-				posX = wid / 3 + wid / 3;
-				for(int a = 0; a < MultiFSMSelection.MAX_SELECT_FSMS; a++) {
+
+				for(int a = 0; a < MAX_DISPLAY_LIST; a++) {
 					String chozes = contents[a] == null ? DEFAULT_TEXT_ENTRY_CONTENTS : contents[a];
 					if((chozes == null || chozes.equals(""))) {
 						OptionPage.handleRectangle(pref + "_rect_fsm_entry_" + a, posX, posY, wid / 3, hei / 30, Color.white, Color.gray);
@@ -186,12 +172,6 @@ public class EntrySet {
 				contents[0] = (contents[0].equals(CHECKBOX_TRUE) ? CHECKBOX_FALSE : CHECKBOX_TRUE);
 				OptionPage.getElementPanel().removeElement(getElementPrefix() + "_checkbox_rect");
 				break;
-			case ENTRY_SELECT_FSM:
-				new SingleFSMSelection(this);
-				break;
-			case ENTRY_SELECT_FSMS:
-				new MultiFSMSelection(this);
-				break;
 			default:
 				break;
 		}
@@ -233,10 +213,8 @@ public class EntrySet {
 				return 1;
 			case ENTRY_TEXT_LONG:
 				return 1;
-			case ENTRY_SELECT_FSM:
-				return 1;
-			case ENTRY_SELECT_FSMS:
-				return MultiFSMSelection.MAX_SELECT_FSMS;
+			case ENTRY_BUTTON_LIST:
+				return MAX_DISPLAY_LIST;		//This needs to be dynamic, ALL of this should be objects
 			case ENTRY_EMPTY:
 				return 0;
 			default:
@@ -278,10 +256,4 @@ public class EntrySet {
 		return getContents()[index];
 	}
 	
-//---  Support Classes   ----------------------------------------------------------------------
-
-	//TODO: Display small .jpg of the fsm?
-	
-	//-- Frames  ----------------------------------------------
-
 }

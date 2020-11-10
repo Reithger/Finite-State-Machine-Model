@@ -22,6 +22,20 @@ public abstract class OptionPage {
 	
 	protected final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
 	
+	public final static String ENTRY_TEXT_SINGLE = "S";	//TODO: Probably distinct functions to add each of these, like ElementPanel
+	public final static String ENTRY_TEXT_DOUBLE = "D";	//TODO: Need EntrySet factory and subclasses of an abstract class, need that structure
+	public final static String ENTRY_TEXT_TRIPLE = "T";
+	public final static String ENTRY_TEXT_QUARTET = "Q";
+	public final static String ENTRY_TEXT_LONG = "L";
+	public final static String ENTRY_CHECKBOX = "C";
+	public final static String TEXT_DISPLAY = "ET";
+	public final static String ENTRY_EMPTY = "E";
+	
+	public final static String ENTRY_BUTTON_LIST = "CSB";
+		//TODO: Should be generic button for high-level interpretation, allows custom work
+		//TODO: Allow register 'x' number of vertical spaces to display associated text
+	
+	
 //---  Instance Variables   -------------------------------------------------------------------
 
 	private String header;
@@ -49,7 +63,7 @@ public abstract class OptionPage {
 			addCategory(cat);
 			for(int j = 0; j < data[i].length; j++) {
 				String lab = (String)(data[i][j][0]);
-				String type = (String)(data[i][j][1]);
+				String type = (String)(data[i][j][1]);	//TODO: ugh
 				int code = (Integer)(data[i][j][2]);
 				boolean butt = (Boolean)(data[i][j][3]);
 				addEntrySet(cat, lab, type, code, butt);
@@ -84,7 +98,7 @@ public abstract class OptionPage {
 			startY = cat.drawCategoryHeader(startY);
 			if(cat.isOpen()) {
 				for(EntrySet e : cat.getEntrySets()) {
-					startY = e.drawEntrySet(startY);
+					startY = e.drawEntrySet(startY, wid, hei);
 				}
 			}
 			else {
