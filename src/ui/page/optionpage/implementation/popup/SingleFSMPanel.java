@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 
+import input.CustomEventReceiver;
 import ui.page.optionpage.OptionPage;
 import ui.page.optionpage.entryset.EntrySet;
 import visual.panel.ElementPanel;
@@ -19,22 +20,25 @@ public class SingleFSMPanel extends ElementPanel{
 		super(0, 0, wid, hei);
 		context = ref;
 		draw();
+		this.setEventReceiver(new CustomEventReceiver() {
+			@Override
+			public void clickEvent(int code, int x, int y, int mouseType) {
+				if(code >= 0 && code < fsms.size()) {
+					context.removeItem(0);
+					context.appendItem(stripPath(fsms.get(code)));
+					OptionPage.getElementPanel().removeElementPrefixed("");
+					OptionPage.getFSMUI().updateActiveOptionPage();
+					getParentFrame().disposeFrame();
+				}
+				if(fsms.size() == 0) {
+					getParentFrame().disposeFrame();
+				}
+				draw();
+			}
+		});
 	}
 	
-	@Override
-	public void clickBehaviour(int code, int x, int y) {
-		if(code >= 0 && code < fsms.size()) {
-			context.removeItem(0);
-			context.appendItem(stripPath(fsms.get(code)));
-			OptionPage.getElementPanel().removeElementPrefixed("");
-			OptionPage.getFSMUI().updateActiveOptionPage();
-			this.getParentFrame().disposeFrame();
-		}
-		if(fsms.size() == 0) {
-			this.getParentFrame().disposeFrame();
-		}
-		draw();
-	}
+
 	
 	public void draw() {
 		int wid = getWidth() * 2 / 3;

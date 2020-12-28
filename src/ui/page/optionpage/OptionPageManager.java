@@ -1,5 +1,6 @@
 package ui.page.optionpage;
 
+import input.CustomEventReceiver;
 import ui.FSMUI;
 import ui.page.optionpage.implementation.AdjustFSM;
 import ui.page.optionpage.implementation.Operations;
@@ -29,16 +30,7 @@ public class OptionPageManager {
 	
 	public ElementPanel generateElementPanel(int x, int y, int width, int height) {
 		p = new ElementPanel(x, y, width, height) {
-			@Override
-			public void keyBehaviour(char code) {
-				
-			}
-
-			@Override
-			public void clickBehaviour(int code, int x, int y) {
-				OPTION_PAGES[currentOptionPageIndex].handleMouseInput(code, x, y);
-			}
-			
+		
 			@Override
 			public int getMinimumScreenX() {
 				return 0;
@@ -54,16 +46,29 @@ public class OptionPageManager {
 				int max = super.getMaximumScreenY();
 				return max + (max > getHeight() ? 15 : 0);
 			}
+		};
+		p.setEventReceiver(new CustomEventReceiver() {
 			
 			@Override
-			public void mouseWheelBehaviour(int rotation) {
-				if(getMaximumScreenY() < getHeight()) {
-					return;
-				}
-				setOffsetYBounded(getOffsetY() - rotation * ROTATION_MULTIPLIER);
+			public void keyEvent(char code) {
+				
 			}
 
-		};
+			@Override
+			public void clickEvent(int code, int x, int y, int mouseType) {
+				OPTION_PAGES[currentOptionPageIndex].handleMouseInput(code, x, y);
+			}
+
+			
+			@Override
+			public void mouseWheelEvent(int rotation) {
+				if(p.getMaximumScreenY() < p.getHeight()) {
+					return;
+				}
+				p.setOffsetYBounded(p.getOffsetY() - rotation * ROTATION_MULTIPLIER);
+			}
+
+		});
 		OptionPage.assignElementPanel(p);
 		return p;
 	}

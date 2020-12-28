@@ -2,6 +2,7 @@ package ui.page.headers;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Image;
 import java.util.ArrayList;
 
 import ui.FSMUI;
@@ -25,15 +26,15 @@ public class ImageHeader extends HeaderBase{
 	}
 
 	public void update() {
-		ArrayList<String> images = imagePage.getImages();
+		ArrayList<Image> images = imagePage.getImages();
 		removeElementPrefixed("header");
 		if(images.size() == 0) {
 			int posX = getWidth()/ 2;
 			int posY = getHeight() / 2;
 			int wid = getWidth() / 3;
 			int hei = getHeight() * 2 / 3;
-			handleRectangle("stand_in_header_rect", 10, posX, posY, wid, hei, Color.gray, Color.black);
-			handleText("stand_in_header_text", posX, posY, wid, hei, IMAGE_HEADER_FONT, "No images currently available");
+			handleRectangle("stand_in_header_rect", false, 10, posX, posY, wid, hei, Color.gray, Color.black);
+			handleText("stand_in_header_text", false, posX, posY, wid, hei, IMAGE_HEADER_FONT, "No images currently available");
 		}
 		else {
 			removeElementPrefixed("stand_in");
@@ -43,26 +44,20 @@ public class ImageHeader extends HeaderBase{
 				int wid = FSMUI.WINDOW_WIDTH / 2 / 6;
 				int hei = (int)(FSMUI.WINDOW_HEIGHT * (1 - FSMUI.PANEL_RATIO_VERTICAL) * 2 / 3);
 				if(i == images.size()) {
-					handleRectangle("header_rect_" + i, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
+					handleRectangle("header_rect_" + i, false, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
 					break;
 				}
 				if(i == imagePage.getCurrentImageIndex()) {
-					handleRectangle("header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
+					handleRectangle("header_rect_active", false, 12, posX, posY, wid, hei, Color.green, Color.black);
 				}
-				handleRectangle("header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
-				handleButton("header_butt_" + i, posX, posY, wid, hei, i);
-				String nom = images.get(i).substring(images.get(i).lastIndexOf("\\") + 1).substring(images.get(i).lastIndexOf("/") + 1);
-				handleText("header_text_" + i, posX, posY, wid, hei, IMAGE_HEADER_FONT, nom);
+				handleRectangle("header_rect_" + i, false, 10, posX, posY, wid, hei, Color.gray, Color.black);
+				handleButton("header_butt_" + i, false, posX, posY, wid, hei, i);
+				//String nom = images.get(i).substring(images.get(i).lastIndexOf("\\") + 1).substring(images.get(i).lastIndexOf("/") + 1);
+				//handleText("header_text_" + i, false, posX, posY, wid, hei, IMAGE_HEADER_FONT, nom);
 			}
 		}
 	}
 	
-	@Override
-	public void keyBehaviour(char code) {
-		
-	}
-
-	@Override
 	public void clickBehaviour(int code, int x, int y) {
 		if(code < imagePage.getImages().size() && code >= 0) {
 			imagePage.setCurrentImageIndex(code);

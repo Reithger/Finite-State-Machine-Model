@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 
+import input.CustomEventReceiver;
 import visual.panel.ElementPanel;
 
 public class MultiFSMSelectablePanel extends ElementPanel{
@@ -19,15 +20,17 @@ public class MultiFSMSelectablePanel extends ElementPanel{
 		context = fra;
 		fsms = inFSMs;
 		draw();
+		this.setEventReceiver(new CustomEventReceiver() {
+			@Override
+			public void clickEvent(int codeB, int x, int y, int mouseType) {
+				if(codeB >= 0 && codeB < fsms.size()) {
+					context.getContext().appendItem(stripPath(fsms.get(codeB)));
+					context.redraw();
+				}
+			}
+		});
 	}
-	
-	@Override
-	public void clickBehaviour(int codeB, int x, int y) {
-		if(codeB >= 0 && codeB < fsms.size()) {
-			context.getContext().appendItem(stripPath(fsms.get(codeB)));
-			context.redraw();
-		}
-	}
+
 	
 	public void draw() {
 		removeElementPrefixed("");

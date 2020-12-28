@@ -29,23 +29,18 @@ public class OptionsHeader extends HeaderBase{
 			int wid = getWidth() /  5;
 			int hei = (int)(getHeight() * 2 / 3);
 			if(i == optionPageManager.getOptionPageList().length) {
-				handleRectangle("header_rect_" + i, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
+				handleRectangle("header_rect_" + i, false, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
 				break;
 			}
 			if(i == optionPageManager.getCurrentOptionPageIndex()) {
-				handleRectangle("header_rect_active", 12, posX, posY, wid, hei, Color.green, Color.black);
+				handleRectangle("header_rect_active",false,  12, posX, posY, wid, hei, Color.green, Color.black);
 			}
-			handleRectangle("header_rect_" + i, 10, posX, posY, wid, hei, Color.gray, Color.black);
-			handleButton("header_butt_" + i, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
-			handleText("header_text_" + i, posX, posY, wid, hei, OPTIONS_HEADER_FONT, optionPageManager.getOptionPageList()[i].getHeader());
+			handleRectangle("header_rect_" + i, false, 10, posX, posY, wid, hei, Color.gray, Color.black);
+			handleButton("header_butt_" + i,false, posX, posY, wid, hei, CODE_START_OPTIONS_HEADER + i);
+			handleText("header_text_" + i, false, posX, posY, wid, hei, OPTIONS_HEADER_FONT, optionPageManager.getOptionPageList()[i].getHeader());
 		}
 	}
 	
-	@Override
-	public void keyBehaviour(char code) {
-		
-	}
-
 	@Override
 	public void clickBehaviour(int code, int x, int y) {
 		int cod = code - CODE_START_OPTIONS_HEADER;

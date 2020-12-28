@@ -3,6 +3,7 @@ package ui.page.optionpage.implementation.popup;
 import java.awt.Color;
 import java.awt.Font;
 
+import input.CustomEventReceiver;
 import ui.page.optionpage.OptionPage;
 import visual.panel.ElementPanel;
 
@@ -21,23 +22,26 @@ public class MultiFSMSelectedPanel extends ElementPanel{
 		context = ref;
 		maxSelectFSMs = maxFSMs;
 		draw();
+		this.setEventReceiver(new CustomEventReceiver() {
+			@Override
+			public void clickEvent(int codeB, int x, int y, int mouseType) {
+				draw();
+				if(codeB >= 0 && codeB < maxSelectFSMs) {
+					context.getContext().removeItem(codeB);
+					draw();
+					OptionPage.getElementPanel().removeElementPrefixed("");
+					OptionPage.getFSMUI().updateActiveOptionPage();
+				}
+				else if(codeB == CODE_CLOSE_SELECT_FSMS) {
+					OptionPage.getElementPanel().removeElementPrefixed("");
+					OptionPage.getFSMUI().updateActiveOptionPage();
+					getParentFrame().disposeFrame();
+				}
+			}
+		});
 	}
 	
-	@Override
-	public void clickBehaviour(int codeB, int x, int y) {
-		draw();
-		if(codeB >= 0 && codeB < maxSelectFSMs) {
-			context.getContext().removeItem(codeB);
-			draw();
-			OptionPage.getElementPanel().removeElementPrefixed("");
-			OptionPage.getFSMUI().updateActiveOptionPage();
-		}
-		else if(codeB == CODE_CLOSE_SELECT_FSMS) {
-			OptionPage.getElementPanel().removeElementPrefixed("");
-			OptionPage.getFSMUI().updateActiveOptionPage();
-			getParentFrame().disposeFrame();
-		}
-	}
+
 	
 	public void draw() {
 		removeElementPrefixed("");

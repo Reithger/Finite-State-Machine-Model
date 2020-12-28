@@ -3,7 +3,6 @@ package ui.page.optionpage.implementation;
 import java.io.File;
 import java.util.Random;
 
-import input.Callback;
 import support.meta.GenerateFSM;
 import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
@@ -165,10 +164,10 @@ public class AdjustFSM extends OptionPage{
 				resetCodeEntries(code);
 				break;
 			case CODE_SAVE_SVG:
-				PopoutAlert pSVG = new PopoutAlert(250, 150, "Saved at: " + getFSMUI().saveActiveSVG());
+				new PopoutAlert(250, 150, "Saved at: " + getFSMUI().saveActiveSVG());
 				break;
 			case CODE_SAVE_TKZ:
-				PopoutAlert pA = new PopoutAlert(250, 150, "Saved at: " + getFSMUI().saveActiveTikZ());
+				new PopoutAlert(250, 150, "Saved at: " + getFSMUI().saveActiveTikZ());
 				break;
 			case CODE_SAVE_FSM:
 				getFSMUI().saveActiveFSMSource();
@@ -187,16 +186,11 @@ public class AdjustFSM extends OptionPage{
 				break;
 			case CODE_LOAD_SOURCE:
 				File f = new File(FSMUI.ADDRESS_SOURCES);
-				PopoutSelectList fs = new PopoutSelectList(300, 600, f.list(), true, "correspond");
-				Callback.setCallback("correspond", new Callback() {
-					@Override
-					public void callbackFunction() {
-						String outcome = fs.getSelected();
-						getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + outcome, outcome.replaceAll(".fsm", ""));
-						getFSMUI().refreshActiveImage();
-						fs.dispose();
-					}
-				});
+				PopoutSelectList fs = new PopoutSelectList(300, 600, f.list(), true);
+				String outcome = fs.getSelected();
+				getFSMUI().allotTransitionSystem(FSMUI.ADDRESS_SOURCES + outcome, outcome.replaceAll(".fsm", ""));
+				getFSMUI().refreshActiveImage();
+				fs.dispose();
 				resetCodeEntries(code);
 				break;
 			case CODE_DELETE_SOURCE:
@@ -266,7 +260,7 @@ public class AdjustFSM extends OptionPage{
 				}
 				catch(Exception e) {
 					e.printStackTrace();
-					PopoutAlert pa3 =  new PopoutAlert(250, 250, "Failed to generate FSM, please check your input again.");
+					new PopoutAlert(250, 250, "Failed to generate FSM, please check your input again.");
 				}
 				break;
 			case CODE_GENERATE_COMPLEX_FSM:
@@ -295,7 +289,7 @@ public class AdjustFSM extends OptionPage{
 				}
 				catch(Exception e) {
 					e.printStackTrace();
-					PopoutAlert pa3 =  new PopoutAlert(250, 250, "Failed to generate FSM, please check your input again.");
+					new PopoutAlert(250, 250, "Failed to generate FSM, please check your input again.");
 				}
 				break;
 			default:

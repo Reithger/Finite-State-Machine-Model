@@ -1,8 +1,10 @@
 package ui.page.imagepage;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.util.ArrayList;
 
+import input.CustomEventReceiver;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
@@ -27,39 +29,44 @@ public class ImagePage {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public ElementPanel generateElementPanel(int x, int y, int width, int height) {
-		p = new ElementPanel(x, y, width, height) {
-			public void keyBehaviour(char code) {
+		p = new ElementPanel(x, y, width, height);
+		p.setEventReceiver(new CustomEventReceiver() {
+			@Override
+			public void keyEvent(char code) {
 				getCurrentImageDisplay().processKeyInput(code);
 				drawPage();
 			}
-			
-			public void clickBehaviour(int code, int x, int y) {
+
+			@Override
+			public void clickEvent(int code, int x, int y, int mouseType) {
 				getCurrentImageDisplay().processClickInput(code);
 				drawPage();
 			}
 
 			@Override
-			public void mouseWheelBehaviour(int scroll) {
+			public void mouseWheelEvent(int scroll) {
 				getCurrentImageDisplay().processMouseWheelInput(scroll);
 				drawPage();
 			}
-			
-			public void clickPressBehaviour(int code, int x, int y) {
+
+			@Override
+			public void clickPressEvent(int code, int x, int y, int mouseType) {
 				getCurrentImageDisplay().processPressInput(code, x, y);
 				drawPage();
 			}
-			
-			public void clickReleaseBehaviour(int code, int x, int y) {
+
+			@Override
+			public void clickReleaseEvent(int code, int x, int y, int mouseType) {
 				getCurrentImageDisplay().processReleaseInput(code, x, y);
 				drawPage();
 			}
 			
 			@Override
-			public void dragBehaviour(int code, int x, int y) {
+			public void dragEvent(int code, int x, int y, int mouseType) {
 				getCurrentImageDisplay().processDragInput(code, x, y);
 				drawPage();
 			}
-		};
+		});
 
 		addFraming();
 		p.setScrollBarHorizontal(false);
@@ -70,13 +77,12 @@ public class ImagePage {
 	public void generatePopout() {
 		WindowFrame newF = new WindowFrame(800, 800);
 		ElementPanel p2 = new ElementPanel(0, 0, 800, 800);
-		new ImageDisplay(getCurrentImageDisplay().getImagePath(), p2);
+		new ImageDisplay(getCurrentImageDisplay().getImage(), p2);
 		newF.addPanel("p2", p2);
 	}
 
 	public void replaceActiveImage(String newPath) {
-		p.removeElement(getCurrentImageDisplay().getImagePath());
-		getCurrentImageDisplay().setImagePath(newPath + (newPath.contains(".jpg") ? "" : ".jpg"));
+		getCurrentImageDisplay().setImage(newPath + (newPath.contains(".jpg") ? "" : ".jpg"));
 	}
 	
 	public void refreshActiveImage() {
@@ -99,7 +105,7 @@ public class ImagePage {
 	//-- Drawing  ---------------------------------------------
 	
 	public void drawPage() {
-		if(images.size() > 0 && p.getElement(ImageDisplay.IMAGE_NAME) == null) {
+		if(images.size() > 0) {
 			getCurrentImageDisplay().drawPage();
 		}
 		addFraming();
@@ -136,10 +142,10 @@ public class ImagePage {
 	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
-	public ArrayList<String> getImages(){
-		ArrayList<String> out = new ArrayList<String>();
+	public ArrayList<Image> getImages(){
+		ArrayList<Image> out = new ArrayList<Image>();
 		for(int i = 0; i < images.size(); i++) {
-			out.add(images.get(i).getImagePath());
+			out.add(images.get(i).getImage());
 		}
 		return out;
 	}

@@ -9,8 +9,6 @@ import java.util.ArrayList;
 
 import filemeta.FileChooser;
 import filemeta.config.Config;
-import fsm.FSM;
-import support.meta.FormatConversion;
 import ui.page.headers.ImageHeader;
 import ui.page.headers.OptionsHeader;
 import ui.page.imagepage.ImagePage;
