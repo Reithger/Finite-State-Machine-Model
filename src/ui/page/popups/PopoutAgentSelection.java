@@ -26,7 +26,7 @@ public class PopoutAgentSelection extends PopoutWindow{
 	private Font SMALLER_FONT = new Font("Serif", Font.BOLD, 10);
 	
 	ArrayList<Agent> agents;
-	ArrayList<Event> events;
+	ArrayList<Entity> events;
 	UStructurePage reference;
 	
 	public PopoutAgentSelection(UStructurePage context, String ref) {
@@ -40,8 +40,8 @@ public class PopoutAgentSelection extends PopoutWindow{
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		Collection<Event> inE = fs.getEvents();
-		events = new ArrayList<Event>(inE);
+		Collection<Entity> inE = fs.getEvents();
+		events = new ArrayList<Entity>(inE);
 		agents = new ArrayList<Agent>();
 		agents.add(new Agent(inE));
 		reference = context;

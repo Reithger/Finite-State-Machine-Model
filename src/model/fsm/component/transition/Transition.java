@@ -1,7 +1,8 @@
-package model.fsm.transition;
+package model.fsm.component.transition;
 
-import java.util.Collection;
 import java.util.Iterator;
+
+import model.fsm.component.Entity;
 
 import java.util.ArrayList;
 
@@ -14,17 +15,21 @@ import java.util.ArrayList;
  * @author Ada Clevinger and Graeme Zinck
  */
 
-public class Transition implements Comparable<Transition> {
+public class Transition extends Entity implements Comparable<Transition> {
 	
 //--- Instance Variables   --------------------------------------------------------------------
 	
-	/** String instance variable representing the String associated to this object*/
-	public String event;
 	/** ArrayList<<r>State> object holding all State objects associated to the String associated to this Transition object*/
 	private ArrayList<String> states;
 	
 //--- Constructors   --------------------------------------------------------------------------
 
+	public Transition(String inEvent, String state) {
+		super(inEvent);
+		states = new ArrayList<String>();
+		states.add(state);
+	}
+	
 	/**
 	 * Constructor for a Transition object, assigning a single String object and a list of States which the event can lead to.
 	 * 
@@ -32,23 +37,9 @@ public class Transition implements Comparable<Transition> {
 	 * @param inStates - List of State objects representing the States led to by the String associated with this Transition object.
 	 */
 	
-	public Transition(String inString, String ... inStates) {
-		event = inString;
-		states = new ArrayList<String>();
-		for(int i = 0; i < inStates.length; i++)
-			states.add(inStates[i]);
-	}
-	
-	/**
-	 * Constructor for a Transition object, assigning a single String object and a list of States which the event can lead to.
-	 * 
-	 * @param inString - String object representing the event that leads to the associated transition states.
-	 * @param inStates - Collection of State objects representing the States led to by the String associated with this Transition object.
-	 */
-	
-	public Transition(String inString, Collection<String> inStates) {
-		event = inString;
-		states = new ArrayList<String>(inStates);
+	public Transition(String inString, ArrayList<String> inStates) {
+		super(inString);
+		states = inStates;
 	}
 
 //--- Setter Methods   ------------------------------------------------------------------------
@@ -64,13 +55,13 @@ public class Transition implements Comparable<Transition> {
 	}
 
 	public void setTransitionEvent(String in) {
-		event = in;
+		setName(in);
 	}
 	
 //--- Getter Methods   ------------------------------------------------------------------------
 	
 	public String getEvent() {
-		return event;
+		return getName();
 	}
 	
 	public ArrayList<String> getStates() {
@@ -79,6 +70,10 @@ public class Transition implements Comparable<Transition> {
 	
 	public boolean hasState(String stateName) {
 		return states.contains(stateName);
+	}
+	
+	public boolean isEmpty() {
+		return states.size() == 0;
 	}
 	
 //---  Adder Methods   ------------------------------------------------------------------------
@@ -90,27 +85,20 @@ public class Transition implements Comparable<Transition> {
 	
 //---  Remover Methods   ----------------------------------------------------------------------
 	
-	public boolean removeTransitionState(String stateName) {
+	public void removeTransitionState(String stateName) {
 		states.remove(stateName);
-		return (states.size() == 0);
-	}
-	
-	public boolean removeTransitionStates(Collection<String> inStates) {
-		states.removeAll(inStates);
-		return (states.size() == 0);
 	}
 
 //---  Mechanics   ----------------------------------------------------------------------------
 	
 	@Override
 	public int compareTo(Transition o) {
-		// Simply compares the names of the two transitions' events
 		return toString().compareTo(o.toString());
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder(event + " goes to the states: ");
+		StringBuilder sb = new StringBuilder(getName() + " goes to the states: ");
 		Iterator<String> itr = states.iterator();
 		while(itr.hasNext()) {
 			sb.append(itr.next());

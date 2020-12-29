@@ -4,12 +4,31 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+import model.fsm.component.Entity;
 import model.fsm.state.State;
 import model.fsm.transition.Transition;
 import model.fsm.transition.TransitionFunction;
 
 public class GenerateDot {
 
+	//------------ State
+	
+	
+	/**
+	 * Makes a String object which has the dot representation of the states, which can be used for sending an FSM to GraphViz.
+	 * 
+	 * @return - Returns a String object containing the dot representation of the Entity Map's States.
+	 */
+	
+	public String makeDotString() {
+		StringBuilder sb = new StringBuilder();
+		for(Entity state : states.values()) {
+			sb.append(state.makeDotString());
+		}
+		return sb.toString();
+	}
+	
+	
 	//---------- Transition
 	
 	/**

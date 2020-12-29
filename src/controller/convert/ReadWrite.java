@@ -5,15 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Scanner;
 
-import model.fsm.event.Event;
-import model.fsm.event.EventMap;
-import model.fsm.state.State;
-import model.fsm.state.StateMap;
-import model.fsm.transition.Transition;
-import model.fsm.transition.TransitionFunction;
+import model.fsm.component.EventMap;
+import model.fsm.component.StateMap;
+import model.fsm.component.transition.TransitionFunction;
 
 /**
  * This class is used for conversions between FSM objects and their Text File representations for reading/writing.
@@ -44,10 +40,10 @@ public class ReadWrite{
 			try {
 			  raf.writeBytes(special);
 			  String build = "";
-			  for(State state1 : transF.getStates()) {
-				for(Transition trans : transF.getTransitions(state1)) {
-					for(State state2 : trans.getTransitionStates()) {
-						build += state1.getStateName() + " " + state2.getStateName() + " " + trans.getTransitionEvent().getEventName() + "\n";
+			  for(String state1 : transF.getStateNames()) {
+				for(String ebe : transF.getStateEvents(state1)) {
+					for(String state2 : transF.getTransitionStates(state1, ebe)) {
+						build += state1 + " " + state2 + " " + ebe + "\n";
 				  }
 				}
 			  }
@@ -104,29 +100,11 @@ public class ReadWrite{
 				String[] in = sc.nextLine().split(" ");
 				if(in.length < 3)
 					break;
-				State fromState = states.addState(in[0]);
-				State toState = states.addState(in[1]);
-				Event event = events.addEvent(in[2]);
+				states.addState(in[0]);
+				states.addState(in[1]);
+				events.addEvent(in[2]);
 				
-				// See if there is already a transition with the event...
-				ArrayList<Transition> thisTransitions = transitions.getTransitions(fromState);
-				boolean foundTransition = false;
-				if(thisTransitions != null) {
-					Iterator<Transition> itr = thisTransitions.iterator();
-					while(!foundTransition && itr.hasNext()) {
-						Transition t = itr.next();
-						if(t.getTransitionEvent().equals(event)) {
-							t.setTransitionState(toState);
-							foundTransition = true;
-						} // if equal
-					} // for every transition
-				} // if not null
-				if(!foundTransition) {
-					Transition outbound = transitions.getEmptyTransition();
-					outbound.setTransitionEvent(event);
-					outbound.setTransitionState(toState);
-					transitions.addTransition(fromState, outbound);
-				} // if did not find transition
+				transitions.addTransition(in[0], in[2], in[1]);
 			} // while sc has next line
 			sc.close();
 			return specialInfo;

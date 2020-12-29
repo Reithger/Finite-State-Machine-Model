@@ -1,22 +1,21 @@
 package model.process;
 
-import model.fsm.state.State;
 
 public class BatchAgentStates implements Comparable<BatchAgentStates>{
 	
-	State[] currentStates;
-	State confirmedObject;
+	private String[] currentStates;
+	private String confirmedObject;
 	
-	public BatchAgentStates(State[] states, State identity) {
+	public BatchAgentStates(String[] states, String identity) {
 		currentStates = states;
 		confirmedObject = identity;
 	}
 	
-	public State[] getStates() {
+	public String[] getStates() {
 		return currentStates;
 	}
 	
-	public void setState(State in) {
+	public void setState(String in) {
 		confirmedObject = in;
 	}
 
@@ -24,7 +23,7 @@ public class BatchAgentStates implements Comparable<BatchAgentStates>{
 	public int compareTo(BatchAgentStates o) {
 		boolean fail = false;
 		for(int i = 0; i < this.getStates().length; i++)
-			if(!this.getStates()[i].getStateName().equals(o.getStates()[i].getStateName()))
+			if(!this.getStates()[i].equals(o.getStates()[i]))
 				fail = true;
 		if(!fail)
 			return 0;
@@ -32,7 +31,7 @@ public class BatchAgentStates implements Comparable<BatchAgentStates>{
 			return -1;
 	}
 		
-	public State getIdentityState() {
+	public String getIdentityState() {
 		return confirmedObject;
 	}
 	

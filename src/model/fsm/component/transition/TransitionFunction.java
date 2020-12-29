@@ -1,13 +1,11 @@
-package model.fsm.transition;
+package model.fsm.component.transition;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
+
+import model.fsm.component.Entity;
 
 /**
  * This class models all Transitions in an FSM, storing States and an ArrayList<<r>Transition> of Transitions as <<r>Key, Value> pairs.
@@ -22,7 +20,9 @@ public class TransitionFunction {
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	/** HashMap<<r>String, ArrayList<Transition>> object containing all the transitions from a given state with various events that are possible. */
-	protected HashMap<String, ArrayList<Transition>> transitions;
+	private HashMap<String, ArrayList<Transition>> transitions;
+	
+	private ArrayList<String> attributes;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -33,8 +33,17 @@ public class TransitionFunction {
 	 * @param obj - Object of the type Transition that extends Transition<<r>S, E> to provide to the TransitionFunction object.
 	 */
 	
-	public TransitionFunction() {
+	public TransitionFunction(ArrayList<String> defAttrib) {
 		transitions = new HashMap<String, ArrayList<Transition>>();
+		attributes = defAttrib == null ? new ArrayList<String>() : defAttrib;
+	}
+	
+//---  Operations   ---------------------------------------------------------------------------
+	
+	public void mergeTransitions(TransitionFunction in) {
+		for(String s : in.getStateNames()) {
+			addTransitions(s, in.getTransitions(s));
+		}
 	}
 	
 //---  Adder Methods   ------------------------------------------------------------------------
@@ -50,21 +59,46 @@ public class TransitionFunction {
 	 */
 	
 	public void addTransition(String inState, String event, String outState) {
-		ArrayList<Transition> currT = transitions.get(inState);
-		if(currT == null) {
-			transitions.put(inState, new ArrayList<Transition>());
-			currT = transitions.get(inState);
+		Transition t = getTransition(inState, event);
+		if(t != null) {
+			t.addTransitionState(outState);
 		}
-		boolean did = false;
-		for(Transition transition : currT) {
-			if(transition.getEvent().equals(event)) {
-				transition.addTransitionState(outState);
-				did = true;
-				break;
+		else {
+			if(transitions.get(inState) == null) {
+				transitions.put(inState, new ArrayList<Transition>());
 			}
+			transitions.get(inState).add(new Transition(event, outState));
+			t = getTransition(inState, event);
 		}
-		if(!did) {
-			currT.add(new Transition(event, outState));
+		LinkedList<String> use = new LinkedList<String>();
+		use.addAll(attributes);
+		t.setAttributes(use);
+	}
+	
+	/**
+	 * Setter method that assigns a new paired <<r>State, ArrayList<<r>Transition>> data set to the Transitions data structure,
+	 * overwriting any previous entry for that State.
+	 * 
+	 * @param state - State object representing the Key in the stored <<r>Key, Value> data structure, <<r>State, ArrayList<<r>Transition>>.
+	 * @param inTransitions - ArrayList<<r>Transition> of Transition objects to become the new Value stored in a <<r>Key, Value> data structure.
+	 */
+	
+	public void addTransitions(String state, ArrayList<Transition> inTransitions) {
+		if(transitions.get(state) == null) {
+			transitions.put(state, new ArrayList<Transition>());
+		}
+		for(Transition t : inTransitions) {
+			Transition ref = getTransition(state, t.getEvent());
+			if(ref == null) {
+				transitions.get(state).add(t);
+			}
+			else {
+				for(String s : t.getStates()) {
+					if(!ref.hasState(s)) {
+						ref.addTransitionState(s);
+					}
+				}
+			}
 		}
 	}
 	
@@ -80,22 +114,19 @@ public class TransitionFunction {
 		transitions.remove(state);
 		for(Map.Entry<String, ArrayList<Transition>> entry : transitions.entrySet()) {
 			ArrayList<Transition> tToRemove = new ArrayList<Transition>();
-			for(Transition transition : entry.getValue())
-				if(transition.removeTransitionState(state))
+			for(Transition transition : entry.getValue()) {
+				transition.removeTransitionState(state);
+				if(transition.isEmpty())
 					tToRemove.add(transition);
+			}
 			entry.getValue().removeAll(tToRemove);
 		} // for every entry
 	}
 
 	public void removeEventTransitions(String event) {
 		for(String s : transitions.keySet()) {
-			HashSet<Transition> remv = new HashSet<Transition>();
-			for(Transition t : transitions.get(s)) {
-				if(t.getEvent().equals(event)) {
-					remv.add(t);
-				}
-			}
-			for(Transition t : remv) {
+			Transition t = getTransition(s, event);
+			if(t != null) {
 				transitions.get(s).remove(t);
 			}
 		}
@@ -111,49 +142,58 @@ public class TransitionFunction {
 	 * @return - Returns a boolean value; true if the transition existed and was removed; false otherwise.
 	 */
 	
-	public boolean removeTransition(String stateFrom, String event, String stateTo) {
+	public void removeTransition(String stateFrom, String event, String stateTo) {
 		ArrayList<Transition> thisTransitions = transitions.get(stateFrom);
 		for(Transition transition : thisTransitions) {
 			if(transition.getEvent().equals(event)) {
 				if(transition.hasState(stateTo)) {
-					boolean shouldDeleteTransition = transition.removeTransitionState(stateTo);
-					if(shouldDeleteTransition) thisTransitions.remove(transition);
-					return true;
+					transition.removeTransitionState(stateTo);
+					if(transition.isEmpty())
+						thisTransitions.remove(transition);
 				}
 			}
 		}
-		return false;
 	}
 
+//---  Setter Methods   -----------------------------------------------------------------------
+
+	public void setAttributes(ArrayList<String> attrib) {
+		attributes = attrib;
+		for(String s : getStateNames()) {
+			for(Entity e : getTransitions(s)) {
+				LinkedList<String> use = new LinkedList<String>();
+				use.addAll(attributes);
+				e.wipeAttributes();
+				e.setAttributes(use);
+			}
+		}
+
+	}
+
+	public void setTransitionAttribute(String state, String event, String ref, boolean val) {
+		getTransition(state, event).setAttributeValue(ref, val);
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
-	
-	/**
-	 * Getter method to acquire an ArrayList<<r>Transition> of Transition objects associated to the provided State object 
-	 * 
-	 * @param state - State object in an FSM associated to the returned ArrayList<<r>Transition> of Transition objects
-	 * @return - Returns an ArrayList<<r>Transition> of Transition objects that are associated to a defined State in an FSM
-	 */
-	
-	public ArrayList<Transition> getStateTransitions(String state) {
-		return transitions.get(state) != null ? transitions.get(state) : new ArrayList<Transition>();
-	}
 
-	public ArrayList<String> getStateEvents(String state){
+	public ArrayList<String> getTransitionsWithAttribute(String attrib){
 		ArrayList<String> out = new ArrayList<String>();
-		for(Transition t : transitions.get(state)) {
-			out.add(t.getEvent());
+		for(String s : getStateNames()) {
+			for(String e : getStateEvents(s)) {
+				if(getTransitionAttribute(s, e, attrib)) {
+					out.add(s);
+				}
+			}
 		}
 		return out;
 	}
 	
-	/**
-	 * Getter method to acquire a set of all states and its corresponding transition objects.
-	 * 
-	 * @return - Returns a Set of map entries with State objects and an ArrayList of the Transitions. (Set<<r>Map, Entry<<r>S, ArrayList<<r>Transition>>>)
-	 */
-	 
-	public HashMap<String, ArrayList<Transition>> getTransitions() {
-		return transitions;
+	public ArrayList<String> getAttributes(){
+		return attributes;
+	}
+	
+	public Boolean getTransitionAttribute(String state, String event, String ref) {
+		return getTransition(state, event).getAttributeValue(ref);
 	}
 	
 	/**
@@ -166,6 +206,14 @@ public class TransitionFunction {
 	public ArrayList<String> getStateNames(){
 		ArrayList<String> out = new ArrayList<String>();
 		out.addAll(transitions.keySet());
+		return out;
+	}
+
+	public ArrayList<String> getStateEvents(String state){
+		ArrayList<String> out = new ArrayList<String>();
+		for(Transition t : transitions.get(state)) {
+			out.add(t.getEvent());
+		}
 		return out;
 	}
 
@@ -204,6 +252,34 @@ public class TransitionFunction {
 		}
 		return false;
 	}
+
+	/**
+	 * Getter method to acquire a set of all states and its corresponding transition objects.
+	 * 
+	 * @return - Returns a Set of map entries with State objects and an ArrayList of the Transitions. (Set<<r>Map, Entry<<r>S, ArrayList<<r>Transition>>>)
+	 */
+	 
+	protected HashMap<String, ArrayList<Transition>> getTransitions() {
+		return transitions;
+	}
+
+	protected ArrayList<Transition> getTransitions(String state){
+		return transitions.get(state);
+	}
+	
+	protected Transition getTransition(String state, String event) {
+		if(transitions.get(state) == null) {
+			return null;
+		}
+		for(Transition t : transitions.get(state)) {
+			if(t.getEvent().equals(event)) {
+				return t;
+			}
+		}
+		return null;
+	}
+	
+//---  Mechanics   ----------------------------------------------------------------------------
 	
 	/**
 	 * This method searches among the Transitions stored by this TransitionFunction object
@@ -216,25 +292,11 @@ public class TransitionFunction {
 	 */
 	
 	public boolean contains(String reference, Transition transition) {
-		for(Transition t : getStateTransitions(reference)) {
+		for(Transition t : transitions.get(reference)) {
 			if(t.equals(transition))
 				return true;
 		}
 		return false;
 	}
-	
-//---  Setter Methods   -----------------------------------------------------------------------
-	
-	/**
-	 * Setter method that assigns a new paired <<r>State, ArrayList<<r>Transition>> data set to the Transitions data structure,
-	 * overwriting any previous entry for that State.
-	 * 
-	 * @param state - State object representing the Key in the stored <<r>Key, Value> data structure, <<r>State, ArrayList<<r>Transition>>.
-	 * @param inTransitions - ArrayList<<r>Transition> of Transition objects to become the new Value stored in a <<r>Key, Value> data structure.
-	 */
-	
-	public void putTransitions(String state, ArrayList<Transition> inTransitions) {
-		transitions.put(state, inTransitions);
-	}
-	
+
 }
