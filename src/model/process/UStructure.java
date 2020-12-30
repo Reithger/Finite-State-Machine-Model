@@ -3,8 +3,8 @@ package model.process;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import model.AttributeList;
 import model.fsm.TransitionSystem;
-import model.fsm.component.Entity;
 import model.fsm.component.transition.TransitionFunction;
 
 import java.util.ArrayList;
@@ -72,12 +72,12 @@ public class UStructure {
 		String[] starting = new String[agents.length];
 		String initName = "<";
 		for(int i = 0; i < starting.length; i++) {
-			starting[i] = plantFSM.getStatesWithAttribute(TransitionSystem.ATTRIBUTE_INITIAl).get(0);
+			starting[i] = plantFSM.getStatesWithAttribute(AttributeList.ATTRIBUTE_INITIAL).get(0);
 			initName += starting[i] + (i + 1 < starting.length ? "," : "");
 		}
 		initName += ">";
 		uStructure.addState(initName);									//create first state, start queue
-		uStructure.setStateAttribute(initName, TransitionSystem.ATTRIBUTE_INITIAl, true);
+		uStructure.setStateAttribute(initName, AttributeList.ATTRIBUTE_INITIAL, true);
 		compositeMapping.put(initName, starting);
 		queue.add(new BatchAgentStates(starting, initName));
 		
@@ -120,11 +120,16 @@ public class UStructure {
 							if(state == null)
 								fail = true;
 						if(!fail) {
-							uStructure.addState(eventName);
-							queue.add(new BatchAgentStates(newSet, eventName));
-							uStructure.getEventMap().addEvent(eventName);
-							uStructure.addTransition(stateSet.getIdentityState(), eventName, eventName);
-							compositeMapping.put(eventName, newSet);
+							ArrayList<String> sta = new ArrayList<String>();
+							for(String q : newSet) {
+								sta.add(q);
+							}
+							String newName = uStructure.compileStateName(sta);
+							queue.add(new BatchAgentStates(newSet, newName));
+							uStructure.addEvent(eventName);
+							uStructure.addState(newName);
+							uStructure.addTransition(stateSet.getIdentityState(), eventName, newName);
+							compositeMapping.put(newName, newSet);
 						}
 					}
 					else {
@@ -136,9 +141,9 @@ public class UStructure {
 				for(int i = 0; i < canAct.length; i++) {
 					if(canAct[i]) {
 						eventName += s + (i + 1 < canAct.length ? ", " : ">");
-						for(Transition t : plantFSM.getStateTransitions(stateSet.getStates()[i])) {
-							if(t.getTransitionEvent().getEventName().equals(s)){
-								newSet[i] = t.getTransitionStates().get(0);
+						for(String t : plantFSM.getStateTransitionEvents(stateSet.getStates()[i])) {
+							if(t.equals(s)){
+								newSet[i] = plantFSM.getStateEventTransitionStates(stateSet.getStates()[i], t).get(0);
 							}
 						}
 					}
@@ -152,72 +157,21 @@ public class UStructure {
 					if(state == null)
 						fail = true;
 				if(!fail) {
-					uStructure.addState(eventName);
-					queue.add(new BatchAgentStates(newSet, eventName));
-					uStructure.addTransition(stateSet.getIdentityState(), uStructure.getEventMap().addEvent(eventName), uStructure.addState(new String(newSet)));
-					compositeMapping.put(uStructure.addState(new String(newSet)), newSet);
+					ArrayList<String> sta = new ArrayList<String>();
+					for(String q : newSet) {
+						sta.add(q);
+					}
+					String newName = uStructure.compileStateName(sta);
+					queue.add(new BatchAgentStates(newSet, newName));
+					uStructure.addEvent(eventName);
+					uStructure.addState(newName);
+					uStructure.addTransition(stateSet.getIdentityState(), eventName, newName);
+					compositeMapping.put(newName, newSet);
 				}
 			}
 		}
 	}
-	
-	public void createUStructureAgain() {
-		uStructure = new TransitionSystem();
-		compositeMapping = new HashMap<String, String[]>();
-		LinkedList<BatchAgentStates> queue = new LinkedList<BatchAgentStates>();		//initialize
-		HashSet<String> visited = new HashSet<String>();
-		String[] starting = new String[agents.length];
-		
-		for(int i = 0; i < starting.length; i++)
-			starting[i] = plantFSM.getInitialStates().get(0);
-		String init = uStructure.addState(starting);									//create first state, start queue
-		uStructure.addInitialState(init);
-		compositeMapping.put(init, starting);
-		queue.add(new BatchAgentStates(starting, uStructure.addState(starting)));
-		
-		while(!queue.isEmpty()) {
-			BatchAgentStates stateSet = queue.poll();
-			if(visited.contains(stateSet.getIdentityState()))					//access next state from queue, ensure it hasn't been processed yet
-				continue;
-			visited.add(stateSet.getIdentityState());
-			
-			HashSet<String> viableEvents = new HashSet<String>();
-			for(String s : stateSet.getStates()) {
-				for(Transition t : plantFSM.getTransitions().getTransitions(s))		//figure out what the legal moves are for the plant
-					viableEvents.add(t.getTransitionEvent().getEventName());
-			}
-			
-			for(String s : viableEvents) {
-				/*
-				 * For each event, find out which agents can perform that event; generate the base-level vector <a, w, a, w, etc.> representing the plant's action
-				 * Then do the permutations on that for every possible way to guess events happening
-				 * Each permutation and the base are unique transitions, find the target states to make that state vector
-				 * Add the transitions to the U-Structure, add the new States to the queue
-				 * 
-				 * Extension: Once you have all the transitions for a String, do type-one bad state analysis (when controllability becomes a factor) and type-two, for that matter
-				 * 
-				 */
-				
-				
-				boolean[] agentVisible = new boolean[stateSet.getStates().length];
-				agentVisible[0] = true;
-				String plantVector = "<" + s;
-				for(int i = 0; i < stateSet.getStates().length; i++) {
-					agentVisible[i + 1] = agents[i].getEventAttribute(Agent.ATTRIBUTE_OBSERVABLE, s);
-					plantVector += ", " + (agentVisible[i + 1] ? s : UNOBSERVED_EVENT);
-				}
-				plantVector += ">";
-				HashSet<String> eventPaths = new HashSet<String>();
-				eventPaths.add(plantVector);
-				generateObservablePermutation(eventPaths, 0, "", agentVisible);
-				
-				for(String vec : eventPaths) {
-					
-				}
-			}
-		}
-	}
-	
+
 	private HashSet<String> generateObservablePermutation(HashSet<String> tags, int index,  String total, boolean[] sight){
 		if(index >= sight.length) {
 			tags.add(total);

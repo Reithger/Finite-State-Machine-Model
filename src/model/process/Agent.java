@@ -2,12 +2,13 @@ package model.process;
 
 import java.util.ArrayList;
 
+import model.AttributeList;
 import model.fsm.component.EventMap;
 
 public class Agent {
 
-	public final static String ATTRIBUTE_OBSERVABLE = "Observable";
-	public final static String ATTRIBUTE_CONTROLLABLE = "Controllable";
+	public final static String ATTRIBUTE_OBSERVABLE = AttributeList.ATTRIBUTE_OBSERVABLE;
+	public final static String ATTRIBUTE_CONTROLLABLE = AttributeList.ATTRIBUTE_CONTROLLABLE;
 	
 	private final static String[] ATTRIBUTES = new String[] {ATTRIBUTE_OBSERVABLE, ATTRIBUTE_CONTROLLABLE};
 	

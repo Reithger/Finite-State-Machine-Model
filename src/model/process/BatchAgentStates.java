@@ -1,6 +1,5 @@
 package model.process;
 
-
 public class BatchAgentStates implements Comparable<BatchAgentStates>{
 	
 	private String[] currentStates;

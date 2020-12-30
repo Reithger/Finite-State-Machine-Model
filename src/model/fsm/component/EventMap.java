@@ -75,6 +75,10 @@ public class EventMap {
 		events.get(eventName).setAttributes(use);
 	}
 
+	public void addEvent(String eventName, EventMap context) {
+		events.put(eventName, context.getEvent(eventName).copy());
+	}
+	
 //---  Remover Methods   ----------------------------------------------------------------------
 
 	/**
@@ -104,6 +108,10 @@ public class EventMap {
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	protected Entity getEvent(String eventName) {
+		return events.get(eventName);
+	}
 	
 	public ArrayList<String> getAttributes(){
 		return attributes;

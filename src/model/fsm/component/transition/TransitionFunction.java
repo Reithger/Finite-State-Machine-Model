@@ -102,6 +102,21 @@ public class TransitionFunction {
 		}
 	}
 	
+	public void addTransition(String state, String event, String target, TransitionFunction context) {
+		if(transitions.get(state) == null) {
+			transitions.put(state, new ArrayList<Transition>());
+		}
+		if(getTransition(state, event) == null) {
+			transitions.get(state).add(context.getTransition(state, event).copy());
+			getTransition(state, event).removeTargetStates();
+			getTransition(state, event).addTransitionState(target);
+		}
+		else {
+			getTransition(state, event).addTransitionState(target);
+			getTransition(state, event).copyAttributes(context.getTransition(state, event));
+		}
+	}
+	
 //---  Remover Methods   ----------------------------------------------------------------------
 	
 	/**

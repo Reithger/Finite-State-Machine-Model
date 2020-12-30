@@ -2,6 +2,7 @@ package model.fsm;
 
 import java.util.ArrayList;
 
+import model.AttributeList;
 import model.fsm.component.EventMap;
 import model.fsm.component.StateMap;
 import model.fsm.component.transition.TransitionFunction;
@@ -18,10 +19,6 @@ import model.fsm.component.transition.TransitionFunction;
  */
 
 public class TransitionSystem {
-	
-//---  Constants   ----------------------------------------------------------------------------
-	
-	public final static String ATTRIBUTE_INITIAl = "Initial";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 
@@ -43,6 +40,10 @@ public class TransitionSystem {
 		id = inId;
 	}
 	
+	public TransitionSystem(String inId) {
+		id = inId;
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
 
 	/**
@@ -53,7 +54,66 @@ public class TransitionSystem {
 	public void renameStates() {
 		states.renameStates();
 	}
+	
+	public String compileStateName(ArrayList<String> in) {
+		String out = "(";
+		for(int i = 0; i < in.size(); i++) {
+			out += in.get(i) + (i + 1 < in.size() ? "," : "");
+		}
+		return out + ")";
+	}
 
+	public void compileStateAttributes(ArrayList<String> in, TransitionSystem context) {
+		String nom = compileStateName(in);
+		if(!states.stateExists(nom)) {
+			states.addState(nom);
+		}
+		for(String s : getStateAttributes()) {
+			boolean cond = AttributeList.getAON(s);
+			boolean use = cond;
+			for(String t : in) {
+				use = cond ? (use && context.getStateAttribute(t, s)) : (use || context.getStateAttribute(t, s));
+			}
+			states.setStateAttribute(nom, s, use);
+		}
+	}
+	
+	public void compileStateAttributes(ArrayList<String> in, ArrayList<TransitionSystem> context) {
+		String nom = compileStateName(in);
+		if(!states.stateExists(nom)) {
+			states.addState(nom);
+		}
+		for(String s : getStateAttributes()) {
+			boolean cond = AttributeList.getAON(s);
+			boolean use = cond;
+			for(int i = 0; i < in.size(); i++) {
+				boolean loc = context.get(i).getStateAttribute(in.get(i), s);
+				use = cond ? (use && loc) : (use || loc);
+			}
+			states.setStateAttribute(nom, s, use);
+		}
+	}
+	
+	public void compileEventAttributes(String eventName, ArrayList<TransitionSystem> context) {
+		if(!events.contains(eventName)) {
+			events.addEvent(eventName);
+		}
+		for(String s : getEventAttributes()) {
+			boolean cond = AttributeList.getAON(s);
+			boolean use = cond;
+			for(TransitionSystem e : context) {
+				use = cond ? (use && e.getEventAttribute(eventName, s)) : (use || e.getEventAttribute(eventName, s));
+			}
+			events.setEventAttribute(eventName, s, use);
+		}
+	}
+
+	public void copyAttributes(TransitionSystem ot) {
+		setStateAttributes(ot.getStateAttributes());
+		setEventAttributes(ot.getEventAttributes());
+		setTransitionAttributes(ot.getTransitionAttributes());
+	}
+	
 	//-- Merge  -----------------------------------------------
 	
 	/**
@@ -113,9 +173,15 @@ public class TransitionSystem {
 	 */
 	
 	public void addState(String stateName) {
-		states.addState(stateName);
+		if(!states.stateExists(stateName))
+			states.addState(stateName);
 	}
 
+	public void addState(String stateName, StateMap context) {
+		if(!states.stateExists(stateName))
+			states.addState(stateName, context);
+	}
+	
 	/**
 	 * Adds a map of states to the composition of an FSM.
 	 * @param composed HashMap mapping States to an ArrayList of States, which is
@@ -127,9 +193,15 @@ public class TransitionSystem {
 	}
 
 	public void addEvent(String eventName) {
-		events.addEvent(eventName);
+		if(!events.eventExists(eventName))
+			events.addEvent(eventName);
 	}
 
+	public void addEvent(String eventName, EventMap context) {
+		if(!events.eventExists(eventName))
+			events.addEvent(eventName, context);
+	}
+	
 	/**
 	 * This method permits the adding of a new Transition to the Transition System in the format
 	 * of two States and an Event, representing a State leading to another State by the defined
@@ -147,6 +219,10 @@ public class TransitionSystem {
 		transitions.addTransition(state, event, state2);
 	}
 
+	public void addTransition(String state, String event, String state2, TransitionFunction context) {
+		transitions.addTransition(state, event, state2, context);
+	}
+	
 //---  Remover Methods   ----------------------------------------------------------------------
 	
 	/**
@@ -320,6 +396,10 @@ public class TransitionSystem {
 
 	//-- State  -----------------------------------------------
 
+	public boolean hasStateAttribute(String ref) {
+		return states.getAttributes().contains(ref);
+	}
+	
 	public ArrayList<String> getStatesWithAttribute(String attrib){
 		return states.getStatesWithAttribute(attrib);
 	}
@@ -363,6 +443,10 @@ public class TransitionSystem {
 	
 	//-- Event  -----------------------------------------------
 
+	public boolean hasEventAttribute(String ref) {
+		return events.getAttributes().contains(ref);
+	}
+	
 	public ArrayList<String> getEventsWithAttribute(String attrib){
 		return events.getEventsWithAttribute(attrib);
 	}
@@ -375,12 +459,20 @@ public class TransitionSystem {
 		return events.getEventNames();
 	}
 
+	public boolean eventExists(String eventName) {
+		return events.contains(eventName);
+	}
+	
 	public Boolean getEventAttribute(String nom, String ref) {
 		return events.getEventAttribute(nom, ref);
 	}
 	
 	//-- Transition  ------------------------------------------
 
+	public boolean hasTransitionAttribute(String ref) {
+		return transitions.getAttributes().contains(ref);
+	}
+	
 	public ArrayList<String> getTransitionsWithAttribute(String attrib){
 		return transitions.getTransitionsWithAttribute(attrib);
 	}

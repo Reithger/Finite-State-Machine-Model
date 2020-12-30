@@ -1,72 +1,11 @@
 package model.process;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
 
-import model.fsm.DisabledEvents;
-import model.fsm.FSM;
-import model.fsm.ModalSpecification;
-import model.fsm.NextStates;
-import model.fsm.State;
-import model.fsm.Transition;
-import model.fsm.component.Entity;
-import model.fsm.component.EventMap;
-import model.fsm.component.transition.TransitionFunction;
+import model.AttributeList;
+import model.fsm.TransitionSystem;
 
 public class ProcessAnalysis {
-
-	/**
-	 * Helper method to the getCoAccessibleMap method that recursively checks States in the calling FSM object's StateMap,
-	 * declaring them as either CoAccessible, not CoAccessible, or unvisited (true, false, null in the results HashMap)
-	 * over the course of its processing, creating via side-effect the list of States' statuses once all have been visited.
-	 * 
-	 * Algorithm works by recursively exploring all the neighbors of each observed State until it either finds a Marked State,
-	 * runs out of neighbors, or finds a State it has already seen. In the first case, all States along that path are set as 
-	 * 'true', and if States remain, another is processed in this same way. In either other case, it returns false, and either
-	 * another pathway is explored or that path of States is marked as not being CoAccessible ('false').
-	 * 
-	 * The method getCoAccessibleMap() uses this to generate the list of States and their statuses.
-	 * 
-	 * @param curr - State object that represents the current 'State' to process recursively.
-	 * @param results - HashMap<<r>String, Boolean> object that records the status of each State as CoAccessible or not.
-	 * @param visited - HashSet<<r>String> object that keeps track of which States have been already visited.
-	 * @return - Returns a boolean value: true if the State object curr is coaccessible, false otherwise.
-	 */
-	
-	private boolean recursivelyFindMarked(String curr, HashMap<String, Boolean> results, HashSet<String> visited) {
-		visited.add(curr);
-		
-		// If the state is marked, return true
-		if(states.getStateMarked(curr)) {
-			results.put(curr, true);
-			return true;
-		}
-		
-		// Base cases when already checked if the state was coaccessible
-		Boolean check = results.get(curr);
-		if(check != null)
-			return check;
-		
-		// Go through each unvisited state and recurse until find a marked state
-		ArrayList<Transition> thisTransitions = transitions.getTransitions(curr);
-		if(thisTransitions == null) return false;
-		for(Transition t : thisTransitions) {
-			for(State next : (ArrayList<State>)t.getTransitionStates()) {
-				if(!visited.contains(next.getStateName())) { // If not already visited
-					// If next is coaccessible, so is curr.
-					if(recursivelyFindMarked(next, results, visited)) {
-						results.put(curr.getStateName(), true);
-						return true;
-					} // if coaccessible
-				} // if not already visited
-			} // for each transition state
-		} // for each transition object
-		return false;
-	} // recursivelyFindMarked(State, HashMap<String, Boolean>, HashSet<String>)
 	
 	/**
 	 * Gets if the FSM is blocking—that is, if there are possible words which are not
@@ -77,26 +16,77 @@ public class ProcessAnalysis {
 	 * @return - Returns a boolean value; true if the FSM is found to be blocking, false otherwise.
 	 */
 	
-	public boolean isBlocking() {
-		// First, find what states we need to indicate
-		HashMap<String, Boolean> processedStates = getCoAccessibleMap();	//Use helper method to generate list of legal/illegal States
-
-		boolean isBlocking = false;
-		
-		// Secondly, indicate blocking states
-		for(Map.Entry<String, Boolean> entry : processedStates.entrySet()) {
-			if(!entry.getValue()) {
-				isBlocking = true;
-				this.getState(entry.getKey()).setStateBad(true);
-			} // if
-			else
-				// Reset the badness to false of good states (accommodates multiple different
-				// operations doing marking by overwriting).
-				this.getState(entry.getKey()).setStateBad(false);
-		} // for
-		
-		return isBlocking;
+	public static boolean isBlocking(TransitionSystem in) {
+		TransitionSystem coAccess = ProcessClean.makeCoAccessible(in);
+		return in.getStateNames().size() == coAccess.getStateNames().size();
 	} // isBlocking()
+	
+	public ArrayList<String> findPrivateStates(TransitionSystem in){
+		return in.getStatesWithAttribute(AttributeList.ATTRIBUTE_PRIVATE);
+	}
+	
+	public boolean testOpacity(TransitionSystem in) {
+		return findPrivateStates(in).size() == 0;
+	}
+
+	
+	/*
+	
+	/**
+	 * This method gets the ModalSpecification representing the greatest lower bound between
+	 * the calling and parameter ModalSpecifications.
+	 * 
+	 * @param other - ModalSpecification to use for calculating the greatest lower bound.
+	 * @return - Returns a ModalSpecification representing the greatest lower bound between the two
+	 * ModalSpecifications.
+	
+	public ModalSpecification getGreatestLowerBound(ModalSpecification other) {
+		ModalSpecification newMS = getPseudoLowerBound(other);
+		return newPrune(this, other, newMS);
+	}
+	
+	/**
+	 * This method gets the pseudo-modal specification representing the lower bound of
+	 * the calling and parameter ModalSpecification inputs. This means:
+	 * - All "may" transitions for a common event must be present in both to exist.
+	 * - All "may" transitions for a private event must only be present in one to exist.
+	 * - All "must" transitions for any event must be present in at least one to exist.
+	 * 
+	 * @param other - ModalSpecification which will be used in conjunction with the calling
+	 * modal specification to create a new ModalSpecification. The result will be the lower
+	 * bound of the two.
+	 * @return - Returns a Pseudo modal specification representing the lower bound of the two.
+	 * This result needs to be pruned to remove states where there exists a must transition but
+	 * no corresponding may transition.
+	
+	private ModalSpecification getPseudoLowerBound(ModalSpecification other) {
+		ModalSpecification newMS = new ModalSpecification(this.id + " Lower Bound");
+		
+		// Also, identify which states are already visited so we don't go in loops
+		HashSet<String> visited = new HashSet<String>();
+		
+		// Start at the beginning of each MS
+		LinkedList<NextStates> next = new LinkedList<NextStates>();
+		if(this.initialState != null && other.initialState != null) { // If one doesn't have an initial, we have a problem.
+			State newInitial = newMS.states.addState(this.initialState, other.initialState);
+			newMS.initialState = newInitial;
+			next.add(new NextStates(this.initialState, other.initialState, newInitial));
+		}
+		while(!next.isEmpty()) {
+			NextStates curr = next.poll();
+			
+			if(visited.contains(curr.stateNew.getStateName()))
+				continue; // If we already added the state, skip this iteration
+			curr.addToComposition(newMS);
+			visited.add(curr.stateNew.getStateName());
+			
+			// Go through all the MAY transitions common in both
+			next.addAll(newMS.copyCommonTransitions(curr, this, other));
+			next.addAll(newMS.copyPrivateTransitions(curr, this, other));
+			next.addAll(newMS.copyMustTransitions(curr, this, other));
+		} // while there are states in the queue
+		return newMS;
+	}
 	
 	/**
 	 * This gets the epsilon reaches of all each state, mapping the state to a set
@@ -104,7 +94,6 @@ public class ProcessAnalysis {
 	 * 
 	 * @param fsmStates Collection of states which exists in the FSM.
 	 * @return Hashmap mapping each state to a hashset of states (which are all reachable
-	 */
 	
 	public HashMap<String, HashSet<String>> getEpsilonReaches(Collection<String> fsmStates) {
 		HashMap<State, HashSet<State>> epsilonReach = new HashMap<State, HashSet<State>>();	//Maps a State to all States it is attached to
@@ -145,7 +134,6 @@ public class ProcessAnalysis {
 	 * @param mustTransitionFunction - TransitionFunction with the transitions that must occur for
 	 * the TransitionSystem.
 	 * @return - HashSet of all the States which were found to be inconsistent.
-	 */
 	
 	public HashSet<String> getInconsistentStates(TransitionFunction mustTransitionFunction) {
 		// This is the must transitions; we want all the states where there is no transition in
@@ -168,28 +156,7 @@ public class ProcessAnalysis {
 		}
 		return badStates;
 	} // getInconsistentStates(TransitionFunction<Transition>)
-	
-	/**
-	 * Helper method that processes the calling FSM object to generate a list of States for that
-	 * object describing their status as CoAccessible, or able to reach a Marked State.
-	 * 
-	 * @return - Returns a HashMap<<r>String, Boolean> object mapping String state names to true if the state is coaccessible, and false if it is not.
-	 */
-	
-	protected HashMap<String, Boolean> getCoAccessibleMap() {
-		// When a state is processed, add it to the map and state if it reached a marked state.
-		HashMap<String, Boolean> results = new HashMap<String, Boolean>();
-		
-		for(String curr : states.getStateNames()) {
-			// Recursively check for a marked state, and keep track of a HashSet of states
-			// which have already been visited to avoid loops.
-			boolean isCoaccessible = recursivelyFindMarked(curr, results, new HashSet<String>());
-			if(!isCoaccessible)
-				results.put(curr, false);
-		}
-		return results;
-	} // getCoAccessibleMap(State, HashMap<String, Boolean>)
-	
+
 	public DisabledEvents getDisabledEvents(State curr, FSM otherFSM, HashSet<String> visitedStates, HashMap<String, DisabledEvents> disabledMap) {
 		String currName = curr.getStateName();
 		State otherCurr = otherFSM.getState(currName);
@@ -259,16 +226,6 @@ public class ProcessAnalysis {
 		} // for each transition
 		return currDE;
 	} // getDisabledEvents
-	
-	public ArrayList<State> testCurrentStateOpacity(){
-		ArrayList<State> secrets = new ArrayList<State>();
-		for(State s : this.getStates()) {
-			if(s.getStatePrivate())
-				secrets.add(s);
-		}
-		return secrets;
-	}
-
 
 	/**
 	 * This method finds the epsilon-reach of a given State in a ModalSpecification (can be generalized easily);
@@ -279,7 +236,6 @@ public class ProcessAnalysis {
 	 * @param s - State object provided as the root State to search for's epsilon-reach.
 	 * @param must - boolean value describing whether or not the algorithm should respect May/Must Transitions or not.
 	 * @return - Returns a HashSet<<r>State> object containing all States in the epsilon-reach of the provided first State.
-	 */
 	
 	public HashSet<State> epsilonReach(ModalSpecification ts, State s, boolean must){
 		HashSet<State> outbound = new HashSet<State>();
@@ -312,7 +268,6 @@ public class ProcessAnalysis {
 	 * @param composedModal - Modal Specification object representing the composition of the two Modal Specifications
 	 * @param s - State object representing the State being checked for its status as Good or Bad.
 	 * @return - Returns a boolean value describing whether or not a State is good or bad.
-	 */
 	
 	public boolean stateIsBad(ModalSpecification modal1, ModalSpecification modal2, ModalSpecification composedModal, State s) {
 		ArrayList<Transition> mustTrans = composedModal.getMustTransitions().getTransitions(s);
@@ -351,7 +306,6 @@ public class ProcessAnalysis {
 	 * @param shared - EventMap object holding the Events shared between the two Modal Specifications that formed the calling object.
 	 * @param e - Event object representing the Event being searched for via an alternate route.
 	 * @return - Returns a boolean denoting the result of the search; true if it did not find the event, false otherwise.
-	 */
 	
 	public boolean privateEventSearch(EventMap mod, State modState, EventMap shared, Entity e) {
 		LinkedList<State> queue = new LinkedList<State>();
@@ -387,7 +341,6 @@ public class ProcessAnalysis {
 	 * @param badStates - HashSet of Strings representing the States which are bad and will
 	 * be removed from the TransitionSystem.
 	 * @return - Returns a boolean value representing if the method added any bad states to the set.
-	 */
 
 	private boolean getBadMustTransitionStates(HashSet<String> badStates) {
 		boolean markedAState = false;
@@ -403,63 +356,6 @@ public class ProcessAnalysis {
 		}
 		return markedAState;
 	} // getBadMustTransitionStates(HashSet<String>)
-	
-	/**
-	 * This method gets the ModalSpecification representing the greatest lower bound between
-	 * the calling and parameter ModalSpecifications.
-	 * 
-	 * @param other - ModalSpecification to use for calculating the greatest lower bound.
-	 * @return - Returns a ModalSpecification representing the greatest lower bound between the two
-	 * ModalSpecifications.
-	 */
-	
-	public ModalSpecification getGreatestLowerBound(ModalSpecification other) {
-		ModalSpecification newMS = getPseudoLowerBound(other);
-		return newPrune(this, other, newMS);
-	}
-	
-	/**
-	 * This method gets the pseudo-modal specification representing the lower bound of
-	 * the calling and parameter ModalSpecification inputs. This means:
-	 * - All "may" transitions for a common event must be present in both to exist.
-	 * - All "may" transitions for a private event must only be present in one to exist.
-	 * - All "must" transitions for any event must be present in at least one to exist.
-	 * 
-	 * @param other - ModalSpecification which will be used in conjunction with the calling
-	 * modal specification to create a new ModalSpecification. The result will be the lower
-	 * bound of the two.
-	 * @return - Returns a Pseudo modal specification representing the lower bound of the two.
-	 * This result needs to be pruned to remove states where there exists a must transition but
-	 * no corresponding may transition.
-	 */
-	
-	private ModalSpecification getPseudoLowerBound(ModalSpecification other) {
-		ModalSpecification newMS = new ModalSpecification(this.id + " Lower Bound");
-		
-		// Also, identify which states are already visited so we don't go in loops
-		HashSet<String> visited = new HashSet<String>();
-		
-		// Start at the beginning of each MS
-		LinkedList<NextStates> next = new LinkedList<NextStates>();
-		if(this.initialState != null && other.initialState != null) { // If one doesn't have an initial, we have a problem.
-			State newInitial = newMS.states.addState(this.initialState, other.initialState);
-			newMS.initialState = newInitial;
-			next.add(new NextStates(this.initialState, other.initialState, newInitial));
-		}
-		while(!next.isEmpty()) {
-			NextStates curr = next.poll();
-			
-			if(visited.contains(curr.stateNew.getStateName()))
-				continue; // If we already added the state, skip this iteration
-			curr.addToComposition(newMS);
-			visited.add(curr.stateNew.getStateName());
-			
-			// Go through all the MAY transitions common in both
-			next.addAll(newMS.copyCommonTransitions(curr, this, other));
-			next.addAll(newMS.copyPrivateTransitions(curr, this, other));
-			next.addAll(newMS.copyMustTransitions(curr, this, other));
-		} // while there are states in the queue
-		return newMS;
-	}
-	
+	*/
+
 }

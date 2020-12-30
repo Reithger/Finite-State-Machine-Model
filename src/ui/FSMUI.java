@@ -1,5 +1,6 @@
 package ui;
 
+import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,21 +32,7 @@ public class FSMUI {
 	public final static int WINDOW_WIDTH = 1000;
 	public final static int WINDOW_HEIGHT = 600;
 	public final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
-	
-	//-- Config  ----------------------------------------------
-	private final static String OS = System.getProperty("os.name");
-	public final static String DOT_ADDRESS_VAR = "dotAddress";
-	public final static String ADDRESS_SETTINGS = "./Finite State Machine Model/settings/";
-	public final static String ADDRESS_IMAGES = "./Finite State Machine Model/images/";
-	public final static String ADDRESS_SOURCES = "./Finite State Machine Model/sources/";
-	public final static String ADDRESS_CONFIG = ADDRESS_SETTINGS + "/config.txt";
-	
-	private final static String DEFAULT_CONFIG_COMMENT = "##############################################################\r\n" + 
-			"#                       Configurations                       #\r\n" + 
-			"##############################################################\r\n" + 
-			"# Format as 'name = address', the \" = \" spacing is necessary\r\n" + 
-			"# It's awkward but it makes the file reading easier and I'm telling you this directly";
-	
+
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	//-- UI  --------------------------------------------------
@@ -63,24 +50,16 @@ public class FSMUI {
 	
 	//-- System Information  ----------------------------------
 	
-	private ArrayList<String> fsmPaths;
-	
-	private ArrayList<FSM> fsms;
+	private ArrayList<String> fsmRefs;
+	private ArrayList<Image> fsmImgs;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FSMUI() {
-		fileConfiguration();
-		FormatConversion.assignPaths(ADDRESS_SOURCES, ADDRESS_CONFIG);
-		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT) {
-			@Override
-			public void reactToResize() {
-				
-			}
-		};
+		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
 		frame.setName("Finite State Machine Model");
-		fsmPaths = new ArrayList<String>();
-		fsms = new ArrayList<FSM>();
+		fsmRefs = new ArrayList<String>();
+		fsmImgs = new ArrayList<Image>();
 		createPages();
 		updateDisplay();
 	}
@@ -99,38 +78,14 @@ public class FSMUI {
 		frame.addPanelToWindow("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 		frame.addPanelToWindow("Home", "imageSpace", imagePage.generateElementPanel(WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
 	}
-	
-	//-- File Configuration  ----------------------------------
-	
-	private void fileConfiguration() {
-		Config c = new Config("", new UMLConfigValidation());
-		c.addFilePath("Diagram");
-		c.addFilePath("Diagram/settings");
-		c.addFilePath("Diagram/images");
-		c.addFilePath("Diagram/sources");
-		c.addFile("Diagram/settings", "config.txt", DEFAULT_CONFIG_COMMENT);
-		c.addFileEntry("Diagram/settings", "config.txt", DOT_ADDRESS_VAR, "Where is your dot program located? It will be called externally.", "?");
-		
-		c.softWriteConfig();
-		
-		while(!c.verifyConfig()) {
-			switch(c.getErrorCode()) {
-				case UMLConfigValidation.CODE_FAILURE_DOT_ADDRESS:
-					PopoutAlert pA = new PopoutAlert(400, 250, "Please navigate to and select the path for your graphviz/bin/dot.exe file in the following navigation tool");
-					c.setConfigFileEntry("Diagram/settings/config.txt", DOT_ADDRESS_VAR, FileChooser.promptSelectFile("C:/", true, true).getAbsolutePath());
-					pA.dispose();
-					break;
-				case UMLConfigValidation.CODE_FAILURE_FILE_MISSING:
-					c.initializeDefaultConfig();
-					break;
-				default:
-					break;
-			}
-		}
-	}
-	
+
 //---  Operations   ---------------------------------------------------------------------------
 
+	public void addFSM(String ref, Image img) {
+		fsmRefs.add(ref);
+		fsmImgs.add(img);
+	}
+	
 	//-- In-program Manipulation  -----------------------------
 	
 	public void allotImage(String path) {
@@ -278,6 +233,7 @@ public class FSMUI {
 	public ArrayList<String> getFSMList(){
 		return fsmPaths;
 	}
+	
 	public String getFSMPath(int index) {
 		return fsmPaths.get(index);
 	}

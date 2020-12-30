@@ -41,6 +41,22 @@ public class Transition extends Entity implements Comparable<Transition> {
 		super(inString);
 		states = inStates;
 	}
+	
+	protected Transition(Entity base) {
+		super(base.getName());
+		copyAttributes(base);
+	}
+	
+//---  Operations   ---------------------------------------------------------------------------
+	
+	@Override
+	public Transition copy() {
+		Transition out = new Transition(this);
+		for(String s : states) {
+			out.addTransitionState(s);
+		}
+		return out;
+	}
 
 //--- Setter Methods   ------------------------------------------------------------------------
 	
@@ -87,6 +103,10 @@ public class Transition extends Entity implements Comparable<Transition> {
 	
 	public void removeTransitionState(String stateName) {
 		states.remove(stateName);
+	}
+	
+	public void removeTargetStates() {
+		states.clear();
 	}
 
 //---  Mechanics   ----------------------------------------------------------------------------

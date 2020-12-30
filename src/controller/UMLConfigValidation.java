@@ -1,10 +1,10 @@
-package ui;
+package controller;
 
 import java.io.File;
 
+import controller.convert.GraphViz;
 import filemeta.config.Config;
 import filemeta.config.ValidateFiles;
-import graphviz.GraphViz;
 
 public class UMLConfigValidation implements ValidateFiles {
 
@@ -15,7 +15,7 @@ public class UMLConfigValidation implements ValidateFiles {
 	public int validateFile(Config c, File f) {
 		switch(f.getName()) {
 			case "config.txt":
-				String entry = c.getConfigFileEntry(f.getAbsolutePath(), FSMUI.DOT_ADDRESS_VAR);
+				String entry = c.getConfigFileEntry(f.getAbsolutePath(), FiniteStateMachine.DOT_ADDRESS_VAR);
 				return verifyDotAddress(entry);
 		}
 		return CODE_FAILURE_FILE_MISSING;

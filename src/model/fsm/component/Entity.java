@@ -2,6 +2,8 @@ package model.fsm.component;
 
 import java.util.LinkedList;
 
+import model.AttributeList;
+
 /**
  * This class models an Event in an FSM, storing information about the Event's name and
  * its status as Observable, Controllable, and whatever other features may be implemented
@@ -49,6 +51,13 @@ public class Entity {
 		wrap = null;
 	}
 	
+	public void copyAttributes(Entity ot) {
+		setAttributes(ot.getAttributes());
+		for(String s : getAttributes()) {
+			setAttributeValue(s, ot.getAttributeValue(s));
+		}
+	}
+	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	/**
@@ -63,15 +72,19 @@ public class Entity {
 	
 	public void setAttributeValue(String ref, boolean val) {
 		if(wrap == null) {
-			wrap = new Attribute(ref);
+			wrap = new Attribute(ref, AttributeList.getAON(ref));
 		}
 		wrap.setValue(ref, val);
 	}
 
 	public void setAttributes(LinkedList<String> refs) {
 		if(refs != null && refs.size() != 0) {
-			wrap = new Attribute(refs.poll());
-			wrap.setAttributes(refs);
+			LinkedList<Boolean> ruls = new LinkedList<Boolean>();
+			for(String s : refs) {
+				ruls.add(AttributeList.getAON(s));
+			}
+			wrap = new Attribute(refs.poll(), ruls.poll());
+			wrap.setAttributes(refs, ruls);
 		}
 	}
 	

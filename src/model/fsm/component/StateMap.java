@@ -97,6 +97,10 @@ public class StateMap {
 		states.get(stateName).setAttributes(use);
 	}
 	
+	public void addState(String stateName, StateMap context) {
+		states.put(stateName, context.getState(stateName).copy());
+	}
+	
 	/**
 	 * Setter method that assigns a list of Entity extending objects to be designated as the States which have
 	 * composed the provided Entity in some operation that aggregated the values in that list to produce the
@@ -168,6 +172,10 @@ public class StateMap {
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	protected Entity getState(String stateName) {
+		return states.get(stateName);
+	}
 	
 	public ArrayList<String> getStatesWithAttribute(String attrib){
 		ArrayList<String> out = new ArrayList<String>();

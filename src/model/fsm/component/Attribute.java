@@ -8,10 +8,13 @@ public class Attribute {
 	
 	private boolean value;
 	
+	private boolean mergeRule;
+	
 	private Attribute wrap;
 	
-	public Attribute(String inId) {
+	public Attribute(String inId, boolean inRule) {
 		id = inId;
+		mergeRule = inRule;
 		value = false;
 	}
 	
@@ -34,10 +37,14 @@ public class Attribute {
 		return null;
 	}
 	
-	public void setAttributes(LinkedList<String> in) {
+	public boolean getMergeRule() {
+		return mergeRule;
+	}
+	
+	public void setAttributes(LinkedList<String> in, LinkedList<Boolean> rule) {
 		if(in != null && in.size() != 0) {
-			wrap = new Attribute(in.poll());
-			wrap.setAttributes(in);
+			wrap = new Attribute(in.poll(), rule.poll());
+			wrap.setAttributes(in, rule);
 		}
 	}
 	
@@ -50,15 +57,15 @@ public class Attribute {
 		return out;
 	}
 	
-	public void addWrapper(String ref) {
+	public void addWrapper(String ref, boolean rule) {
 		if(id.equals(ref)) {
 			return;
 		}
 		if(wrap != null) {
-			wrap.addWrapper(ref);
+			wrap.addWrapper(ref, rule);
 		}
 		else {
-			wrap = new Attribute(ref);
+			wrap = new Attribute(ref, rule);
 		}
 	}
 	

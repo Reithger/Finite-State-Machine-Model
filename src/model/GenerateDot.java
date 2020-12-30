@@ -1,16 +1,20 @@
-package controller.convert;
+package model;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+import model.fsm.TransitionSystem;
 import model.fsm.component.Entity;
-import model.fsm.state.State;
-import model.fsm.transition.Transition;
-import model.fsm.transition.TransitionFunction;
 
 public class GenerateDot {
 
+	public static String generateDot(TransitionSystem in) {
+		String out = "";
+		
+		return out;
+	}
+	
 	//------------ State
 	
 	
@@ -27,7 +31,6 @@ public class GenerateDot {
 		}
 		return sb.toString();
 	}
-	
 	
 	//---------- Transition
 	
