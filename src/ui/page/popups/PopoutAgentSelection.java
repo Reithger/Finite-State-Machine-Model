@@ -6,9 +6,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import fsm.FSM;
-import support.Agent;
-import support.component.Event;
 import ui.page.optionpage.implementation.UStructurePage;
 import visual.composite.popout.PopoutWindow;
 

@@ -7,12 +7,18 @@ import model.fsm.component.EventMap;
 
 public class Agent {
 
+//---  Constants   ----------------------------------------------------------------------------
+	
 	public final static String ATTRIBUTE_OBSERVABLE = AttributeList.ATTRIBUTE_OBSERVABLE;
 	public final static String ATTRIBUTE_CONTROLLABLE = AttributeList.ATTRIBUTE_CONTROLLABLE;
 	
 	private final static String[] ATTRIBUTES = new String[] {ATTRIBUTE_OBSERVABLE, ATTRIBUTE_CONTROLLABLE};
 	
+//---  Instance Variables   -------------------------------------------------------------------
+	
 	private EventMap events;
+	
+//---  Constructors   -------------------------------------------------------------------------
 	
 	public Agent(ArrayList<String> inEvents) {
 		ArrayList<String> attrib = new ArrayList<String>();
@@ -24,12 +30,22 @@ public class Agent {
 			events.addEvent(e);
 	}
 	
+//---  Operations   ---------------------------------------------------------------------------
+	
+	public void addUnknownEvent(String in) {
+		events.addEvent(in);
+	}
+	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
 	public void setAttributeTrue(String attrib, ArrayList<String> names) {
 		for(String s : names) {
 			events.setEventAttribute(s, attrib, true);
 		}
 	}
 	
+//---  Getter Methods   -----------------------------------------------------------------------
+
 	public Boolean getEventAttribute(String event, String attrib) {
 		return events.getEventAttribute(event, attrib);
 	}
@@ -48,11 +64,7 @@ public class Agent {
 		}
 		return out;
 	}
-	
-	public void addUnknownEvent(String in) {
-		events.addEvent(in);
-	}
-	
+
 	public boolean contains(String eventName) {
 		return events.contains(eventName);
 	}

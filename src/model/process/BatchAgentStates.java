@@ -2,21 +2,35 @@ package model.process;
 
 public class BatchAgentStates implements Comparable<BatchAgentStates>{
 	
+//---  Instance Variables   -------------------------------------------------------------------
+	
 	private String[] currentStates;
 	private String confirmedObject;
+	
+//---  Constructors   -------------------------------------------------------------------------
 	
 	public BatchAgentStates(String[] states, String identity) {
 		currentStates = states;
 		confirmedObject = identity;
 	}
 	
-	public String[] getStates() {
-		return currentStates;
-	}
+//---  Setter Methods   -----------------------------------------------------------------------
 	
 	public void setState(String in) {
 		confirmedObject = in;
 	}
+
+//---  Getter Methods   -----------------------------------------------------------------------
+	
+	public String[] getStates() {
+		return currentStates;
+	}
+
+	public String getIdentityState() {
+		return confirmedObject;
+	}
+	
+//---  Mechanics   ----------------------------------------------------------------------------
 
 	@Override
 	public int compareTo(BatchAgentStates o) {
@@ -30,10 +44,6 @@ public class BatchAgentStates implements Comparable<BatchAgentStates>{
 			return -1;
 	}
 		
-	public String getIdentityState() {
-		return confirmedObject;
-	}
-	
 	@Override
 	public boolean equals(Object o1) {
 		return this.confirmedObject.equals(((BatchAgentStates)o1).confirmedObject);

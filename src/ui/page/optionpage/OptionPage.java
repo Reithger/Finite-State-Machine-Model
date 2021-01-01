@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 
+import controller.InputReceiver;
 import ui.FSMUI;
 import ui.page.optionpage.entryset.EntrySet;
 import visual.panel.ElementPanel;
@@ -51,6 +52,8 @@ public abstract class OptionPage {
 	private int helpKey;
 	private boolean showSettings; //TODO: Settings menu
 	private int settingsKey;
+	
+	private static InputReceiver inputRef;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -111,7 +114,7 @@ public abstract class OptionPage {
 		handleText("help", p.getWidth() / 2, p.getHeight() / 2, p.getWidth(), p.getHeight(), OPTIONS_FONT, help);
 	}
 	
-	public void handleMouseInput(int code, int x, int y) {
+	public void handleMouseInput(int code, int x, int y, int mouseType) {
 		if(code == helpKey || showHelp == true) {
 			showHelp = !showHelp;
 			p.removeElementPrefixed("");
@@ -123,15 +126,17 @@ public abstract class OptionPage {
 			e.processEvent();
 		}
 		if(!toggleCategory(code)) {
-			applyCode(code);
+			inputRef.receiveCode(code, getEntrySetFromCode(code).getLabel(), mouseType);
 		}
 		drawPage();
 	}
 
-	public abstract void applyCode(int code);
-
 //---  Setter Methods   -----------------------------------------------------------------------
 
+	public static void assignInputReceiver(InputReceiver iR) {
+		inputRef = iR;
+	}
+	
 	public static void assignElementPanel(ElementPanel inP) {
 		p = inP;
 		p.setScrollBarHorizontal(false);

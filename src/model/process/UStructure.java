@@ -16,7 +16,11 @@ public class UStructure {
 	//TODO: Get subautomota representing the paths that can reach goodBad/badGood states (flip transition direction, set initial as marked, etc.)
 	//TODO: Integrate bad state analysis into the construction of the U-structure to save time
 	
+//---  Constants   ----------------------------------------------------------------------------
+	
 	private static final String UNOBSERVED_EVENT = "w";
+	
+//---  Instance Variables   -------------------------------------------------------------------
 	
 	private TransitionSystem plantFSM;
 	private Agent[] agents;
@@ -26,6 +30,8 @@ public class UStructure {
 	private TransitionSystem uStructure;
 	private HashSet<String> goodBadStates;
 	private HashSet<String> badGoodStates;
+	
+//---  Constructors   -------------------------------------------------------------------------
 	
 	public UStructure(TransitionSystem thePlant, TransitionFunction theBadTransitions, ArrayList<Agent> theAgents) {
 		plantFSM = thePlant;
@@ -63,6 +69,8 @@ public class UStructure {
 		createUStructure();
 		findIllegalStates();
 	}
+	
+//---  Operations   ---------------------------------------------------------------------------
 	
 	public void createUStructure() {
 		uStructure = new TransitionSystem("U-struc", plantFSM.getStateAttributes(), plantFSM.getEventAttributes(), plantFSM.getTransitionAttributes());
@@ -171,7 +179,27 @@ public class UStructure {
 			}
 		}
 	}
+	
+//---  Getter Methods   -----------------------------------------------------------------------
+	
+	public TransitionSystem getUStructure() {
+		return uStructure;
+	}
+		
+	public TransitionSystem getPlantFSM() {
+		return plantFSM;
+	}
 
+	public HashSet<String> getIllegalConfigOneStates(){
+		return badGoodStates;
+	}
+	
+	public HashSet<String> getIllegalConfigTwoStates(){
+		return goodBadStates;
+	}
+	
+//---  Support Methods   ----------------------------------------------------------------------
+	
 	private HashSet<String> generateObservablePermutation(HashSet<String> tags, int index,  String total, boolean[] sight){
 		if(index >= sight.length) {
 			tags.add(total);
@@ -191,7 +219,7 @@ public class UStructure {
 		}
 	}
 
-	public void findIllegalStates() {
+	private void findIllegalStates() {
 		goodBadStates = new HashSet<String>();
 		badGoodStates = new HashSet<String>();
 		for(String state : uStructure.getStateNames()) {
@@ -236,21 +264,6 @@ public class UStructure {
 			}
 		}
 	}
-	
-	public TransitionSystem getUStructure() {
-		return uStructure;
-	}
-		
-	public TransitionSystem getPlantFSM() {
-		return plantFSM;
-	}
 
-	public HashSet<String> getIllegalConfigOneStates(){
-		return badGoodStates;
-	}
-	
-	public HashSet<String> getIllegalConfigTwoStates(){
-		return goodBadStates;
-	}
 }
 

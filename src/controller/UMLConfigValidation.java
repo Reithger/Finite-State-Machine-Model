@@ -8,8 +8,12 @@ import filemeta.config.ValidateFiles;
 
 public class UMLConfigValidation implements ValidateFiles {
 
+//---  Constants   ----------------------------------------------------------------------------
+	
 	public final static int CODE_FAILURE_DOT_ADDRESS = -1;
 	public final static int CODE_FAILURE_FILE_MISSING = -2;
+	
+//---  Operations   ---------------------------------------------------------------------------
 	
 	@Override
 	public int validateFile(Config c, File f) {

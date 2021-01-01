@@ -9,8 +9,12 @@ import model.fsm.TransitionSystem;
 
 public class ProcessClean {
 	
+//---  Constants   ----------------------------------------------------------------------------
+	
 	public final static String ATTRIBUTE_INITIAL = AttributeList.ATTRIBUTE_INITIAL;
 	public final static String ATTRIBUTE_MARKED = AttributeList.ATTRIBUTE_MARKED;
+	
+//---  Operations   ---------------------------------------------------------------------------
 	
 	/**
 	 * This method performs a trim operation on the calling TransitionSystem (performing the
@@ -24,8 +28,8 @@ public class ProcessClean {
 	
 	public static TransitionSystem trim(TransitionSystem in) {
 		TransitionSystem out = in.copy();
-		makeAccessible(out);
-		makeCoAccessible(out);
+		out = makeAccessible(out);
+		out = makeCoAccessible(out);
 		out.setId(in.getId() + "_trim");
 		return out;
 	}
@@ -113,6 +117,8 @@ public class ProcessClean {
 		}
 		return out;
 	}
+	
+//---  Support Methods   ----------------------------------------------------------------------
 	
 	/**
 	 * Helper method that processes the calling FSM object to generate a list of States for that

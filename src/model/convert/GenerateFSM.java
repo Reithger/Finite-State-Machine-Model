@@ -1,4 +1,4 @@
-package model;
+package model.convert;
 
 import java.io.File;
 import java.io.RandomAccessFile;

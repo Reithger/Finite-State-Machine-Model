@@ -10,8 +10,12 @@ import model.fsm.TransitionSystem;
 
 public class ProcessOperation {
 
+//---  Constants   ----------------------------------------------------------------------------
+	
 	public final static String ATTRIBUTE_OBSERVABLE = AttributeList.ATTRIBUTE_OBSERVABLE;
 	public final static String ATTRIBUTE_INITIAL = AttributeList.ATTRIBUTE_INITIAL;
+	
+//---  Operations   ---------------------------------------------------------------------------
 	
 	/**
 	 * This method creates a modified TransitionSystem or Modal Specification derived from the calling object by removing Observable Events
@@ -78,7 +82,43 @@ public class ProcessOperation {
 		}
 		return out;
 	}
+	
+	/**
+	 * This method performs a Product(or Intersection) operation between multiple TransitionSystem objects, one provided as an
+	 * argument and the other being the TransitionSystem object calling this method, and returns the resulting TransitionSystem object.
+	 * 
+	 * @param other - Array of TransitionSystem extending objects that performs the product operation on with the current TransitionSystem.
+	 * @return - Returns a TransitionSystem extending object representing the TransitionSystem object resulting from all Product operations.
+	 */
 
+ 	public static TransitionSystem product(TransitionSystem in, ArrayList<TransitionSystem> other) {
+		TransitionSystem out = productHelper(in, other.get(0));
+		for(int i = 1; i < other.size(); i++) {
+			out = productHelper(out, other.get(i));
+		}
+		out.setId(in.getId() + "_product");
+		return out;
+	}
+
+	/**
+	 * This method performs the Parallel Composition of multiple TransitionSystems: the TransitionSystem calling this method and the TransitionSystems
+	 * provided as arguments. The resulting, returned, TransitionSystem will be the same type as the calling TransitionSystem.
+	 * 
+	 * @param other - Array of TransitionSystem extending objects provided to perform Parallel Composition with the calling TransitionSystem object.
+	 * @return - Returns a TransitionSystem extending object representing the result of all Parallel Composition operations.
+	 */
+	
+	public static TransitionSystem parallelComposition(TransitionSystem in, ArrayList<TransitionSystem> other){
+		TransitionSystem out = parallelCompositionHelper(in, other.get(0));
+		for(int i = 1; i < other.size(); i++) {
+			out = parallelCompositionHelper(out, other.get(1));
+		}
+		out.setId(in.getId() + "_parallel");
+		return out;
+	}
+
+//---  Support Methods   ----------------------------------------------------------------------
+	
 	private static HashMap<String, ArrayList<String>> collapseStates(TransitionSystem in){
 		HashMap<String, ArrayList<String>> out = new HashMap<String, ArrayList<String>>();
 		for(String s : in.getStateNames()) {
@@ -104,25 +144,6 @@ public class ProcessOperation {
 		return local;
 	}
 	
-	
-	
-	/**
-	 * This method performs a Product(or Intersection) operation between multiple TransitionSystem objects, one provided as an
-	 * argument and the other being the TransitionSystem object calling this method, and returns the resulting TransitionSystem object.
-	 * 
-	 * @param other - Array of TransitionSystem extending objects that performs the product operation on with the current TransitionSystem.
-	 * @return - Returns a TransitionSystem extending object representing the TransitionSystem object resulting from all Product operations.
-	 */
-
- 	public static TransitionSystem product(TransitionSystem in, ArrayList<TransitionSystem> other) {
-		TransitionSystem out = productHelper(in, other.get(0));
-		for(int i = 1; i < other.size(); i++) {
-			out = productHelper(out, other.get(i));
-		}
-		out.setId(in.getId() + "_product");
-		return out;
-	}
-
 	/**
 	 * Helper method that performs the brunt of the operations involved with a single Product operation
 	 * between two TransitionSystem objects, leaving the specialized features in more advanced TransitionSystem types to their
@@ -189,23 +210,6 @@ public class ProcessOperation {
 		} // while there are more states connected to the 2-tuple of initial states
 		return out;
 	} // productHelper(TransitionSystem)
-
-	/**
-	 * This method performs the Parallel Composition of multiple TransitionSystems: the TransitionSystem calling this method and the TransitionSystems
-	 * provided as arguments. The resulting, returned, TransitionSystem will be the same type as the calling TransitionSystem.
-	 * 
-	 * @param other - Array of TransitionSystem extending objects provided to perform Parallel Composition with the calling TransitionSystem object.
-	 * @return - Returns a TransitionSystem extending object representing the result of all Parallel Composition operations.
-	 */
-	
-	public static TransitionSystem parallelComposition(TransitionSystem in, ArrayList<TransitionSystem> other){
-		TransitionSystem out = parallelCompositionHelper(in, other.get(0));
-		for(int i = 1; i < other.size(); i++) {
-			out = parallelCompositionHelper(out, other.get(1));
-		}
-		out.setId(in.getId() + "_parallel");
-		return out;
-	}
 
 	/**
 	 * Helper method that performs the brunt of the operations involved with a single Parallel Composition

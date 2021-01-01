@@ -7,18 +7,32 @@ public class AttributeList {
 //---  Constants   ----------------------------------------------------------------------------
 	
 	//false means you only need one, true means you need all (AON = "all or nothing")
+	
+	//-- State  -----------------------------------------------
+	
 	public final static String ATTRIBUTE_INITIAL = "Initial";
 	public final static boolean ATTRIBUTE_AON_INITIAL = false;
 	public final static String ATTRIBUTE_MARKED = "Marked";
 	public final static boolean ATTRIBUTE_AON_MARKED = true;
 	public final static String ATTRIBUTE_PRIVATE = "Private";
 	public final static boolean ATTRIBUTE_AON_PRIVATE = true;
+	public final static String ATTRIBUTE_BAD = "Bad";
+	public final static boolean ATTRIBUTE_AON_BAD = false;
+	
+	//-- Event  -----------------------------------------------
+	
 	public final static String ATTRIBUTE_OBSERVABLE = "Observable";
 	public final static boolean ATTRIBUTE_AON_OBSERVABLE = false;
 	public final static String ATTRIBUTE_CONTROLLABLE = "Controllable";
 	public final static boolean ATTRIBUTE_AON_CONTROLLABLE = false;
+	public final static String ATTRIBUTE_ATTACKER_OBSERVABLE = "AttackerObservable";
+	public final static boolean ATTRIBUTE_AON_ATTACKER_OBSERVABLE = true;
+	
+//---  Instance Variables   -------------------------------------------------------------------
 	
 	private static HashMap<String, Boolean> map;
+	
+//---  Getter Methods   -----------------------------------------------------------------------
 	
 	public static boolean getAON(String ref) {
 		if(map == null) {
@@ -26,6 +40,8 @@ public class AttributeList {
 		}
 		return map.get(ref);
 	}
+	
+//---  Support Methods   ----------------------------------------------------------------------
 	
 	private static void setupMap() {
 		map = new HashMap<String, Boolean>();

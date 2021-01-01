@@ -20,7 +20,6 @@ public class Entity {
 	
 	/** String instance variable object representing the name of the Event*/
 	private String id;
-	
 	private Attribute wrap;
 	
 //---  Constructors   -------------------------------------------------------------------------

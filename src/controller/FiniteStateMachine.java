@@ -3,9 +3,13 @@ package controller;
 import controller.convert.FormatConversion;
 import filemeta.FileChooser;
 import filemeta.config.Config;
+import model.Manager;
+import ui.FSMUI;
 import visual.composite.popout.PopoutAlert;
 
-public class FiniteStateMachine {
+public class FiniteStateMachine implements InputReceiver{
+	
+//---  Constants   ----------------------------------------------------------------------------
 	
 	//-- Config  ----------------------------------------------
 	
@@ -21,10 +25,34 @@ public class FiniteStateMachine {
 			"##############################################################\r\n" + 
 			"# Format as 'name = address', the \" = \" spacing is necessary\r\n" + 
 			"# It's awkward but it makes the file reading easier and I'm telling you this directly";
+
+	public final static int WINDOW_WIDTH = 1000;
+	public final static int WINDOW_HEIGHT = 600;
+	
+//---  Instance Variables   -------------------------------------------------------------------
+	
+	private FSMUI view;
+	private Manager model;
+	
+//---  Constructors   -------------------------------------------------------------------------
 	
 	public FiniteStateMachine() {
+		view = new FSMUI(WINDOW_WIDTH, WINDOW_HEIGHT, this);
+		model = new Manager();
 		FormatConversion.assignPaths(ADDRESS_SOURCES, ADDRESS_CONFIG);
 		fileConfiguration();
+	}
+
+//---  Operations   ---------------------------------------------------------------------------
+	
+	//-- Input Handling  --------------------------------------
+	
+	public void receiveCode(int code, String ref, int mouseType) {
+		
+	}
+	
+	public void receiveKeyInput(char code, String ref, int keyType) {
+		
 	}
 	
 	//-- File Configuration  ----------------------------------
@@ -55,11 +83,5 @@ public class FiniteStateMachine {
 			}
 		}
 	}
-	
-	public void handleInput(int code, String ref) {
-		
-	}
-	
-	
 	
 }

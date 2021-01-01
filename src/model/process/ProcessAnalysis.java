@@ -7,8 +7,10 @@ import model.fsm.TransitionSystem;
 
 public class ProcessAnalysis {
 	
+//---  Operations   ---------------------------------------------------------------------------
+	
 	/**
-	 * Gets if the FSM is blocking—that is, if there are possible words which are not
+	 * Gets if the FSM is blocking; that is, if there are possible words which are not
 	 * part of the prefix closure of the marked language of the FSM. In other words, if
 	 * the FSM is NOT coaccessible, then the FSM is blocking.
 	 * It marks bad states along the way.
@@ -21,11 +23,11 @@ public class ProcessAnalysis {
 		return in.getStateNames().size() == coAccess.getStateNames().size();
 	} // isBlocking()
 	
-	public ArrayList<String> findPrivateStates(TransitionSystem in){
+	public static ArrayList<String> findPrivateStates(TransitionSystem in){
 		return in.getStatesWithAttribute(AttributeList.ATTRIBUTE_PRIVATE);
 	}
 	
-	public boolean testOpacity(TransitionSystem in) {
+	public static boolean testOpacity(TransitionSystem in) {
 		return findPrivateStates(in).size() == 0;
 	}
 

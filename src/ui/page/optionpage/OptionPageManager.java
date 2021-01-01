@@ -11,19 +11,24 @@ public class OptionPageManager {
 	
 //---  Instance Variables   -------------------------------------------------------------------
 
-	private final static OptionPage[] OPTION_PAGES = new OptionPage[] {
-			new AdjustFSM(0, 0, FSMUI.WINDOW_WIDTH/2, (int)(FSMUI.WINDOW_HEIGHT * FSMUI.PANEL_RATIO_VERTICAL)),
-			new Operations(0, 0, FSMUI.WINDOW_WIDTH/2, (int)(FSMUI.WINDOW_HEIGHT * FSMUI.PANEL_RATIO_VERTICAL)),
-			new UStructurePage(0, 0, FSMUI.WINDOW_WIDTH/2, (int)(FSMUI.WINDOW_HEIGHT * FSMUI.PANEL_RATIO_VERTICAL)),
-	};
+	private OptionPage[] optionPages;
 	private static int currentOptionPageIndex;
 	private ElementPanel p;
 	private final static int ROTATION_MULTIPLIER = 15;
+	private int width;
+	private int height;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public OptionPageManager(FSMUI reference) {
+	public OptionPageManager(FSMUI reference, int wid, int hei) {
 		OptionPage.assignFSMUI(reference);
+		width = wid;
+		height = hei;
+		optionPages = new OptionPage[] {
+				new AdjustFSM(0, 0, width/2, (int)(height * FSMUI.PANEL_RATIO_VERTICAL)),
+				new Operations(0, 0, width/2, (int)(height * FSMUI.PANEL_RATIO_VERTICAL)),
+				new UStructurePage(0, 0, width/2, (int)(height * FSMUI.PANEL_RATIO_VERTICAL)),
+		};
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
@@ -56,7 +61,7 @@ public class OptionPageManager {
 
 			@Override
 			public void clickEvent(int code, int x, int y, int mouseType) {
-				OPTION_PAGES[currentOptionPageIndex].handleMouseInput(code, x, y);
+				optionPages[currentOptionPageIndex].handleMouseInput(code, x, y, mouseType);
 			}
 
 			
@@ -74,7 +79,7 @@ public class OptionPageManager {
 	}
 
 	public void drawPage() {
-		OPTION_PAGES[currentOptionPageIndex].drawPage();
+		optionPages[currentOptionPageIndex].drawPage();
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -91,7 +96,7 @@ public class OptionPageManager {
 	}
 	
 	public OptionPage[] getOptionPageList() {
-		return OPTION_PAGES;
+		return optionPages;
 	}
 	
 }

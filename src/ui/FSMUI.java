@@ -7,7 +7,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import controller.InputReceiver;
 import filemeta.FileChooser;
 import filemeta.config.Config;
 import ui.page.headers.ImageHeader;
@@ -25,12 +27,10 @@ import visual.frame.WindowFrame;
  *
  */
 
-public class FSMUI {
+public class FSMUI implements InputReceiver{
 
 //---  Constants   ----------------------------------------------------------------------------
 	
-	public final static int WINDOW_WIDTH = 1000;
-	public final static int WINDOW_HEIGHT = 600;
 	public final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
 
 //---  Instance Variables   -------------------------------------------------------------------
@@ -50,16 +50,17 @@ public class FSMUI {
 	
 	//-- System Information  ----------------------------------
 	
-	private ArrayList<String> fsmRefs;
-	private ArrayList<Image> fsmImgs;
+	private HashMap<String, Image> fsmImgs;
+	
+	private InputReceiver reference;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public FSMUI() {
-		frame = new WindowFrame(WINDOW_WIDTH, WINDOW_HEIGHT);
+	public FSMUI(int wid, int hei, InputReceiver ref) {
+		reference = ref;
+		frame = new WindowFrame(wid, hei);
 		frame.setName("Finite State Machine Model");
-		fsmRefs = new ArrayList<String>();
-		fsmImgs = new ArrayList<Image>();
+		fsmImgs = new HashMap<String, Image>();
 		createPages();
 		updateDisplay();
 	}
@@ -71,119 +72,30 @@ public class FSMUI {
 		frame.showActiveWindow("Home");
 		imagePage = new ImagePage();	//TODO: Need to have headers refresh automatically
 		optionPageManager = new OptionPageManager(this);
-		optionHeader = new OptionsHeader(0, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), optionPageManager);
-		imageHeader = new ImageHeader(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), imagePage); 
+		optionHeader = new OptionsHeader(0, 0, frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), optionPageManager);
+		imageHeader = new ImageHeader(frame.getWidth() / 2, 0, frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), imagePage); 
 		frame.addPanelToWindow("Home", "optionHeader", optionHeader);
 		frame.addPanelToWindow("Home", "imageHeader", imageHeader);
-		frame.addPanelToWindow("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
-		frame.addPanelToWindow("Home", "imageSpace", imagePage.generateElementPanel(WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * (1 - PANEL_RATIO_VERTICAL)), WINDOW_WIDTH / 2, (int)(WINDOW_HEIGHT * PANEL_RATIO_VERTICAL)));
+		frame.addPanelToWindow("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), frame.getWidth() / 2, (int)(frame.getHeight() * PANEL_RATIO_VERTICAL)));
+		frame.addPanelToWindow("Home", "imageSpace", imagePage.generateElementPanel(frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), frame.getWidth() / 2, (int)(frame.getHeight() * PANEL_RATIO_VERTICAL)));
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
-
+	
+	public void receiveCode(int code, String ref, int mouseType) {
+		reference.receiveCode(code, ref, mouseType);
+	}
+	
+	public void receiveKeyInput(char code, String ref, int keyType) {
+		reference.receiveKeyInput(code, ref, keyType);
+	}
+	
 	public void addFSM(String ref, Image img) {
-		fsmRefs.add(ref);
-		fsmImgs.add(img);
+		fsmImgs.put(ref, img);
 	}
 	
-	//-- In-program Manipulation  -----------------------------
-	
-	public void allotImage(String path) {
-		imagePage.allotImage(path);
-		imagePage.increaseCurrentImageIndex();
-		updateImageHeader();
-		updateImagePanel();
-	}
-	
-	public void allotTransitionSystem(String in, String name) {
-		if(in.contains(".fsm") == false) {
-			in = in + ".fsm";
-		}
-		FSM cre = new FSM();
-		try {
-			cre = new FSM(new File(in), name);
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		allotTransitionSystem(cre, name);
-	}
-	
-	public void allotTransitionSystem(FSM in, String name) {
-		if(fsmPaths.contains(ADDRESS_SOURCES + name)) {
-			removeTransitionSystem(fsmPaths.indexOf(ADDRESS_SOURCES + name));
-		}
-		in.setId(name);
-		fsmPaths.add(ADDRESS_SOURCES + name);
-		fsms.add(in);
-		in.toTextFile(FSMUI.ADDRESS_SOURCES, name);
-		String imgPath = FormatConversion.createImgFromFSM(in, in.getId());
-		allotImage(imgPath);
-	}
-	
-	public void removeImage(int index) {
-		fsmPaths.remove(index);
-		imagePage.removeImage(index);
-		imagePage.decreaseCurrentImageIndex();
-		updateImageHeader();
-		updateImagePanel();
-	}
-	
-	public void removeTransitionSystem(int index) {
-		fsms.remove(index);
-		removeImage(index);
-	}
-	
-	public void removeActiveTransitionSystem() {
-		removeTransitionSystem(imagePage.getCurrentImageIndex());
-	}
-	
-	public void refreshActiveImage() {
-		FSM tS = getActiveFSM();
-		if(tS != null) {
-			FormatConversion.createImgFromFSM(tS, tS.getId());
-		}
-		imagePage.refreshActiveImage();
-	}
-		
-	//-- File Manipulation  -----------------------------------
-	
-	public void saveActiveFSMSource() {
-		getActiveFSM().toTextFile(FSMUI.ADDRESS_SOURCES, getActiveFSM().getId());
-	}
-	
-	public String saveActiveFSMImage() {
-		return FormatConversion.createImgFromFSM(getActiveFSM(), getActiveFSM().getId());
-	}
-	
-	public String saveActiveTikZ() {
-		return FormatConversion.createTikZFromFSM(getActiveFSM(), getActiveFSM().getId());
-	}
-	
-	public String saveActiveSVG() {
-		return FormatConversion.createSVGFromFSM(getActiveFSM(), getActiveFSM().getId());
-	}
-	
-	public void renameActiveFSM(String newName) {
-		deleteFSMFromMemory(newName);
-		getActiveFSM().setId(newName);
-		getActiveFSM().toTextFile(ADDRESS_SOURCES, newName);
-		FormatConversion.createImgFromFSM(getActiveFSM(), getActiveFSM().getId());
-		imagePage.replaceActiveImage(newName);
-		updateImageHeader();
-	}
-	
-	public void deleteActiveFSM() {
-		deleteFSMFromMemory(getActiveFSM().getId());
-		removeActiveTransitionSystem();
-		refreshActiveImage();
-	}
-	
-	private void deleteFSMFromMemory(String name) {
-		File f = new File(ADDRESS_SOURCES + name + ".fsm");
-		f.delete();
-		f = new File(ADDRESS_IMAGES + name + ".jpg");
-		f.delete();
+	public void removeFSM(String ref) {
+		fsmImgs.remove(ref);
 	}
 
 	//-- Update ElementPanels  --------------------------------
@@ -221,31 +133,6 @@ public class FSMUI {
 		updateImageHeader();
 	}
 
-//---  Getter Methods   -----------------------------------------------------------------------
-	
-	public FSM getActiveFSM() {
-		if(fsms.size() == 0) {
-			return null;
-		}
-		return fsms.get(imagePage.getCurrentImageIndex());
-	}
-	
-	public ArrayList<String> getFSMList(){
-		return fsmPaths;
-	}
-	
-	public String getFSMPath(int index) {
-		return fsmPaths.get(index);
-	}
-	
-	public FSM getFSM(int index) {
-		return fsms.get(index);
-	}
-	
-	public int getCurrentActiveFSM() {
-		return imagePage.getCurrentImageIndex();
-	}
-	
 //---  Mechanical   ---------------------------------------------------------------------------
 	
 	public BufferedReader retrieveFileReader(String pathIn) {
