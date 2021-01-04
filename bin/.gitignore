@@ -1,5 +1,4 @@
-/ui/
-/model/
-/fsm/
-/test/
+/assets/
 /controller/
+/model/
+/ui/

@@ -1,4 +1,4 @@
-package ui.page.optionpage.implementation.popup;
+package ui.popups;
 
 import java.awt.Color;
 import java.awt.Font;

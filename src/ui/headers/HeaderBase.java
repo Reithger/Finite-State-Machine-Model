@@ -1,4 +1,4 @@
-package ui.page.headers;
+package ui.headers;
 
 import input.CustomEventReceiver;
 import visual.composite.HandlePanel;

@@ -1,11 +1,10 @@
-package ui.page.headers;
+package ui.headers;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
 import java.util.ArrayList;
 
-import ui.FSMUI;
 import ui.page.imagepage.ImagePage;
 
 public class ImageHeader extends HeaderBase{
@@ -39,10 +38,10 @@ public class ImageHeader extends HeaderBase{
 		else {
 			removeElementPrefixed("stand_in");
 			for(int i = 0 ; i < images.size() + 1; i++) {
-				int posX = FSMUI.WINDOW_WIDTH / 2/ 10 + i * (FSMUI.WINDOW_WIDTH / 2 / 5);
-				int posY = (int)(FSMUI.WINDOW_HEIGHT * (1.0 - FSMUI.PANEL_RATIO_VERTICAL) / 2);
-				int wid = FSMUI.WINDOW_WIDTH / 2 / 6;
-				int hei = (int)(FSMUI.WINDOW_HEIGHT * (1 - FSMUI.PANEL_RATIO_VERTICAL) * 2 / 3);
+				int posX = getWidth() / 2/ 10 + i * (getWidth() / 2 / 5);
+				int posY = (int)(getHeight() / 2);
+				int wid = getWidth() / 2 / 6;
+				int hei = (int)(getHeight() * 2 / 3);
 				if(i == images.size()) {
 					handleRectangle("header_rect_" + i, false, 10, posX, posY, 1, hei, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
 					break;
@@ -66,6 +65,4 @@ public class ImageHeader extends HeaderBase{
 		update();
 	}
 	
-
-
 }

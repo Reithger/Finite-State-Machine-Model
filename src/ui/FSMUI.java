@@ -6,17 +6,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import controller.InputReceiver;
-import filemeta.FileChooser;
-import filemeta.config.Config;
-import ui.page.headers.ImageHeader;
-import ui.page.headers.OptionsHeader;
+import ui.headers.ImageHeader;
+import ui.headers.OptionsHeader;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.OptionPageManager;
-import visual.composite.popout.PopoutAlert;
 import visual.frame.WindowFrame;
 
 /**
@@ -71,7 +67,7 @@ public class FSMUI implements InputReceiver{
 		frame.reserveWindow("Home");
 		frame.showActiveWindow("Home");
 		imagePage = new ImagePage();	//TODO: Need to have headers refresh automatically
-		optionPageManager = new OptionPageManager(this);
+		optionPageManager = new OptionPageManager(this, frame.getWidth() / 2, (int)(frame.getHeight() * PANEL_RATIO_VERTICAL));
 		optionHeader = new OptionsHeader(0, 0, frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), optionPageManager);
 		imageHeader = new ImageHeader(frame.getWidth() / 2, 0, frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), imagePage); 
 		frame.addPanelToWindow("Home", "optionHeader", optionHeader);
@@ -82,12 +78,12 @@ public class FSMUI implements InputReceiver{
 
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public void receiveCode(int code, String ref, int mouseType) {
-		reference.receiveCode(code, ref, mouseType);
+	public void receiveCode(int code, int mouseType) {
+		reference.receiveCode(code, mouseType);
 	}
 	
-	public void receiveKeyInput(char code, String ref, int keyType) {
-		reference.receiveKeyInput(code, ref, keyType);
+	public void receiveKeyInput(char code, int keyType) {
+		reference.receiveKeyInput(code, keyType);
 	}
 	
 	public void addFSM(String ref, Image img) {

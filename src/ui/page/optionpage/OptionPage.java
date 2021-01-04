@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import controller.InputReceiver;
 import ui.FSMUI;
 import ui.page.optionpage.entryset.EntrySet;
-import visual.panel.ElementPanel;
+import visual.composite.HandlePanel;
 
 /**
  * 
  * DO NOT USE NEGATIVE CODE VALUES WE HAD TO MAKE A COMPROMISE AND THAT'S THE RESULT
  * 
- * @author Reithger
+ * @author Ada Clevinger
  *
  */
 
@@ -22,15 +22,6 @@ public abstract class OptionPage {
 //---  Constant Values   ----------------------------------------------------------------------
 	
 	protected final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
-	
-	public final static String ENTRY_TEXT_SINGLE = "S";	//TODO: Probably distinct functions to add each of these, like ElementPanel
-	public final static String ENTRY_TEXT_DOUBLE = "D";	//TODO: Need EntrySet factory and subclasses of an abstract class, need that structure
-	public final static String ENTRY_TEXT_TRIPLE = "T";
-	public final static String ENTRY_TEXT_QUARTET = "Q";
-	public final static String ENTRY_TEXT_LONG = "L";
-	public final static String ENTRY_CHECKBOX = "C";
-	public final static String TEXT_DISPLAY = "ET";
-	public final static String ENTRY_EMPTY = "E";
 	
 	public final static String ENTRY_BUTTON_LIST = "CSB";
 		//TODO: Should be generic button for high-level interpretation, allows custom work
@@ -43,10 +34,7 @@ public abstract class OptionPage {
 	private String help;
 	private ArrayList<Category> categories;	
 	
-	/** Administrative code value used by subsystems (codes to refer to textEntry objects mostly) so they have unique identifiers*/
-	public static int SUBSYSTEM_CODE = -50;
-	
-	private static ElementPanel p;
+	private static HandlePanel p;
 	private static FSMUI reference;
 	private boolean showHelp;		//TODO actually implement help pages
 	private int helpKey;
@@ -55,12 +43,15 @@ public abstract class OptionPage {
 	
 	private static InputReceiver inputRef;
 	
+	private static int lineHeightFraction;
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public OptionPage(String head, String inHelp, String[] categoriesIn, Object[][][] data) {
 		header = head;
 		help = inHelp;
 		categories = new ArrayList<Category>();
+		lineHeightFraction = 20;
 		for(int i = 0; i < categoriesIn.length; i++) {
 			String cat = categoriesIn[i];
 			addCategory(cat);
@@ -93,25 +84,17 @@ public abstract class OptionPage {
 		helpKey = codeStart;
 		settingsKey = ++codeStart;
 		codeStart++;
-		handleRectangle("help_rect", wid - wid / 15, wid / 20, wid / 20, wid / 20, Color.gray, Color.black);
-		handleButton("help_button", wid - wid / 15,  wid / 20, wid / 20, wid / 20, helpKey);
-		handleImage("help_img", wid - wid / 15, wid / 20, "/assets/ui/question_mark.png", 3);
+		p.handleRectangle("help_rect", false, 5, wid - wid / 15, wid / 20, wid / 20, wid / 20, Color.gray, Color.black);
+		p.handleButton("help_button", false, wid - wid / 15,  wid / 20, wid / 20, wid / 20, helpKey);
+		p.handleImage("help_img", false, wid - wid / 15, wid / 20, "/assets/ui/question_mark.png", 3);
 		for(int i = 0; i < categories.size(); i++) {
 			Category cat = categories.get(i);
-			startY = cat.drawCategoryHeader(startY);
-			if(cat.isOpen()) {
-				for(EntrySet e : cat.getEntrySets()) {
-					startY = e.drawEntrySet(startY, wid, hei);
-				}
-			}
-			else {
-				cat.hideContents();
-			}
+			cat.draw(startY, hei / lineHeightFraction, p);
 		}
 	}
 	
 	public void drawHelpPage() {
-		handleText("help", p.getWidth() / 2, p.getHeight() / 2, p.getWidth(), p.getHeight(), OPTIONS_FONT, help);
+		p.handleText("help", false, p.getWidth() / 2, p.getHeight() / 2, p.getWidth(), p.getHeight(), OPTIONS_FONT, help);
 	}
 	
 	public void handleMouseInput(int code, int x, int y, int mouseType) {
@@ -121,14 +104,9 @@ public abstract class OptionPage {
 			drawPage();
 			return;
 		}
-		EntrySet e = getEntrySetFromCode(code);
-		if(e != null) {
-			e.processEvent();
-		}
 		if(!toggleCategory(code)) {
-			inputRef.receiveCode(code, getEntrySetFromCode(code).getLabel(), mouseType);
+			inputRef.receiveCode(code, mouseType);
 		}
-		drawPage();
 	}
 
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -137,7 +115,7 @@ public abstract class OptionPage {
 		inputRef = iR;
 	}
 	
-	public static void assignElementPanel(ElementPanel inP) {
+	public static void assignHandlePanel(HandlePanel inP) {
 		p = inP;
 		p.setScrollBarHorizontal(false);
 	}
@@ -145,6 +123,16 @@ public abstract class OptionPage {
 	public static void assignFSMUI(FSMUI fsm) {
 		reference = fsm;
 	}
+
+	public boolean toggleCategory(int code) { 
+		if(code >= 0 && code < categories.size()) {
+			categories.get(code).toggleOpen();
+			return true;
+		}
+		return false;
+	}
+
+	//-- EntrySet  --------------------------------------------
 
 	public void addCategory(String title) {
 		Category out = new Category(title);
@@ -160,26 +148,18 @@ public abstract class OptionPage {
 	public void resetCodeEntries(int code) {
 		for(Category c : categories) {
 			if(c.contains(code)) {
-				c.getEntrySet(code).resetContents();
+				c.getEntrySet(code).reset(p);
 			}
 		}
-		p.repaint();
+		drawPage();
 	}
 
-	public boolean toggleCategory(int code) { 
-		if(code >= 0 && code < categories.size()) {
-			categories.get(code).toggleOpen();
-			return true;
-		}
-		return false;
-	}
-
-	public void appendContentToCode(int code, String reference) {
-		getEntrySetFromCode(code).appendItem(reference);
+	public void setEntrySetContent(int code, int index, String reference) {
+		getCategoryFromCode(code).setEntrySetContent(code, index, reference);
 	}
 	
 	public void removeContentsFromCode(int code, int index) {
-		getEntrySetFromCode(code).removeItem(index);
+		getCategoryFromCode(code).removeEntrySetContent(code, index);
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -194,7 +174,7 @@ public abstract class OptionPage {
 		return reference;
 	}
 	
-	public static ElementPanel getElementPanel() {
+	public static HandlePanel getHandlePanel() {
 		return p;
 	}
 	
@@ -215,20 +195,13 @@ public abstract class OptionPage {
 		}
 		return null;
 	}
-	
-	public EntrySet getEntrySetFromCode(int code) {
-		Category c = getCategoryFromCode(code);
-		if(c != null)
-			return c.getEntrySet(code);
-		return null;
-	}
-	
+
 	//-- Access Contents  -------------------------------------
 	
 	public String getTextFromCode(int code, int posit){
 		Category c = getCategoryFromCode(code);
 		if(c != null)
-			return c.getContents(code, posit);
+			return c.getContent(code, posit);
 		return null;
 	}
 			
@@ -237,53 +210,11 @@ public abstract class OptionPage {
 	}
 	
 	public Boolean getCheckboxContentsFromCode(int code) {
-		return getTextFromCode(code, 0).contentEquals(EntrySet.CHECKBOX_TRUE);
+		return getTextFromCode(code, 0).contentEquals(EntrySet.SIGNIFIER_TRUE);
 	}
 	
-	public String getTypeFromCode(int code) {
-		return getEntrySetFromCode(code).getType();
-	}
-
-	public String[] getContentFromCode(int code) {
-		return getEntrySetFromCode(code).getContents();
-	}
-		
-//---  Composites   ---------------------------------------------------------------------------
-
-	public static void handleText(String nom, int x, int y, int wid, int hei, Font inF, String phr) {
-		if(!p.moveElement(nom, x, y)){
-			p.addText(nom, 15, false, x, y, wid, hei, phr, inF, true, true, true);
-		}
-	}
-	
-	public static void handleImage(String nom, int x, int y, String path, double scale) {
-		if(!p.moveElement(nom, x, y)){
-			p.addImage(nom, 15, false,  x, y, true, path, scale);
-		}
-	}
-
-	public static void handleTextEntry(String nom, int x, int y, int wid, int hei, int cod, String phr) {
-		if(!p.moveElement(nom, x, y)){
-			p.addTextEntry(nom, 15, false, x, y, wid, hei, cod, phr, OPTIONS_FONT, true, true, true);
-		}
-	}
-	
-	public static void handleButton(String nom, int x, int y, int wid, int hei, int code) {
-		if(!p.moveElement(nom, x, y)) {
-			p.addButton(nom, 10, false, x, y, wid, hei, code, true);
-		}
-	}
-	
-	public static void handleLine(String nom, int x, int y, int x2, int y2, int thck, Color col) {
-		if(!p.moveElement(nom, x, y)) {
-			p.addLine(nom, 5, false, x, y, x2, y2, thck, col);
-		}
-	}
-	
-	public static void handleRectangle(String nom, int x, int y, int wid, int hei, Color inside, Color border) {
-		if(!p.moveElement(nom, x, y)) {
-			p.addRectangle(nom, 5, false, x, y, wid, hei, true, inside, border);
-		}
+	public ArrayList<String> getContentFromCode(int code) {
+		return getCategoryFromCode(code).getContents(code);
 	}
 		
 }

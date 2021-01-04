@@ -48,4 +48,30 @@ public class CodeReference {
 	public final static int CODE_CLOSE_FSM = 137;
 	
 	
+	public final static int CODE_TRIM = 200;
+	public final static int CODE_ACCESSIBLE = 201;
+	public final static int CODE_CO_ACCESSIBLE = 202;
+	public final static int CODE_OBSERVER = 203;
+	public final static int CODE_PRODUCT_SELECT = 204;
+	public final static int CODE_PRODUCT = 205;
+	public final static int CODE_PARALLEL_COMPOSITION_SELECT = 206;
+	public final static int CODE_PARALLEL_COMPOSITION = 207;
+	public final static int CODE_SUP_CNT_SBL_SELECT = 208;
+	public final static int CODE_SUP_CNT_SBL = 209;
+	public final static int CODE_UNDER_FSM = 210;
+	public final static int CODE_OPT_OPQ_CONTROLLER =111;
+	public final static int CODE_OPT_SPVR_SELECT = 212;
+	public final static int CODE_OPT_SPVR = 213;
+	public final static int CODE_GRT_LWR_BND_SELECT = 214;
+	public final static int CODE_GRT_LWR_BND = 215;
+	public final static int CODE_PRUNE = 216;
+	public final static int CODE_BLOCKING = 217;
+	public final static int CODE_STATE_EXISTS = 218;
+	
+	public final static int CODE_SELECT_PLANT = 300;
+	public final static int CODE_ADD_BAD_TRANS = 301;
+	public final static int CODE_BUILD_AGENTS = 302;
+	public final static int CODE_BUILD_USTRUCT = 303;
+	public final static int CODE_TOGGLE_USTRUCT = 304;
+	public final static int CODE_DISPLAY_BAD_TRANS_START = 500;
 }

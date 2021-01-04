@@ -4,8 +4,8 @@ public interface InputReceiver {
 
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public abstract void receiveCode(int code, String ref, int mouseType);
+	public abstract void receiveCode(int code, int mouseType);
 
-	public abstract void receiveKeyInput(char code, String ref, int keyType);
+	public abstract void receiveKeyInput(char code, int keyType);
 	
 }

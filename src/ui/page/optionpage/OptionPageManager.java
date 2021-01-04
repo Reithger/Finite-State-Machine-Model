@@ -5,7 +5,7 @@ import ui.FSMUI;
 import ui.page.optionpage.implementation.AdjustFSM;
 import ui.page.optionpage.implementation.Operations;
 import ui.page.optionpage.implementation.UStructurePage;
-import visual.panel.ElementPanel;
+import visual.composite.HandlePanel;
 
 public class OptionPageManager {
 	
@@ -13,7 +13,7 @@ public class OptionPageManager {
 
 	private OptionPage[] optionPages;
 	private static int currentOptionPageIndex;
-	private ElementPanel p;
+	private HandlePanel p;
 	private final static int ROTATION_MULTIPLIER = 15;
 	private int width;
 	private int height;
@@ -22,6 +22,7 @@ public class OptionPageManager {
 	
 	public OptionPageManager(FSMUI reference, int wid, int hei) {
 		OptionPage.assignFSMUI(reference);
+		OptionPage.assignInputReceiver(reference);
 		width = wid;
 		height = hei;
 		optionPages = new OptionPage[] {
@@ -33,8 +34,8 @@ public class OptionPageManager {
 
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public ElementPanel generateElementPanel(int x, int y, int width, int height) {
-		p = new ElementPanel(x, y, width, height) {
+	public HandlePanel generateElementPanel(int x, int y, int width, int height) {
+		p = new HandlePanel(x, y, width, height) {
 		
 			@Override
 			public int getMinimumScreenX() {
@@ -74,7 +75,7 @@ public class OptionPageManager {
 			}
 
 		});
-		OptionPage.assignElementPanel(p);
+		OptionPage.assignHandlePanel(p);
 		return p;
 	}
 

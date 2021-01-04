@@ -47,11 +47,16 @@ public class FiniteStateMachine implements InputReceiver{
 	
 	//-- Input Handling  --------------------------------------
 	
-	public void receiveCode(int code, String ref, int mouseType) {
-		
+	public void receiveCode(int code, int mouseType) {
+		switch(code) {
+			case 5:
+				break;
+			default:
+				break;
+		}
 	}
 	
-	public void receiveKeyInput(char code, String ref, int keyType) {
+	public void receiveKeyInput(char code, int keyType) {
 		
 	}
 	
