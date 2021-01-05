@@ -24,21 +24,21 @@ public class Operations extends OptionPage{
 	//-- Scripts  ---------------------------------------------
 	
 	private final static String HEADER = "Operations";
-	private final static String[] CATEGORIES = new String[] {"Transition Systems", "FSM", "Modal - WIP", "Queries"};
+	
+	private final static String CATEGORY_TRANS_SYSTEMS = "Transition Systems";
+	private final static String CATEGORY_FSM = "FSM";
+	private final static String CATEGORY_MODAL = "Modal";
+	private final static String CATEGORY_QUERIES = "Queries";
+	
+	private final static String[] CATEGORIES = new String[] {CATEGORY_TRANS_SYSTEMS, CATEGORY_FSM, CATEGORY_MODAL, CATEGORY_QUERIES};
 	private final static Object[][][] DATA = new Object[][][] {
 		{
-			{"Trim", OptionPage.ENTRY_EMPTY, CodeReference.CODE_TRIM, true},
-			{"Make Accessible", OptionPage.ENTRY_EMPTY, CodeReference.CODE_ACCESSIBLE, true},
-			{"Make Co-Accessible", OptionPage.ENTRY_EMPTY, CodeReference.CODE_CO_ACCESSIBLE, true},
 		},
 		{
 			{"Build Observer", OptionPage.ENTRY_EMPTY, CodeReference.CODE_OBSERVER, true},
 			{"Product", OptionPage.ENTRY_BUTTON_LIST, CodeReference.CODE_PRODUCT_SELECT, true},	//H, respond to input to make MultiFSMSelection
-			{"", OptionPage.ENTRY_EMPTY, CodeReference.CODE_PRODUCT, true},
 			{"Parallel Composition", OptionPage.ENTRY_BUTTON_LIST, CodeReference.CODE_PARALLEL_COMPOSITION_SELECT, true},	//H
-			{"", OptionPage.ENTRY_EMPTY, CodeReference.CODE_PARALLEL_COMPOSITION, true},
 			{"Generate Supremal Controllable Sublanguage", OptionPage.ENTRY_BUTTON_LIST, CodeReference.CODE_SUP_CNT_SBL_SELECT, true},	//H
-			{"", OptionPage.ENTRY_EMPTY, CodeReference.CODE_SUP_CNT_SBL, true},
 		},
 		{
 			{"Get Underlying FSM", OptionPage.ENTRY_EMPTY, CodeReference.CODE_UNDER_FSM, true},
@@ -62,8 +62,19 @@ public class Operations extends OptionPage{
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public Operations(int x, int y, int wid, int hei) {
-		super(HEADER, HELP, CATEGORIES, DATA);
+	public Operations() {
+		super(HEADER, HELP);
+		for(String s : CATEGORIES) {
+			addCategory(s);
+		}
+		
+		addEntryEmpty(CATEGORY_TRANS_SYSTEMS, "Trim", true, CodeReference.CODE_TRIM);
+		addEntryEmpty(CATEGORY_TRANS_SYSTEMS, "Make Accessible", true, CodeReference.CODE_ACCESSIBLE);
+		addEntryEmpty(CATEGORY_TRANS_SYSTEMS, "Make CoAccessible", true, CodeReference.CODE_CO_ACCESSIBLE);
+		
+		addEntryEmpty(CATEGORY_FSM, "Build Observer", true, CodeReference.CODE_OBSERVER);
+		addEntryList(CATEGORY_FSM, "Product", true, CodeReference.CODE_PRODUCT, CodeReference.CODE_PRODUCT_SELECT);
+		addEntryList(CATEGORY_FSM, "Parallel Composition", )
 	}
 
 }

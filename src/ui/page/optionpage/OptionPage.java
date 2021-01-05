@@ -5,8 +5,8 @@ import java.awt.Font;
 import java.util.ArrayList;
 
 import controller.InputReceiver;
-import ui.FSMUI;
 import ui.page.optionpage.entryset.EntrySet;
+import ui.page.optionpage.entryset.EntrySetFactory;
 import visual.composite.HandlePanel;
 
 /**
@@ -23,11 +23,6 @@ public abstract class OptionPage {
 	
 	protected final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
 	
-	public final static String ENTRY_BUTTON_LIST = "CSB";
-		//TODO: Should be generic button for high-level interpretation, allows custom work
-		//TODO: Allow register 'x' number of vertical spaces to display associated text
-	
-	
 //---  Instance Variables   -------------------------------------------------------------------
 
 	private String header;
@@ -35,7 +30,6 @@ public abstract class OptionPage {
 	private ArrayList<Category> categories;	
 	
 	private static HandlePanel p;
-	private static FSMUI reference;
 	private boolean showHelp;		//TODO actually implement help pages
 	private int helpKey;
 	private boolean showSettings; //TODO: Settings menu
@@ -47,22 +41,11 @@ public abstract class OptionPage {
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public OptionPage(String head, String inHelp, String[] categoriesIn, Object[][][] data) {
+	public OptionPage(String head, String inHelp) {
 		header = head;
 		help = inHelp;
 		categories = new ArrayList<Category>();
 		lineHeightFraction = 20;
-		for(int i = 0; i < categoriesIn.length; i++) {
-			String cat = categoriesIn[i];
-			addCategory(cat);
-			for(int j = 0; j < data[i].length; j++) {
-				String lab = (String)(data[i][j][0]);
-				String type = (String)(data[i][j][1]);	//TODO: ugh
-				int code = (Integer)(data[i][j][2]);
-				boolean butt = (Boolean)(data[i][j][3]);
-				addEntrySet(cat, lab, type, code, butt);
-			}
-		}
 	}
 
 	//---  Operations   ---------------------------------------------------------------------------
@@ -119,10 +102,6 @@ public abstract class OptionPage {
 		p = inP;
 		p.setScrollBarHorizontal(false);
 	}
-	
-	public static void assignFSMUI(FSMUI fsm) {
-		reference = fsm;
-	}
 
 	public boolean toggleCategory(int code) { 
 		if(code >= 0 && code < categories.size()) {
@@ -133,18 +112,13 @@ public abstract class OptionPage {
 	}
 
 	//-- EntrySet  --------------------------------------------
-
+	
 	public void addCategory(String title) {
 		Category out = new Category(title);
 		out.setCode(categories.size());
 		categories.add(out);
 	}
 
-	public void addEntrySet(String category, String label, String type, int code, boolean activeButton) {
-		EntrySet set = new EntrySet(label, type, activeButton, code);
-		getCategory(category).addEntrySet(set);
-	}
-	
 	public void resetCodeEntries(int code) {
 		for(Category c : categories) {
 			if(c.contains(code)) {
@@ -162,6 +136,48 @@ public abstract class OptionPage {
 		getCategoryFromCode(code).removeEntrySetContent(code, index);
 	}
 	
+		//-- Add Types  ---------------------------------------
+
+	public void addEntryText(String category, String label, boolean button, int code, int size, boolean flex) {
+		if(getCategory(category) == null) {
+			addCategory(category);
+		}
+		Category c = getCategory(category);
+		c.addEntrySet(EntrySetFactory.generateEntryText(c.prefix(), label, button, code, size, flex));
+	}
+	
+	public void addEntryTextDisplay(String category, String label, boolean button, int code) {
+		if(getCategory(category) == null) {
+			addCategory(category);
+		}
+		Category c = getCategory(category);
+		c.addEntrySet(EntrySetFactory.generateEntryTextDisplay(c.prefix(), label, button, code));
+	}
+	
+	public void addEntryList(String category, String label, boolean button, int code, int newCode) {
+		if(getCategory(category) == null) {
+			addCategory(category);
+		}
+		Category c = getCategory(category);
+		c.addEntrySet(EntrySetFactory.generateEntryList(c.prefix(), label, button, code, newCode));
+	}
+	
+	public void addEntryCheckbox(String category, String label, boolean button, int code) {
+		if(getCategory(category) == null) {
+			addCategory(category);
+		}
+		Category c = getCategory(category);
+		c.addEntrySet(EntrySetFactory.generateEntryCheckbox(c.prefix(), label, button, code));
+	}
+	
+	public void addEntryEmpty(String category, String label, boolean button, int code) {
+		if(getCategory(category) == null) {
+			addCategory(category);
+		}
+		Category c = getCategory(category);
+		c.addEntrySet(EntrySetFactory.generateEntryEmpty(c.prefix(), label, button, code));
+	}
+
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	//-- Meta  ------------------------------------------------
@@ -170,10 +186,6 @@ public abstract class OptionPage {
 		return header;
 	}
 
-	public static FSMUI getFSMUI() {
-		return reference;
-	}
-	
 	public static HandlePanel getHandlePanel() {
 		return p;
 	}

@@ -1,7 +1,9 @@
 package ui.page.optionpage;
 
+import java.util.ArrayList;
+
+import controller.InputReceiver;
 import input.CustomEventReceiver;
-import ui.FSMUI;
 import ui.page.optionpage.implementation.AdjustFSM;
 import ui.page.optionpage.implementation.Operations;
 import ui.page.optionpage.implementation.UStructurePage;
@@ -9,32 +11,32 @@ import visual.composite.HandlePanel;
 
 public class OptionPageManager {
 	
+//---  Constants   ----------------------------------------------------------------------------
+	
+	private final static int ROTATION_MULTIPLIER = 15;
+	
 //---  Instance Variables   -------------------------------------------------------------------
 
 	private OptionPage[] optionPages;
 	private static int currentOptionPageIndex;
 	private HandlePanel p;
-	private final static int ROTATION_MULTIPLIER = 15;
-	private int width;
-	private int height;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public OptionPageManager(FSMUI reference, int wid, int hei) {
-		OptionPage.assignFSMUI(reference);
+	public OptionPageManager(InputReceiver reference, int xIn, int yIn, int wid, int hei) {
 		OptionPage.assignInputReceiver(reference);
-		width = wid;
-		height = hei;
+		generateHandlePanel(xIn, yIn, wid, hei);
+		OptionPage.assignHandlePanel(p);
 		optionPages = new OptionPage[] {
-				new AdjustFSM(0, 0, width/2, (int)(height * FSMUI.PANEL_RATIO_VERTICAL)),
-				new Operations(0, 0, width/2, (int)(height * FSMUI.PANEL_RATIO_VERTICAL)),
-				new UStructurePage(0, 0, width/2, (int)(height * FSMUI.PANEL_RATIO_VERTICAL)),
+				new AdjustFSM(),
+				new Operations(),
+				new UStructurePage(),
 		};
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public HandlePanel generateElementPanel(int x, int y, int width, int height) {
+	private void generateHandlePanel(int x, int y, int width, int height) {
 		p = new HandlePanel(x, y, width, height) {
 		
 			@Override
@@ -75,8 +77,6 @@ public class OptionPageManager {
 			}
 
 		});
-		OptionPage.assignHandlePanel(p);
-		return p;
 	}
 
 	public void drawPage() {
@@ -91,6 +91,18 @@ public class OptionPageManager {
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	public ArrayList<String> getOptionPageNames(){
+		ArrayList<String> out = new ArrayList<String>();
+		for(OptionPage p : optionPages) {
+			out.add(p.getHeader());
+		}
+		return out;
+	}
+	
+	public HandlePanel getPanel() {
+		return p;
+	}
 	
 	public int getCurrentOptionPageIndex() {
 		return currentOptionPageIndex;

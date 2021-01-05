@@ -33,8 +33,8 @@ public class UStructurePage extends OptionPage{
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public UStructurePage(int x, int y, int wid, int hei) {
-		super(HEADER, HELP, CATEGORIES, DATA);
+	public UStructurePage() {
+		super(HEADER, HELP);
 	}
 
 }

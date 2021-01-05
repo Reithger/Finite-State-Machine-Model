@@ -9,8 +9,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 import controller.InputReceiver;
-import ui.headers.ImageHeader;
-import ui.headers.OptionsHeader;
+import ui.headers.HeaderSelect;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.OptionPageManager;
 import visual.frame.WindowFrame;
@@ -27,7 +26,10 @@ public class FSMUI implements InputReceiver{
 
 //---  Constants   ----------------------------------------------------------------------------
 	
-	public final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
+	private final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
+	private final static String WINDOW_NAME = "Home";
+	private final static int CODE_BASE_OPTIONS_HEADER = 3500;
+	private final static int CODE_BASE_IMAGE_HEADER = 4000;
 
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -40,13 +42,11 @@ public class FSMUI implements InputReceiver{
 	/** */
 	private OptionPageManager optionPageManager;
 	/** ElementPanel object handling the organization and accessing of all currently available images*/
-	private ImageHeader imageHeader;
+	private HeaderSelect imageHeader;
 	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
-	private OptionsHeader optionHeader;
+	private HeaderSelect optionHeader;
 	
 	//-- System Information  ----------------------------------
-	
-	private HashMap<String, Image> fsmImgs;
 	
 	private InputReceiver reference;
 	
@@ -56,7 +56,6 @@ public class FSMUI implements InputReceiver{
 		reference = ref;
 		frame = new WindowFrame(wid, hei);
 		frame.setName("Finite State Machine Model");
-		fsmImgs = new HashMap<String, Image>();
 		createPages();
 		updateDisplay();
 	}
@@ -64,22 +63,38 @@ public class FSMUI implements InputReceiver{
 	//-- Support  ---------------------------------------------
 
 	private void createPages() {
-		frame.reserveWindow("Home");
-		frame.showActiveWindow("Home");
+		frame.reserveWindow(WINDOW_NAME);
+		frame.showActiveWindow(WINDOW_NAME);
+		int wid = frame.getWidth();
+		int hei = frame.getHeight();
 		imagePage = new ImagePage();	//TODO: Need to have headers refresh automatically
-		optionPageManager = new OptionPageManager(this, frame.getWidth() / 2, (int)(frame.getHeight() * PANEL_RATIO_VERTICAL));
-		optionHeader = new OptionsHeader(0, 0, frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), optionPageManager);
-		imageHeader = new ImageHeader(frame.getWidth() / 2, 0, frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), imagePage); 
-		frame.addPanelToWindow("Home", "optionHeader", optionHeader);
-		frame.addPanelToWindow("Home", "imageHeader", imageHeader);
-		frame.addPanelToWindow("Home", "optionSpace", optionPageManager.generateElementPanel(0, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), frame.getWidth() / 2, (int)(frame.getHeight() * PANEL_RATIO_VERTICAL)));
-		frame.addPanelToWindow("Home", "imageSpace", imagePage.generateElementPanel(frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), frame.getWidth() / 2, (int)(frame.getHeight() * PANEL_RATIO_VERTICAL)));
+		optionPageManager = new OptionPageManager(this, 0, (int)(hei * (1 - PANEL_RATIO_VERTICAL)), wid / 2, (int)(hei * PANEL_RATIO_VERTICAL));
+		optionHeader = new HeaderSelect(0, 0, wid / 2, (int)(hei * (1 - PANEL_RATIO_VERTICAL)), CODE_BASE_OPTIONS_HEADER);
+		imageHeader = new HeaderSelect(frame.getWidth() / 2, 0, frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), CODE_BASE_IMAGE_HEADER); 
+		
+		imageHeader.setInputReceiver(this);
+		optionHeader.setInputReceiver(this);
+		
+		frame.addPanelToWindow(WINDOW_NAME, "optionHeader", optionHeader);
+		frame.addPanelToWindow(WINDOW_NAME, "imageHeader", imageHeader);
+		frame.addPanelToWindow(WINDOW_NAME, "optionSpace", optionPageManager.getPanel());
+		frame.addPanelToWindow(WINDOW_NAME, "imageSpace", imagePage.generateElementPanel(frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), frame.getWidth() / 2, (int)(frame.getHeight() * PANEL_RATIO_VERTICAL)));
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public void receiveCode(int code, int mouseType) {
-		reference.receiveCode(code, mouseType);
+		if(code - CODE_BASE_OPTIONS_HEADER >= 0 && code - CODE_BASE_OPTIONS_HEADER < optionPageManager.getOptionPageList().length) {
+			optionPageManager.setCurrentOptionPageIndex(code - CODE_BASE_OPTIONS_HEADER);
+			updateOptionHeader();
+		}
+		else if(code - CODE_BASE_IMAGE_HEADER >= 0 && code - CODE_BASE_IMAGE_HEADER < imagePage.getImages().size()){
+			imagePage.setCurrentImageIndex(code - CODE_BASE_IMAGE_HEADER);
+			updateImageHeader();
+		}
+		else {
+			reference.receiveCode(code, mouseType);
+		}
 	}
 	
 	public void receiveKeyInput(char code, int keyType) {
@@ -105,12 +120,12 @@ public class FSMUI implements InputReceiver{
 	
 	public void updateOptionHeader() {
 		if(optionHeader != null)
-			optionHeader.update();
+			optionHeader.update(optionPageManager.getOptionPageNames(), optionPageManager.getCurrentOptionPageIndex());
 	}
 
 	public void updateImageHeader() {
 		if(imageHeader != null) 
-			imageHeader.update();
+			imageHeader.update(imagePage.getImageNames(), imagePage.getCurrentImageIndex());
 	}
 	
 	public void updateActiveOptionPage() {

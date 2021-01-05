@@ -85,8 +85,8 @@ public class AdjustFSM extends OptionPage{
 	
 //---  Constructors   -------------------------------------------------------------------------
 
-	public AdjustFSM(int x, int y, int width, int height) {
-		super(HEADER, HELP, CATEGORIES, DATA);
+	public AdjustFSM() {
+		super(HEADER, HELP);
 	}
 
 }

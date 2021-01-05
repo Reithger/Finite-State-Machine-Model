@@ -46,9 +46,9 @@ public class Category {
 	public int drawCategoryHeader(int y, int lineHei, HandlePanel p) {
 		int posX = p.getWidth() / 3 / 2;
 		int wid =  p.getWidth() * 9/10;
-		p.handleText("top_category_" + name + "_header_text", false, posX, y, wid, lineHei, CATEGORY_FONT, name);
-		p.handleButton("top_category_" + name + "_header_butt_" + name, false, posX, y, wid, lineHei, catCode);
-		p.handleLine("top_category_" + name + "_header_line_" + name, false, 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * 11 / 20, y + p.getHeight() / 40, 3, Color.black);
+		p.handleText(prefix() + "_header_text", false, posX, y, wid, lineHei, CATEGORY_FONT, name);
+		p.handleButton(prefix() + "_header_butt_" + name, false, posX, y, wid, lineHei, catCode);
+		p.handleLine(prefix() + name, false, 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * 11 / 20, y + p.getHeight() / 40, 3, Color.black);
 		return y + lineHei;
 	}
 
@@ -57,7 +57,7 @@ public class Category {
 	}
 
 	public void hideContents() {
-		OptionPage.getHandlePanel().moveElementPrefixed("category_" + name, -100, -100);
+		OptionPage.getHandlePanel().moveElementPrefixed(prefix(), -100, -100);
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -92,6 +92,10 @@ public class Category {
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	public String prefix() {
+		return "category_" + getTitle();
+	}
 	
 	public String getTitle() {
 		return name;
