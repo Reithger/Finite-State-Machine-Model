@@ -66,6 +66,14 @@ public abstract class EntrySet {
 	
 	protected abstract int draw(int y, int lineHei, HandlePanel p);
 	
+	public void resetContent() {
+		int i = contents.size();
+		contents.clear();
+		for(int a = 0; a < i; a++) {
+			contents.add("");
+		}
+	}
+	
 	public void reset(HandlePanel p) {
 		for(int i = 0; i < contents.size(); i++) {
 			contents.set(i, "");

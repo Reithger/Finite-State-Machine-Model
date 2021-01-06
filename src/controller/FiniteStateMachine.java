@@ -1,5 +1,7 @@
 package controller;
 
+import java.awt.Image;
+
 import controller.convert.FormatConversion;
 import filemeta.FileChooser;
 import filemeta.config.Config;
@@ -48,16 +50,102 @@ public class FiniteStateMachine implements InputReceiver{
 	//-- Input Handling  --------------------------------------
 	
 	public void receiveCode(int code, int mouseType) {
+		if(code == -1) {
+			return;
+		}
+		String currFSM = view.getCurrentFSM();
 		switch(code) {
-			case 5:
+			case CodeReference.CODE_ADD_STATE:
+				String newState = view.getTextContent(code);
+				model.addState(currFSM, newState);
+				view.clearTextContents(code);
 				break;
+			case CodeReference.CODE_REMOVE_STATE:
+				String removeState = view.getTextContent(code);
+				model.removeState(currFSM, removeState);
+				view.clearTextContents(code);
+			case CodeReference.CODE_GENERATE_FSM:
+				int st = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_STATES);
+				int ev = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_EVENTS);
+				int tr = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_TRANS);
+				String nom = view.getTextContent(CodeReference.CODE_ACCESS_FSM_NAME);
+				boolean det = view.getCheckboxContent(CodeReference.CODE_ACCESS_NON_DETERMINISTIC);
+				model.readInFSM(model.generateRandomFSM(nom, st, ev, tr, det));
+				view.addFSM(nom, generateDotImage(nom));
+				break;
+			case CodeReference.CODE_RENAME_STATE:
+				break;
+			case CodeReference.CODE_ADD_STATES:
+				break;
+			case CodeReference.CODE_ADD_TRANSITION:
+				break;
+			case CodeReference.CODE_REMOVE_TRANSITION:
+				break;
+			case CodeReference.CODE_SAVE_FSM:
+				break;
+			case CodeReference.CODE_SAVE_IMG:
+				break;
+			case CodeReference.CODE_SAVE_TKZ:
+				break;
+			case CodeReference.CODE_SAVE_SVG:
+				break;
+			case CodeReference.CODE_LOAD_SOURCE:
+				break;
+			case CodeReference.CODE_DELETE_SOURCE:
+				break;
+			case CodeReference.CODE_RENAME_FSM:
+				break;
+			case CodeReference.CODE_DUPLICATE_FSM:
+				break;
+			case CodeReference.CODE_CLOSE_FSM:
+				break;
+			case CodeReference.CODE_TRIM:
+				break;
+			case CodeReference.CODE_ACCESSIBLE:
+				break;
+			case CodeReference.CODE_CO_ACCESSIBLE:
+				break;
+			case CodeReference.CODE_OBSERVER:
+				break;
+			case CodeReference.CODE_PRODUCT:
+				break;
+			case CodeReference.CODE_PARALLEL_COMPOSITION:
+				break;
+			case CodeReference.CODE_SUP_CNT_SBL:
+				break;
+			case CodeReference.CODE_BLOCKING:
+				break;
+			case CodeReference.CODE_STATE_EXISTS:
+				break;
+			case CodeReference.CODE_SELECT_PLANT:
+				break;
+			case CodeReference.CODE_ADD_BAD_TRANS:
+				break;
+			case CodeReference.CODE_BUILD_AGENTS:
+				break;
+			case CodeReference.CODE_BUILD_USTRUCT:
+				break;
+			case CodeReference.CODE_TOGGLE_USTRUCT:
+				break;
+			case CodeReference.CODE_DISPLAY_BAD_TRANS_START:
+				break;
+				
 			default:
 				break;
 		}
+		updateViewFSM(currFSM);
 	}
 	
 	public void receiveKeyInput(char code, int keyType) {
 		
+	}
+	
+	public void updateViewFSM(String ref) {
+		view.updateFSMImage(ref, generateDotImage(ref));
+	}
+	
+	private String generateDotImage(String ref) {
+		return FormatConversion.createImgFromFSM(model.generateFSMDot(ref), ref);
 	}
 	
 	//-- File Configuration  ----------------------------------

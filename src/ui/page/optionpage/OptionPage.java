@@ -136,6 +136,10 @@ public abstract class OptionPage {
 		getCategoryFromCode(code).removeEntrySetContent(code, index);
 	}
 	
+	public void resetContents(int code) {
+		getCategoryFromCode(code).resetEntrySetContents(code);
+	}
+	
 		//-- Add Types  ---------------------------------------
 
 	public void addEntryText(String category, String label, boolean button, int code, int size, boolean flex) {

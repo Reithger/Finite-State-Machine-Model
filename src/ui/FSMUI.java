@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import controller.InputReceiver;
@@ -67,10 +68,11 @@ public class FSMUI implements InputReceiver{
 		frame.showActiveWindow(WINDOW_NAME);
 		int wid = frame.getWidth();
 		int hei = frame.getHeight();
-		imagePage = new ImagePage();	//TODO: Need to have headers refresh automatically
-		optionPageManager = new OptionPageManager(this, 0, (int)(hei * (1 - PANEL_RATIO_VERTICAL)), wid / 2, (int)(hei * PANEL_RATIO_VERTICAL));
-		optionHeader = new HeaderSelect(0, 0, wid / 2, (int)(hei * (1 - PANEL_RATIO_VERTICAL)), CODE_BASE_OPTIONS_HEADER);
-		imageHeader = new HeaderSelect(frame.getWidth() / 2, 0, frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), CODE_BASE_IMAGE_HEADER); 
+		int headerHeight = (int)(hei * (1 - PANEL_RATIO_VERTICAL));
+		imagePage = new ImagePage(wid / 2, headerHeight, wid / 2, hei - headerHeight);
+		optionPageManager = new OptionPageManager(this, 0, headerHeight, wid / 2, hei - headerHeight);
+		optionHeader = new HeaderSelect(0, 0, wid / 2, headerHeight, CODE_BASE_OPTIONS_HEADER);
+		imageHeader = new HeaderSelect(wid / 2, 0, wid / 2, headerHeight, CODE_BASE_IMAGE_HEADER); 
 		
 		imageHeader.setInputReceiver(this);
 		optionHeader.setInputReceiver(this);
@@ -78,7 +80,7 @@ public class FSMUI implements InputReceiver{
 		frame.addPanelToWindow(WINDOW_NAME, "optionHeader", optionHeader);
 		frame.addPanelToWindow(WINDOW_NAME, "imageHeader", imageHeader);
 		frame.addPanelToWindow(WINDOW_NAME, "optionSpace", optionPageManager.getPanel());
-		frame.addPanelToWindow(WINDOW_NAME, "imageSpace", imagePage.generateElementPanel(frame.getWidth() / 2, (int)(frame.getHeight() * (1 - PANEL_RATIO_VERTICAL)), frame.getWidth() / 2, (int)(frame.getHeight() * PANEL_RATIO_VERTICAL)));
+		frame.addPanelToWindow(WINDOW_NAME, "imageSpace", imagePage.getPanel());
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
@@ -88,7 +90,7 @@ public class FSMUI implements InputReceiver{
 			optionPageManager.setCurrentOptionPageIndex(code - CODE_BASE_OPTIONS_HEADER);
 			updateOptionHeader();
 		}
-		else if(code - CODE_BASE_IMAGE_HEADER >= 0 && code - CODE_BASE_IMAGE_HEADER < imagePage.getImages().size()){
+		else if(code - CODE_BASE_IMAGE_HEADER >= 0 && code - CODE_BASE_IMAGE_HEADER < imagePage.getImageNames().size()){
 			imagePage.setCurrentImageIndex(code - CODE_BASE_IMAGE_HEADER);
 			updateImageHeader();
 		}
@@ -101,14 +103,22 @@ public class FSMUI implements InputReceiver{
 		reference.receiveKeyInput(code, keyType);
 	}
 	
-	public void addFSM(String ref, Image img) {
-		fsmImgs.put(ref, img);
+	public void addFSM(String ref, String img) {
+		imagePage.allotFSM(ref, img);
 	}
 	
 	public void removeFSM(String ref) {
-		fsmImgs.remove(ref);
+		imagePage.removeFSM(ref);
 	}
 
+	public void updateFSMImage(String ref, String img) {
+		imagePage.updateFSM(ref, img);
+	}
+	
+	public void clearTextContents(int code) {
+		optionPageManager.clearTextContents(code);
+	}
+	
 	//-- Update ElementPanels  --------------------------------
 	
 	public void updateDisplay() {
@@ -144,6 +154,36 @@ public class FSMUI implements InputReceiver{
 		updateImageHeader();
 	}
 
+//---  Getter Methods   -----------------------------------------------------------------------
+	
+	public String getCurrentFSM() {
+		return imagePage.getCurrentFSM();
+	}
+	
+	public String getTextContent(int code) {
+		return optionPageManager.getTextContent(code, 0);
+	}
+	
+	public String getTextContent(int code, int posit) {
+		return optionPageManager.getTextContent(code, posit);
+	}
+	
+	public Integer getIntegerContent(int code) {
+		return Integer.parseInt(getTextContent(code));
+	}
+	
+	public Integer getIntegerContent(int code, int posit) {
+		return Integer.parseInt(getTextContent(code, posit));
+	}
+	
+	public Boolean getCheckboxContent(int code) {
+		return optionPageManager.getCheckboxContent(code);
+	}
+	
+	public ArrayList<String> getContent(int code){
+		return optionPageManager.getContent(code);
+	}
+	
 //---  Mechanical   ---------------------------------------------------------------------------
 	
 	public BufferedReader retrieveFileReader(String pathIn) {

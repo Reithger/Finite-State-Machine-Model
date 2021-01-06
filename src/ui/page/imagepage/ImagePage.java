@@ -1,9 +1,11 @@
 package ui.page.imagepage;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.util.ArrayList;
 
 import input.CustomEventReceiver;
+import visual.composite.HandlePanel;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
@@ -14,10 +16,10 @@ public class ImagePage {
 
 //---  Instance Variables   -------------------------------------------------------------------
 	
-	private ElementPanel p;
+	private HandlePanel p;
 	private ArrayList<FSMImage> images;
 	private ImageDisplay iD;
-	private int currentImageIndex;
+	private int index;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -25,13 +27,13 @@ public class ImagePage {
 		images = new ArrayList<FSMImage>();
 		generateElementPanel(x, y, width, height);
 		iD = new ImageDisplay("./assets/default.png", p);
-		currentImageIndex = 0;
+		index = 0;
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public void generateElementPanel(int x, int y, int width, int height) {
-		p = new ElementPanel(x, y, width, height);
+		p = new HandlePanel(x, y, width, height);
 		p.setEventReceiver(new CustomEventReceiver() {
 			@Override
 			public void keyEvent(char code) {
@@ -83,20 +85,43 @@ public class ImagePage {
 	}
 
 	public void refreshActiveImage() {
+		iD.setImage(images.get(getCurrentImageIndex()).getPath());
 		iD.refresh();
 		drawPage();
 	}
 	
-	public void allotImage(String ref, String path) {
-		images.add(new FSMImage(ref, path));
+	public void allotFSM(String ref, String path) {
+		images.add(new FSMImage(ref, p.retrieveImage(path)));
 	}
 	
-	public void removeImage(int ind){
+	public void updateFSM(String ref, String path) {
+		for(FSMImage fI : images) {
+			if(fI.getReferenceName().equals(ref)) {
+				fI.setPath(p.retrieveImage(path));
+				refreshActiveImage();
+				break;
+			}
+		}
+	}
+	
+	public void removeFSM(String ref) {
+		for(int i = 0; i < images.size(); i++) {
+			if(images.get(i).getReferenceName().equals(ref)) {
+				removeFSM(i);
+				break;
+			}
+		}
+	}
+	
+	public void removeFSM(int ind){
 		if(ind < 0 || ind >= images.size()) {
 			return;
 		}
-		iD.clear();
+		if(ind <= index) {
+			index--;
+		}
 		images.remove(ind);
+		refreshActiveImage();
 	}
 	
 	//-- Drawing  ---------------------------------------------
@@ -120,13 +145,21 @@ public class ImagePage {
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public void setCurrentImageIndex(int in) {
-		currentImageIndex = in;
-		iD.setImage(images.get(currentImageIndex).getPath());
+		index = in;
+		iD.setImage(images.get(index).getPath());
 		p.removeElement("img");
 		refreshActiveImage();
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	public String getCurrentFSM() {
+		return images.get(getCurrentImageIndex()).getReferenceName();
+	}
+	
+	public HandlePanel getPanel() {
+		return p;
+	}
 	
 	public ArrayList<String> getImageNames(){
 		ArrayList<String> out = new ArrayList<String>();
@@ -137,7 +170,7 @@ public class ImagePage {
 	}
 	
 	public int getCurrentImageIndex() {
-		return currentImageIndex;
+		return index;
 	}
 	
 }

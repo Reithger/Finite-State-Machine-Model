@@ -83,6 +83,10 @@ public class OptionPageManager {
 		optionPages[currentOptionPageIndex].drawPage();
 	}
 	
+	public void clearTextContents(int code) {
+		getCurrentPage().resetContents(code);
+	}
+	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public void setCurrentOptionPageIndex(int in) {
@@ -92,12 +96,28 @@ public class OptionPageManager {
 
 //---  Getter Methods   -----------------------------------------------------------------------
 	
+	public String getTextContent(int code, int posit) {
+		return getCurrentPage().getTextFromCode(code, posit);
+	}
+	
+	public Boolean getCheckboxContent(int code) {
+		return getCurrentPage().getCheckboxContentsFromCode(code);
+	}
+	
+	public ArrayList<String> getContent(int code){
+		return getCurrentPage().getContentFromCode(code);
+	}
+	
 	public ArrayList<String> getOptionPageNames(){
 		ArrayList<String> out = new ArrayList<String>();
 		for(OptionPage p : optionPages) {
 			out.add(p.getHeader());
 		}
 		return out;
+	}
+	
+	private OptionPage getCurrentPage() {
+		return optionPages[currentOptionPageIndex];
 	}
 	
 	public HandlePanel getPanel() {

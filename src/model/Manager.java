@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import model.convert.GenerateDot;
+import model.convert.GenerateFSM;
 import model.convert.ReadWrite;
 import model.fsm.TransitionSystem;
 import model.process.ProcessAnalysis;
@@ -37,6 +38,14 @@ public class Manager {
 	
 	public String exportFSM(String ref) {
 		return ReadWrite.generateFile(fsms.get(ref));
+	}
+	
+	//-- FSM Generation  --------------------------------------
+	
+	//TODO: Currently returns file path, should just return contents
+	
+	public String generateRandomFSM(String nom, int numStates, int numEvents, int numTrans, boolean det) {
+		return GenerateFSM.createNewFSM(numStates, 0, numEvents, numTrans, 0, 0, 0, 0, 0, det, nom, "");
 	}
 	
 	//-- Processes  -------------------------------------------

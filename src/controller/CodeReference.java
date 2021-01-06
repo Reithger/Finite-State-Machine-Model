@@ -28,10 +28,6 @@ public class CodeReference {
 	public final static int CODE_REMOVE_STATE = 119;	
 	public final static int CODE_RENAME_STATE = 120;
 	public final static int CODE_ADD_STATES = 121;
-	public final static int CODE_INITIAL_STATE = 122;
-	public final static int CODE_MARKED_STATE = 123;
-	public final static int CODE_SECRET_STATE = 124;
-	public final static int CODE_BAD_STATE = 125;
 	//--
 	public final static int CODE_ADD_TRANSITION = 126;
 	public final static int CODE_TOGGLE_MUST = 127;

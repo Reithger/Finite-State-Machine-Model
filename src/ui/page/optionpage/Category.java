@@ -91,6 +91,13 @@ public class Category {
 		}
 	}
 	
+	public void resetEntrySetContents(int code) {
+		EntrySet e = getEntrySet(code);
+		if(e != null) {
+			e.resetContent();
+		}
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String prefix() {

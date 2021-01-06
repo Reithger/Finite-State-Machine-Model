@@ -1,11 +1,13 @@
 package ui.page.imagepage;
 
+import java.awt.Image;
+
 public class FSMImage {
 	
 	private String reference;
-	private String path;
+	private Image path;
 	
-	public FSMImage (String inRef, String inPath) {
+	public FSMImage (String inRef, Image inPath) {
 		reference = inRef;
 		path = inPath;
 	}
@@ -14,7 +16,7 @@ public class FSMImage {
 		reference = in;
 	}
 	
-	public void setPath(String in) {
+	public void setPath(Image in) {
 		path = in;
 	}
 	
@@ -22,7 +24,7 @@ public class FSMImage {
 		return reference;
 	}
 	
-	public String getPath() {
+	public Image getPath() {
 		return path;
 	}
 	
