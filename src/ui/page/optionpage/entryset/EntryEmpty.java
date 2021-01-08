@@ -12,5 +12,5 @@ public class EntryEmpty extends EntrySet{
 	public int draw(int y, int lineHei, HandlePanel p) {
 		return y;
 	}
-	
+
 }

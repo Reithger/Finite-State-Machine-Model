@@ -27,11 +27,11 @@ public class AdjustFSM extends OptionPage {
 	// -- Scripts ---------------------------------------------
 
 	private final static String HEADER = "Adjust FSM";
-	private final static String CATEGORY_GENERATE_SIMPLE = "Generate FSM Simple";
+	private final static String CATEGORY_GENERATE = "Generate FSM Simple";
 	private final static String CATEGORY_EDIT_STATES = "Edit FSM States";
 	private final static String CATEGORY_EDIT_TRANSITIONS = "Edit FSM Transitions";
 	private final static String CATEGORY_ADMIN = "Admin";
-	private final static String[] CATEGORIES = new String[] { CATEGORY_GENERATE_SIMPLE,
+	private final static String[] CATEGORIES = new String[] { CATEGORY_GENERATE,
 			CATEGORY_EDIT_STATES, CATEGORY_EDIT_TRANSITIONS, CATEGORY_ADMIN };
 	private final static String HELP = "Some line\n" + "Another line\n" + "This will be the help page";
 
@@ -43,12 +43,15 @@ public class AdjustFSM extends OptionPage {
 			addCategory(s);
 		}
 		
-		addEntryText(CATEGORY_GENERATE_SIMPLE, "Number of States", false, CodeReference.CODE_ACCESS_NUM_STATES, 1, false);
-		addEntryText(CATEGORY_GENERATE_SIMPLE, "Number of Events", false, CodeReference.CODE_ACCESS_NUM_EVENTS, 1, false);
-		addEntryText(CATEGORY_GENERATE_SIMPLE, "Number of Transitions", false, CodeReference.CODE_ACCESS_NUM_TRANS, 1, false);
-		addEntryCheckbox(CATEGORY_GENERATE_SIMPLE, "Deterministic?", false, CodeReference.CODE_ACCESS_NON_DETERMINISTIC);
-		addEntryText(CATEGORY_GENERATE_SIMPLE, "Name", false, CodeReference.CODE_ACCESS_FSM_NAME, 1, true);
-		addEntryEmpty(CATEGORY_GENERATE_SIMPLE, "", true, CodeReference.CODE_GENERATE_FSM);
+		addEntryText(CATEGORY_GENERATE, "Number of States", false, CodeReference.CODE_ACCESS_NUM_STATES, 1, false);
+		addEntryText(CATEGORY_GENERATE, "Number of Events", false, CodeReference.CODE_ACCESS_NUM_EVENTS, 1, false);
+		addEntryText(CATEGORY_GENERATE, "Number of Transitions", false, CodeReference.CODE_ACCESS_NUM_TRANS, 1, false);
+		addEntryCheckbox(CATEGORY_GENERATE, "Deterministic?", false, CodeReference.CODE_ACCESS_NON_DETERMINISTIC);
+		addEntryText(CATEGORY_GENERATE, "Name", false, CodeReference.CODE_ACCESS_FSM_NAME, 1, true);
+		addEntryList(CATEGORY_GENERATE, "State Attributes", false, CodeReference.CODE_ACCESS_STATE_ATTRIBUTES, CodeReference.CODE_ADD_STATE_ATTRIBUTE);
+		addEntryList(CATEGORY_GENERATE, "Event Attributes", false, CodeReference.CODE_ACCESS_EVENT_ATTRIBUTES, CodeReference.CODE_ADD_EVENT_ATTRIBUTE);
+		addEntryList(CATEGORY_GENERATE, "Trans Attributes", false, CodeReference.CODE_ACCESS_TRANS_ATTRIBUTES, CodeReference.CODE_ADD_TRANS_ATTRIBUTE);
+		addEntryEmpty(CATEGORY_GENERATE, "", true, CodeReference.CODE_GENERATE_FSM);
 		
 		addEntryText(CATEGORY_EDIT_STATES, "Add State", true, CodeReference.CODE_ADD_STATE, 1, false);
 		addEntryText(CATEGORY_EDIT_STATES, "Add Many States", true, CodeReference.CODE_ADD_STATES, 1, false);

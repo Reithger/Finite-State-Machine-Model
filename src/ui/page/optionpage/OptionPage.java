@@ -5,7 +5,6 @@ import java.awt.Font;
 import java.util.ArrayList;
 
 import controller.InputReceiver;
-import ui.page.optionpage.entryset.EntrySet;
 import ui.page.optionpage.entryset.EntrySetFactory;
 import visual.composite.HandlePanel;
 
@@ -45,7 +44,7 @@ public abstract class OptionPage {
 		header = head;
 		help = inHelp;
 		categories = new ArrayList<Category>();
-		lineHeightFraction = 20;
+		lineHeightFraction = 15;
 	}
 
 	//---  Operations   ---------------------------------------------------------------------------
@@ -72,7 +71,7 @@ public abstract class OptionPage {
 		p.handleImage("help_img", false, wid - wid / 15, wid / 20, "/assets/ui/question_mark.png", 3);
 		for(int i = 0; i < categories.size(); i++) {
 			Category cat = categories.get(i);
-			cat.draw(startY, hei / lineHeightFraction, p);
+			startY = cat.draw(startY, hei / lineHeightFraction, p);
 		}
 	}
 	
@@ -87,9 +86,17 @@ public abstract class OptionPage {
 			drawPage();
 			return;
 		}
-		if(!toggleCategory(code)) {
+		if(!toggleCategory(code) && handleInput(code)) {
 			inputRef.receiveCode(code, mouseType);
 		}
+	}
+	
+	public boolean handleInput(int code) {
+		boolean out = false;
+		if(getCategoryFromCode(code) != null)
+			out = getCategoryFromCode(code).handleInput(code, p);
+		drawPage();
+		return out;
 	}
 
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -106,6 +113,7 @@ public abstract class OptionPage {
 	public boolean toggleCategory(int code) { 
 		if(code >= 0 && code < categories.size()) {
 			categories.get(code).toggleOpen();
+			drawPage();
 			return true;
 		}
 		return false;
@@ -130,14 +138,17 @@ public abstract class OptionPage {
 
 	public void setEntrySetContent(int code, int index, String reference) {
 		getCategoryFromCode(code).setEntrySetContent(code, index, reference);
+		drawPage();
 	}
 	
 	public void removeContentsFromCode(int code, int index) {
 		getCategoryFromCode(code).removeEntrySetContent(code, index);
+		drawPage();
 	}
 	
 	public void resetContents(int code) {
 		getCategoryFromCode(code).resetEntrySetContents(code);
+		drawPage();
 	}
 	
 		//-- Add Types  ---------------------------------------
@@ -226,7 +237,7 @@ public abstract class OptionPage {
 	}
 	
 	public Boolean getCheckboxContentsFromCode(int code) {
-		return getTextFromCode(code, 0).contentEquals(EntrySet.SIGNIFIER_TRUE);
+		return getTextFromCode(code, 0).contentEquals(EntrySetFactory.SIGNIFIER_TRUE);
 	}
 	
 	public ArrayList<String> getContentFromCode(int code) {

@@ -1,18 +1,19 @@
 package ui;
 
-import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import controller.InputReceiver;
+import filemeta.FileChooser;
 import ui.headers.HeaderSelect;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.OptionPageManager;
+import ui.popups.PopoutInputRequest;
+import visual.composite.popout.PopoutSelectList;
 import visual.frame.WindowFrame;
 
 /**
@@ -85,14 +86,47 @@ public class FSMUI implements InputReceiver{
 
 //---  Operations   ---------------------------------------------------------------------------
 	
+	public String requestFolderPath(String defDir, String display) {
+		return FileChooser.promptSelectFile(defDir, true, false).toString();
+	}
+	
+	public String requestFilePath(String defDir, String display) {
+		return FileChooser.promptSelectFile(defDir, true, true).toString();
+	}
+
+	public String requestUserInputList(String[] refs, boolean search) {
+		PopoutSelectList pL = new PopoutSelectList(250, 200, refs, search);
+		String out = pL.getSelected();
+		pL.dispose();
+		return out;
+	}
+	
+	public String requestUserInput(String phrase) {
+		PopoutInputRequest pIR = new PopoutInputRequest(phrase);
+		String result = pIR.getSubmitted();
+		pIR.dispose();
+		return result;
+	}
+	
+	public Integer requestUserIntegerInput(String phrase) {
+		try {
+			return Integer.parseInt(requestUserInput(phrase));
+		}
+		catch(Exception e) {
+			return null;
+		}
+	}
+	
 	public void receiveCode(int code, int mouseType) {
 		if(code - CODE_BASE_OPTIONS_HEADER >= 0 && code - CODE_BASE_OPTIONS_HEADER < optionPageManager.getOptionPageList().length) {
 			optionPageManager.setCurrentOptionPageIndex(code - CODE_BASE_OPTIONS_HEADER);
 			updateOptionHeader();
+			updateActiveOptionPage();
 		}
 		else if(code - CODE_BASE_IMAGE_HEADER >= 0 && code - CODE_BASE_IMAGE_HEADER < imagePage.getImageNames().size()){
 			imagePage.setCurrentImageIndex(code - CODE_BASE_IMAGE_HEADER);
 			updateImageHeader();
+			updateImagePanel();
 		}
 		else {
 			reference.receiveCode(code, mouseType);
@@ -105,14 +139,20 @@ public class FSMUI implements InputReceiver{
 	
 	public void addFSM(String ref, String img) {
 		imagePage.allotFSM(ref, img);
+		updateImageHeader();
+		updateImagePanel();
 	}
 	
 	public void removeFSM(String ref) {
 		imagePage.removeFSM(ref);
+		updateImageHeader();
+		updateImagePanel();
 	}
 
 	public void updateFSMImage(String ref, String img) {
 		imagePage.updateFSM(ref, img);
+		updateImageHeader();
+		updateImagePanel();
 	}
 	
 	public void clearTextContents(int code) {
@@ -143,7 +183,6 @@ public class FSMUI implements InputReceiver{
 			return;
 		}
 		optionPageManager.drawPage();
-		updateOptionHeader();
 	}
 
 	public void updateImagePanel() {
@@ -151,9 +190,14 @@ public class FSMUI implements InputReceiver{
 			return;
 		}
 		imagePage.drawPage();
-		updateImageHeader();
 	}
 
+//---  Setter Methods   -----------------------------------------------------------------------
+	
+	public void setTextContent(int code, int posit, String ref) {
+		optionPageManager.setEntrySetContent(code, posit, ref);
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String getCurrentFSM() {

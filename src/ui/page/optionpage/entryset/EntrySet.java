@@ -3,6 +3,7 @@ package ui.page.optionpage.entryset;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import visual.composite.HandlePanel;
@@ -18,7 +19,7 @@ public abstract class EntrySet {
 	
 //---  Constants   ----------------------------------------------------------------------------
 
-	protected final static Font DEFAULT_FONT = new Font("Serif", Font.BOLD, 14);
+	protected final static Font DEFAULT_FONT = new Font("Serif", Font.BOLD, 12);
 	private final static int SUBSYSTEM_CODE_DEFAULT = -1500;
 	public final static String SIGNIFIER_TRUE = "t";
 	
@@ -27,7 +28,7 @@ public abstract class EntrySet {
 	protected static int subSystemCode = SUBSYSTEM_CODE_DEFAULT;
 	
 	private ArrayList<String> contents;
-	private HashSet<Integer> codes;
+	private HashMap<Integer, String> codes;
 	
 	private String prefix;
 	private String label;
@@ -42,18 +43,16 @@ public abstract class EntrySet {
 		label = inName;
 		button = submit;
 		code = inCode;
-		codes = new HashSet<Integer>();
-		codes.add(code);
+		codes = new HashMap<Integer, String>();
+		codes.put(code, "");
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public int drawEntrySet(int y, int lineHei, HandlePanel p) {
-		p.handleText("entry_set_" + label + "_label", false, p.getWidth() / 8, y, p.getWidth() / 4, lineHei, DEFAULT_FONT, label);
+		p.handleText(prefix() + "_entry_set_" + label + "_label", false, p.getWidth() / 8, y, p.getWidth() / 4, lineHei, DEFAULT_FONT, label);
 		
 		y = draw(y, lineHei, p);
-		
-		y += lineHei;
 		
 		if(button) {
 			int posX = p.getWidth() * 11 / 12;
@@ -61,10 +60,16 @@ public abstract class EntrySet {
 			p.handleButton(prefix() + "_button_butt", false, posX, y, p.getHeight() / 30, p.getHeight() / 30, code);
 		}
 		p.handleLine(prefix() + "_underscore_line", false, 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * (button ? 17 : 19) / 20, y + p.getHeight() / 40, 1, Color.black);
+		
+		y += lineHei;
 		return y;
 	}
 	
 	protected abstract int draw(int y, int lineHei, HandlePanel p);
+	
+	public boolean handleInput(int code, HandlePanel p) {
+		return getCodeMapping(code).equals("");
+	}
 	
 	public void resetContent() {
 		int i = contents.size();
@@ -79,12 +84,12 @@ public abstract class EntrySet {
 			contents.set(i, "");
 		}
 		deregisterCodes();
-		registerCode(code);
+		registerCode(code, "");
 		p.removeElementPrefixed(prefix());
 	}
 	
-	protected void registerCode(int in) {
-		codes.add(in);
+	protected void registerCode(int in, String ref) {
+		codes.put(in, ref);
 	}
 	
 	protected void deregisterCode(int in) {
@@ -102,21 +107,41 @@ public abstract class EntrySet {
 	}
 	
 	public void setContent(String in, int index) {
-		contents.set(index, in);
+		if(index == contents.size()) {
+			contents.add(in);
+		}
+		else if(index >= 0 && index < contents.size()) {
+			contents.set(index, in);
+		}
 	}
 
+	public void addContent(String in) {
+		for(int i = 0; i < contents.size(); i++) {
+			if(contents.get(i).equals("")) {
+				contents.set(i, in);
+				return;
+			}
+		}
+		contents.add(in);
+	}
+	
 	public void removeContentAt(int i) {
 		contents.remove(i);
+		contents.add("");
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
 
+	protected String getCodeMapping(int code) {
+		return codes.get(code);
+	}
+	
 	protected String prefix() {
 		return prefix + "_entry_set_" + label + "_" + code;
 	}
 	
 	public boolean containsCode(int in) {
-		return codes.contains(in);
+		return codes.get(in) != null;
 	}
 
 	public String getName() {

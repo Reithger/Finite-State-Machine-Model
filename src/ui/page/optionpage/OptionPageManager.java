@@ -66,7 +66,6 @@ public class OptionPageManager {
 			public void clickEvent(int code, int x, int y, int mouseType) {
 				optionPages[currentOptionPageIndex].handleMouseInput(code, x, y, mouseType);
 			}
-
 			
 			@Override
 			public void mouseWheelEvent(int rotation) {
@@ -76,11 +75,16 @@ public class OptionPageManager {
 				p.setOffsetYBounded(p.getOffsetY() - rotation * ROTATION_MULTIPLIER);
 			}
 
+			@Override
+			public void focusEventReaction(int code) {
+				getCurrentPage().handleInput(code);
+			}
+			
 		});
 	}
 
 	public void drawPage() {
-		optionPages[currentOptionPageIndex].drawPage();
+		getCurrentPage().drawPage();
 	}
 	
 	public void clearTextContents(int code) {
@@ -94,6 +98,10 @@ public class OptionPageManager {
 		p.removeElementPrefixed("");
 	}
 
+	public void setEntrySetContent(int code, int posit, String ref) {
+		getCurrentPage().setEntrySetContent(code, posit, ref);
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String getTextContent(int code, int posit) {

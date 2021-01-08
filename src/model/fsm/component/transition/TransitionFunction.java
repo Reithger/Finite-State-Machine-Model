@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import model.fsm.component.Entity;
-
 /**
  * This class models all Transitions in an FSM, storing States and an ArrayList<<r>Transition> of Transitions as <<r>Key, Value> pairs.
  * 
@@ -175,7 +173,7 @@ public class TransitionFunction {
 	public void setAttributes(ArrayList<String> attrib) {
 		attributes = attrib;
 		for(String s : getStateNames()) {
-			for(Entity e : getTransitions(s)) {
+			for(Transition e : getTransitions(s)) {
 				LinkedList<String> use = new LinkedList<String>();
 				use.addAll(attributes);
 				e.wipeAttributes();
@@ -226,6 +224,9 @@ public class TransitionFunction {
 
 	public ArrayList<String> getStateEvents(String state){
 		ArrayList<String> out = new ArrayList<String>();
+		if(transitions.get(state) == null) {
+			return out;
+		}
 		for(Transition t : transitions.get(state)) {
 			out.add(t.getEvent());
 		}

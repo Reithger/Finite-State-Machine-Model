@@ -36,6 +36,8 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
+import filemeta.config.Config;
+
 
 /**
 * <dl>
@@ -115,22 +117,7 @@ public class GraphViz
 	 tempDir = workingPath;
 	 cfgProp = configPath;
 	 
-	 configFile = new Properties() {
-	     private final static long serialVersionUID = 1L; {
-	         try {
-	             load(GraphViz.class.getResourceAsStream("/src/config/config.properties"));
-	         } catch (Exception e) {
-	        	 try {
-	        		 load(new FileInputStream(cfgProp));
-	        	 }
-	        	 catch(Exception e1) {
-	        		 System.out.println("Could not find the configuration file.");
-	        		 e1.printStackTrace();
-	        	 }
-	         }
-	     }
-	 };
-	 DOT = configFile.getProperty("dotAddress");
+	 DOT = Config.getConfigFileEntry(configPath, "dotAddress");
 	 graph = new StringBuilder();
 	 currentDpiPos = 7;
  }

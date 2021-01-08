@@ -24,9 +24,10 @@ public class GenerateDot {
 		
 		for(String e : in.getStateNames()) {
 			nameMap.put(e, "n" + counter++);
-			String line = "\"" + nameMap.get(e) + "\"[shape=" + generateStateDot(in, e);
+			String line = "\"" + nameMap.get(e) + "\"[label=\"" + nameMap.get(e).substring(1) + "\"shape=" + generateStateDot(in, e);
 			states.add(line);
-			if(in.getStateAttribute(e, AttributeList.ATTRIBUTE_INITIAL)) {
+			Boolean init = in.getStateAttribute(e, AttributeList.ATTRIBUTE_INITIAL);
+			if(init != null && init) {
 				String use = (INITIAL_STATE_MARKER + counter);
 				states.add("\"" + use + "\"[fontSize=1 shape=point];");
 				transitions.add("{\"" + use + "\"}->{\"" + nameMap.get(e) + "\"};");
@@ -55,14 +56,16 @@ public class GenerateDot {
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private static String generateStateDot(TransitionSystem in, String ref) {
-		boolean bad = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_BAD);
-		String line = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_MARKED) ? "doublecircle" : "circle";
+		Boolean bad = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_BAD);
+		Boolean mark = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_MARKED);
+		String line = mark != null && mark ? "doublecircle" : "circle";
 		line += " color=\"";
-		if(in.getStateAttribute(ref, AttributeList.ATTRIBUTE_PRIVATE)) {
-			line += bad ? "red" : "orange";
+		Boolean priv = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_PRIVATE);
+		if(priv != null && priv) {
+			line += bad != null && bad ? "red" : "orange";
 		}
 		else {
-			line += bad ? "purple" : "black";
+			line += bad != null && bad ? "purple" : "black";
 		}
 		line += "\"];";
 		return line;
@@ -70,10 +73,13 @@ public class GenerateDot {
 	
 	private static String generateTransitionDot(TransitionSystem in, String ref) {
 		String trans = "[label = \"" + ref + "\" color=\"";
-		trans += in.getEventAttribute(ref, AttributeList.ATTRIBUTE_OBSERVABLE) ? "black" : "red";
+		Boolean obs = in.getEventAttribute(ref, AttributeList.ATTRIBUTE_OBSERVABLE);
+		Boolean atkObs = in.getEventAttribute(ref, AttributeList.ATTRIBUTE_ATTACKER_OBSERVABLE);
+		Boolean cont = in.getEventAttribute(ref, AttributeList.ATTRIBUTE_CONTROLLABLE);
+		trans += obs == null || obs ? "black" : "red";
 		trans += "\" arrowhead=\"normal";
-		trans += in.getEventAttribute(ref, AttributeList.ATTRIBUTE_ATTACKER_OBSERVABLE) ? "odot" : "";
-		trans += in.getEventAttribute(ref, AttributeList.ATTRIBUTE_CONTROLLABLE) ? "diamond" : "";
+		trans += atkObs != null && atkObs ? "odot" : "";
+		trans += cont != null && cont ? "diamond" : "";
 		trans += "\"];";
 		return trans;
 	}

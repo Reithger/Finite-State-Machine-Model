@@ -11,7 +11,7 @@ public class Category {
 	
 //---  Constant Values   ----------------------------------------------------------------------
 	
-	private final static Font CATEGORY_FONT = new Font("Serif", Font.BOLD, 12);
+	private final static Font CATEGORY_FONT = new Font("Serif", Font.BOLD, 14);
 
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -30,28 +30,37 @@ public class Category {
 
 //---  Operations   ---------------------------------------------------------------------------
 
-	public void draw(int y, int heiLine, HandlePanel p) {
+	public int draw(int y, int heiLine, HandlePanel p) {
 		y = drawCategoryHeader(y, heiLine, p);
 		
 		if(open) {
 			for(EntrySet e : sets) {
-				e.drawEntrySet(y, heiLine, p);
+				y = e.drawEntrySet(y, heiLine, p);
 			}
 		}
 		else {
 			hideContents();
 		}
+		return y;
 	}
 	
 	public int drawCategoryHeader(int y, int lineHei, HandlePanel p) {
 		int posX = p.getWidth() / 3 / 2;
 		int wid =  p.getWidth() * 9/10;
-		p.handleText(prefix() + "_header_text", false, posX, y, wid, lineHei, CATEGORY_FONT, name);
-		p.handleButton(prefix() + "_header_butt_" + name, false, posX, y, wid, lineHei, catCode);
-		p.handleLine(prefix() + name, false, 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * 11 / 20, y + p.getHeight() / 40, 3, Color.black);
+		p.handleText("category_header_" + name + "_header_text", false, posX, y, wid, lineHei, CATEGORY_FONT, name);
+		p.handleButton("category_header_" + name + "_header_butt", false, posX, y, wid, lineHei, catCode);
+		p.handleLine("category_header_" + name + "_header_line", false, 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * 11 / 20, y + p.getHeight() / 40, 3, Color.black);
 		return y + lineHei;
 	}
 
+	public boolean handleInput(int code, HandlePanel p) {
+		EntrySet e = getEntrySet(code);
+		if(e != null) {
+			return getEntrySet(code).handleInput(code, p);
+		}
+		return true;
+	}
+	
 	public void toggleOpen() {
 		open = !open;
 	}

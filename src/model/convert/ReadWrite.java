@@ -8,17 +8,25 @@ public class ReadWrite {
 	
 //---  Constants   ----------------------------------------------------------------------------
 	
-	private final static String SEPARATOR = ";,;;,;";
-	private final static String REGION_SEPARATOR = "---";
-	private final static String TRUE_SYMBOL = "o";
-	private final static String FALSE_SYMBOL = "x";
+	private static String SEPARATOR;
+	private static String REGION_SEPARATOR;
+	private static String TRUE_SYMBOL;
+	private static String FALSE_SYMBOL;
 
 //---  Operations   ---------------------------------------------------------------------------
+
+	public static void assignConstants(String separator, String regionSeparator, String trueSymbol, String falseSymbol) {
+		SEPARATOR = separator;
+		REGION_SEPARATOR = regionSeparator;
+		TRUE_SYMBOL = trueSymbol;
+		FALSE_SYMBOL = falseSymbol;
+	}
 	
 	public static String generateFile(TransitionSystem in) {
 		StringBuilder out = new StringBuilder();
 		
 		out.append(in.getId() + "\n");
+		out.append(REGION_SEPARATOR + "\n");
 		
 		ArrayList<String> stateAttr = in.getStateAttributes();
 		ArrayList<String> eventAttr = in.getEventAttributes();
@@ -27,6 +35,8 @@ public class ReadWrite {
 		attribute(stateAttr, out);
 		attribute(eventAttr, out);
 		attribute(tranAttr, out);
+
+		out.append(REGION_SEPARATOR + "\n");
 		
 		for(String s : in.getStateNames()) {
 			String build = s;
@@ -60,25 +70,29 @@ public class ReadWrite {
 	}
 	
 	public static TransitionSystem readFile(String in) {
+		System.out.println(in);
 		String[] lines = in.split("\n");
 		
 		ArrayList<String> stateAttr = new ArrayList<String>();
-		for(String s : lines[1].split(SEPARATOR)) {
-			stateAttr.add(s);
+		for(String s : lines[2].split(SEPARATOR)) {
+			if(!s.equals(""))
+				stateAttr.add(s);
 		}
 		ArrayList<String> eventAttr = new ArrayList<String>();
-		for(String s : lines[2].split(SEPARATOR)) {
-			eventAttr.add(s);
+		for(String s : lines[3].split(SEPARATOR)) {
+			if(!s.equals(""))
+				eventAttr.add(s);
 		}
 		ArrayList<String> tranAttr = new ArrayList<String>();
-		for(String s : lines[3].split(SEPARATOR)) {
-			tranAttr.add(s);
+		for(String s : lines[4].split(SEPARATOR)) {
+			if(!s.equals(""))
+				tranAttr.add(s);
 		}
 		
 		TransitionSystem out = new TransitionSystem(lines[0], stateAttr, eventAttr, tranAttr);
 		
-		int index = 4;
-		while(!lines[index].equals(REGION_SEPARATOR)) {
+		int index = 6;
+		while(index < lines.length && !lines[index].equals(REGION_SEPARATOR)) {
 			String[] info = lines[index++].split(SEPARATOR);
 			out.addState(info[0]);
 			for(int i = 0; i < stateAttr.size(); i++) {
@@ -86,7 +100,7 @@ public class ReadWrite {
 			}
 		}
 		index++;
-		while(!lines[index].equals(REGION_SEPARATOR)) {
+		while(index < lines.length && !lines[index].equals(REGION_SEPARATOR)) {
 			String[] info = lines[index++].split(SEPARATOR);
 			out.addEvent(info[0]);
 			for(int i = 0; i < eventAttr.size(); i++) {
@@ -94,10 +108,10 @@ public class ReadWrite {
 			}
 		}
 		index++;
-		while(!lines[index].equals(REGION_SEPARATOR)) {
+		while(index < lines.length && !lines[index].equals(REGION_SEPARATOR)) {
 			String[] info = lines[index++].split(SEPARATOR);
 			out.addTransition(info[0], info[1], info[2]);
-			for(int i = 0; i < eventAttr.size(); i++) {
+			for(int i = 0; i < tranAttr.size(); i++) {
 				out.setTransitionAttribute(info[0], info[1], tranAttr.get(i), info[i+3].equals(TRUE_SYMBOL));
 			}
 		}
@@ -108,8 +122,9 @@ public class ReadWrite {
 	
 	private static StringBuilder attribute(ArrayList<String> use, StringBuilder out) {
 		for(int i = 0; i < use.size(); i++) {
-			out.append(use.get(i) + (i + 1 < use.size() ? ", " : "\n"));
+			out.append(use.get(i) + (i + 1 < use.size() ? SEPARATOR : ""));
 		}
+		out.append(SEPARATOR + "\n");
 		return out;
 	}
 	

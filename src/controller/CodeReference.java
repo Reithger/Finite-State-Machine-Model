@@ -9,20 +9,13 @@ public class CodeReference {
 	public final static int CODE_ACCESS_NUM_TRANS = 102;
 	public final static int CODE_ACCESS_FSM_NAME = 103;
 	public final static int CODE_ACCESS_NON_DETERMINISTIC = 104;
+	public final static int CODE_ACCESS_STATE_ATTRIBUTES = 106;
+	public final static int CODE_ACCESS_EVENT_ATTRIBUTES = 107;
+	public final static int CODE_ACCESS_TRANS_ATTRIBUTES = 108;
+	public final static int CODE_ADD_STATE_ATTRIBUTE = 109;
+	public final static int CODE_ADD_EVENT_ATTRIBUTE = 110;
+	public final static int CODE_ADD_TRANS_ATTRIBUTE = 111;
 	public final static int CODE_GENERATE_FSM = 105;
-	// Generate Complex FSM  
-	public final static int CODE_ACCESS_COMPLEX_NUM_STATES = 106;
-	public final static int CODE_ACCESS_COMPLEX_NUM_EVENTS = 107;
-	public final static int CODE_ACCESS_COMPLEX_NUM_TRANS = 108;
-	public final static int CODE_ACCESS_COMPLEX_INITIAL = 109;
-	public final static int CODE_ACCESS_COMPLEX_MARKED = 110;
-	public final static int CODE_ACCESS_COMPLEX_SECRET = 111;
-	public final static int CODE_ACCESS_COMPLEX_CONTROLLED = 112;
-	public final static int CODE_ACCESS_COMPLEX_UNOBSERVED = 113;
-	public final static int CODE_ACCESS_COMPLEX_ATTACKER = 114;
-	public final static int CODE_ACCESS_COMPLEX_NON_DETERMINISTIC = 115;
-	public final static int CODE_ACCESS_COMPLEX_FSM_NAME = 116;
-	public final static int CODE_GENERATE_COMPLEX_FSM = 117;
 	//
 	public final static int CODE_ADD_STATE = 118;
 	public final static int CODE_REMOVE_STATE = 119;	

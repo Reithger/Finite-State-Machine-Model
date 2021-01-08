@@ -10,6 +10,7 @@ public class AttributeList {
 	
 	//-- State  -----------------------------------------------
 	
+	public final static String[] STATE_ATTRIBUTES = new String[] {AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_BAD};
 	public final static String ATTRIBUTE_INITIAL = "Initial";
 	public final static boolean ATTRIBUTE_AON_INITIAL = false;
 	public final static String ATTRIBUTE_MARKED = "Marked";
@@ -21,12 +22,17 @@ public class AttributeList {
 	
 	//-- Event  -----------------------------------------------
 	
+	public final static String[] EVENT_ATTRIBUTES = new String[] {AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE, AttributeList.ATTRIBUTE_ATTACKER_OBSERVABLE};
 	public final static String ATTRIBUTE_OBSERVABLE = "Observable";
 	public final static boolean ATTRIBUTE_AON_OBSERVABLE = false;
 	public final static String ATTRIBUTE_CONTROLLABLE = "Controllable";
 	public final static boolean ATTRIBUTE_AON_CONTROLLABLE = false;
 	public final static String ATTRIBUTE_ATTACKER_OBSERVABLE = "AttackerObservable";
 	public final static boolean ATTRIBUTE_AON_ATTACKER_OBSERVABLE = true;
+	
+	//-- Transitions  -----------------------------------------
+	
+	public final static String[] TRANS_ATTRIBUTES = new String[] {AttributeList.ATTRIBUTE_BAD};
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -50,6 +56,8 @@ public class AttributeList {
 		map.put(ATTRIBUTE_PRIVATE, ATTRIBUTE_AON_PRIVATE);
 		map.put(ATTRIBUTE_OBSERVABLE, ATTRIBUTE_AON_OBSERVABLE);
 		map.put(ATTRIBUTE_CONTROLLABLE, ATTRIBUTE_AON_CONTROLLABLE);
+		map.put(ATTRIBUTE_BAD, ATTRIBUTE_AON_BAD);
+		map.put(ATTRIBUTE_ATTACKER_OBSERVABLE, ATTRIBUTE_AON_ATTACKER_OBSERVABLE);
 	}
 	
 }

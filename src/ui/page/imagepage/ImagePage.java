@@ -86,17 +86,20 @@ public class ImagePage {
 
 	public void refreshActiveImage() {
 		iD.setImage(images.get(getCurrentImageIndex()).getPath());
-		iD.refresh();
 		drawPage();
 	}
 	
 	public void allotFSM(String ref, String path) {
+		System.out.println("Allot");
 		images.add(new FSMImage(ref, p.retrieveImage(path)));
+		setCurrentImageIndex(images.size() - 1);
+		System.out.println("Zoom: " + iD.getZoom());
 	}
 	
 	public void updateFSM(String ref, String path) {
 		for(FSMImage fI : images) {
 			if(fI.getReferenceName().equals(ref)) {
+				p.removeCachedImage(path);
 				fI.setPath(p.retrieveImage(path));
 				refreshActiveImage();
 				break;
@@ -108,6 +111,8 @@ public class ImagePage {
 		for(int i = 0; i < images.size(); i++) {
 			if(images.get(i).getReferenceName().equals(ref)) {
 				removeFSM(i);
+				index -= index >= i ? 1 : 0;
+				setCurrentImageIndex(index);
 				break;
 			}
 		}
@@ -119,6 +124,7 @@ public class ImagePage {
 		}
 		if(ind <= index) {
 			index--;
+			setCurrentImageIndex(index);
 		}
 		images.remove(ind);
 		refreshActiveImage();
@@ -146,14 +152,15 @@ public class ImagePage {
 	
 	public void setCurrentImageIndex(int in) {
 		index = in;
-		iD.setImage(images.get(index).getPath());
-		p.removeElement("img");
 		refreshActiveImage();
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String getCurrentFSM() {
+		if(images.size() == 0) {
+			return null;
+		}
 		return images.get(getCurrentImageIndex()).getReferenceName();
 	}
 	

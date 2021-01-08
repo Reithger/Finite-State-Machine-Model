@@ -13,6 +13,13 @@ import model.process.ProcessOperation;
 
 public class Manager {
 
+//---  Constants   ----------------------------------------------------------------------------
+	
+	private final static String SEPARATOR = ";,;;,;";
+	private final static String REGION_SEPARATOR = "---";
+	private final static String TRUE_SYMBOL = "o";
+	private final static String FALSE_SYMBOL = "x";
+	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private HashMap<String, TransitionSystem> fsms;
@@ -21,6 +28,8 @@ public class Manager {
 	
 	public Manager() {
 		fsms = new HashMap<String, TransitionSystem>();
+		ReadWrite.assignConstants(SEPARATOR, REGION_SEPARATOR, TRUE_SYMBOL, FALSE_SYMBOL);
+		GenerateFSM.assignConstants(SEPARATOR, REGION_SEPARATOR, TRUE_SYMBOL, FALSE_SYMBOL);
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -31,21 +40,42 @@ public class Manager {
 		return GenerateDot.generateDot(fsms.get(ref));
 	}
 	
-	public void readInFSM(String fileContents) {
+	public String readInFSM(String fileContents) {
 		TransitionSystem in = ReadWrite.readFile(fileContents);
 		fsms.put(in.getId(), in);
+		return in.getId();
 	}
 	
 	public String exportFSM(String ref) {
 		return ReadWrite.generateFile(fsms.get(ref));
 	}
 	
+	public boolean hasFSM(String ref) {
+		return fsms.containsKey(ref);
+	}
+	
+	public void renameFSM(String old, String newFSM) {
+		if(fsms.get(old) != null) {
+			TransitionSystem oldFS = fsms.get(old).copy();
+			oldFS.setId(newFSM);
+			fsms.remove(old);
+			fsms.put(newFSM, oldFS);
+		}
+	}
+	
+	public String duplicate(String fsm) {
+		if(fsms.get(fsm) != null) {
+			TransitionSystem out = fsms.get(fsm).copy();
+			out.setId(out.getId() + "_copy");
+			return out.getId();
+		}
+		return null;
+	}
+	
 	//-- FSM Generation  --------------------------------------
 	
-	//TODO: Currently returns file path, should just return contents
-	
-	public String generateRandomFSM(String nom, int numStates, int numEvents, int numTrans, boolean det) {
-		return GenerateFSM.createNewFSM(numStates, 0, numEvents, numTrans, 0, 0, 0, 0, 0, det, nom, "");
+	public String generateRandomFSM(String nom, int numStates, int numEvents, int numTrans, boolean det, ArrayList<String> stateAttr, ArrayList<String> eventAttr, ArrayList<String> transAttr, ArrayList<Integer> numbers) {
+		return GenerateFSM.createNewFSM(nom, numStates, numEvents, numTrans, det, stateAttr, eventAttr, transAttr, numbers);
 	}
 	
 	//-- Processes  -------------------------------------------
@@ -70,29 +100,40 @@ public class Manager {
 		fsms.put(out.getId(), out);
 	}
 	
-	public void buildObserver(String ref) {
+	public String buildObserver(String ref) {
 		TransitionSystem out = ProcessOperation.buildObserver(fsms.get(ref));
 		fsms.put(out.getId(), out);
+		return out.getId();
 	}
 	
 	//-- Clean  -----------------------------------------------
 	
-	public void trim(String ref) {
+	public String trim(String ref) {
 		TransitionSystem out = ProcessClean.trim(fsms.get(ref));
 		fsms.put(out.getId(), out);
+		return out.getId();
 	}
 	
-	public void makeAccessible(String ref) {
+	public String makeAccessible(String ref) {
 		TransitionSystem out = ProcessClean.makeAccessible(fsms.get(ref));
 		fsms.put(out.getId(), out);
+		return out.getId();
 	}
 	
-	public void makeCoAccessible(String ref) {
+	public String makeCoAccessible(String ref) {
 		TransitionSystem out = ProcessClean.makeCoAccessible(fsms.get(ref));
 		fsms.put(out.getId(), out);
+		return out.getId();
 	}
 	
 	//-- Analysis  --------------------------------------------
+	
+	public Boolean stateExists(String ref, String nom) {
+		if(fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).stateExists(nom);
+	}
 	
 	public Boolean isBlocking(String ref) {
 		if(fsms.get(ref) == null) {
@@ -142,8 +183,33 @@ public class Manager {
 		fsms.get(ref).addState(stateName);
 	}
 	
+	public void addStates(String ref, int num) {
+		String alph = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		int used = 0;
+		int curr = 0;
+		while(used < num) {
+			String nom = "";
+			int cop = curr;
+			do {
+				nom += alph.charAt(cop % alph.length());
+				cop /= alph.length();
+			}while(cop != 0);
+			if(!stateExists(ref, nom)) {
+				addState(ref, nom);
+				used++;
+			}
+			curr++;
+		}
+	}
+	
 	public void removeState(String ref, String stateName) {
 		fsms.get(ref).removeState(stateName);
+	}
+	
+	public void renameState(String ref, String old, String newNom) {
+		if(fsms.get(ref) != null) {
+			fsms.get(ref).renameState(old, newNom);
+		}
 	}
 	
 	public void setStateAttribute(String ref, String stateName, String attrib, boolean inValue) {
@@ -176,6 +242,14 @@ public class Manager {
 	
 	public void setTransitionAttribute(String ref, String star, String even, String attrib, boolean inValue) {
 		fsms.get(ref).setTransitionAttribute(star, even, attrib, inValue);
+	}
+	
+//---  Getter Methods   -----------------------------------------------------------------------
+	
+	public ArrayList<String> getReferences(){
+		ArrayList<String> out = new ArrayList<String>();
+		out.addAll(fsms.keySet());
+		return out;
 	}
 	
 }

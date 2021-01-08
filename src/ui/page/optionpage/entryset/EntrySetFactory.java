@@ -1,6 +1,8 @@
 package ui.page.optionpage.entryset;
 
 public class EntrySetFactory {
+
+	public final static String SIGNIFIER_TRUE = "t";
 	
 	public static EntrySet generateEntryText(String pref, String label, boolean button, int code, int size, boolean flex) {
 		return new EntryText(pref, label, button, code, size, flex);

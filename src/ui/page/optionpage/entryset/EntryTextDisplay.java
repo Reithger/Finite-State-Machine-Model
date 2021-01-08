@@ -18,14 +18,15 @@ public class EntryTextDisplay extends EntrySet{
 			if(starr == null || starr.contentEquals("")) {
 				break;
 			}
-			if(i != 0)
-				y += lineHei;
-			p.handleRectangle(prefix() + "_entry_text_rect_" + i, false, 5, posX, y, p.getWidth() / 3, lineHei, Color.white, Color.gray);
-			p.handleText(prefix() + "_entry_text_text_" + i, false, posX, y, p.getWidth() / 3, lineHei, DEFAULT_FONT, starr);
-			p.handleButton(prefix() + "_entry_text_butt_" + i, false, posX, y, p.getWidth() / 3, lineHei, subSystemCode);
-			registerCode(subSystemCode--);
+			p.handleTextButton(formTextButtonName(i), false, posX, y, p.getWidth() / 2, lineHei * 5 / 8, DEFAULT_FONT, starr, subSystemCode, Color.white, Color.gray);
+			registerCode(subSystemCode--, formTextButtonName(i));
+			y += lineHei;
 		}
 		return y;
+	}
+	
+	protected String formTextButtonName(int index) {
+		return prefix() + "_entry_text_" + index;
 	}
 
 	@Override
