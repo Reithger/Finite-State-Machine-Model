@@ -8,7 +8,6 @@ import java.util.Scanner;
 import controller.convert.FormatConversion;
 import filemeta.FileChooser;
 import filemeta.config.Config;
-import model.AttributeList;
 import model.Manager;
 import ui.FSMUI;
 import visual.composite.popout.PopoutAlert;
@@ -77,13 +76,13 @@ public class FiniteStateMachine implements InputReceiver{
 				generateRandomFSM(code);
 				break;
 			case CodeReference.CODE_ADD_STATE_ATTRIBUTE:
-				requestAttributeChoice(code, AttributeList.STATE_ATTRIBUTES, "How many states of this type do you want?");
+				requestAttributeChoice(code, model.getStateAttributeList(), "How many states of this type do you want?");
 				break;
 			case CodeReference.CODE_ADD_EVENT_ATTRIBUTE:
-				requestAttributeChoice(code, AttributeList.EVENT_ATTRIBUTES, "How many events of this type do you want?");
+				requestAttributeChoice(code, model.getEventAttributeList(), "How many events of this type do you want?");
 				break;
 			case CodeReference.CODE_ADD_TRANS_ATTRIBUTE:
-				requestAttributeChoice(code, AttributeList.TRANS_ATTRIBUTES, "How many transitions of this type do you want?");
+				requestAttributeChoice(code, model.getTransitionAttributeList(), "How many transitions of this type do you want?");
 				break;
 			case CodeReference.CODE_RENAME_STATE:
 				String old = view.getTextContent(code, 0);
@@ -147,7 +146,7 @@ public class FiniteStateMachine implements InputReceiver{
 				break;
 			case CodeReference.CODE_PRODUCT:
 				ArrayList<String> noms = view.getContent(code);
-				model.performProduct(noms);
+				allotFSMToView(model.performProduct(noms));
 				view.clearTextContents(code);
 				break;
 			case CodeReference.CODE_PRODUCT_SELECT:
@@ -155,7 +154,7 @@ public class FiniteStateMachine implements InputReceiver{
 				break;
 			case CodeReference.CODE_PARALLEL_COMPOSITION:
 				ArrayList<String> noms2 = view.getContent(code);
-				model.performParallelComposition(noms2);
+				allotFSMToView(model.performParallelComposition(noms2));
 				view.clearTextContents(code);
 				break;
 			case CodeReference.CODE_PARALLEL_COMPOSITION_SELECT:

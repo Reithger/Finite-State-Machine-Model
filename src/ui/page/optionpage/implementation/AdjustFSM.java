@@ -1,13 +1,7 @@
 package ui.page.optionpage.implementation;
 
-import java.io.File;
-import java.util.Random;
-
 import controller.CodeReference;
-import ui.FSMUI;
 import ui.page.optionpage.OptionPage;
-import visual.composite.popout.PopoutAlert;
-import visual.composite.popout.PopoutSelectList;
 
 /**
  * TODO: SVG is not displaying correctly, despite the produced TikZ functioning
@@ -50,8 +44,8 @@ public class AdjustFSM extends OptionPage {
 		addEntryText(CATEGORY_GENERATE, "Name", false, CodeReference.CODE_ACCESS_FSM_NAME, 1, true);
 		addEntryList(CATEGORY_GENERATE, "State Attributes", false, CodeReference.CODE_ACCESS_STATE_ATTRIBUTES, CodeReference.CODE_ADD_STATE_ATTRIBUTE);
 		addEntryList(CATEGORY_GENERATE, "Event Attributes", false, CodeReference.CODE_ACCESS_EVENT_ATTRIBUTES, CodeReference.CODE_ADD_EVENT_ATTRIBUTE);
-		addEntryList(CATEGORY_GENERATE, "Trans Attributes", false, CodeReference.CODE_ACCESS_TRANS_ATTRIBUTES, CodeReference.CODE_ADD_TRANS_ATTRIBUTE);
-		addEntryEmpty(CATEGORY_GENERATE, "", true, CodeReference.CODE_GENERATE_FSM);
+		addEntryList(CATEGORY_GENERATE, "Transition Attributes", false, CodeReference.CODE_ACCESS_TRANS_ATTRIBUTES, CodeReference.CODE_ADD_TRANS_ATTRIBUTE);
+		addEntryEmpty(CATEGORY_GENERATE, "Generate", true, CodeReference.CODE_GENERATE_FSM);
 		
 		addEntryText(CATEGORY_EDIT_STATES, "Add State", true, CodeReference.CODE_ADD_STATE, 1, false);
 		addEntryText(CATEGORY_EDIT_STATES, "Add Many States", true, CodeReference.CODE_ADD_STATES, 1, false);

@@ -2,12 +2,19 @@ package model.process;
 
 import java.util.ArrayList;
 
-import model.AttributeList;
 import model.fsm.TransitionSystem;
 
 public class ProcessAnalysis {
 	
+//---  Instance Variables   -------------------------------------------------------------------
+	
+	private static String attributePrivateRef;
+	
 //---  Operations   ---------------------------------------------------------------------------
+	
+	public static void assignAttributeReferences(String priv) {
+		attributePrivateRef = priv;
+	}
 	
 	/**
 	 * Gets if the FSM is blocking; that is, if there are possible words which are not
@@ -24,7 +31,7 @@ public class ProcessAnalysis {
 	} // isBlocking()
 	
 	public static ArrayList<String> findPrivateStates(TransitionSystem in){
-		return in.getStatesWithAttribute(AttributeList.ATTRIBUTE_PRIVATE);
+		return in.getStatesWithAttribute(attributePrivateRef);
 	}
 	
 	public static boolean testOpacity(TransitionSystem in) {

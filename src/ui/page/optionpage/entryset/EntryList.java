@@ -30,6 +30,12 @@ public class EntryList extends EntryTextDisplay{
 	}
 	
 	@Override
+	public String resetContent() {
+		getContents().clear();
+		return prefix();
+	}
+	
+	@Override
 	public boolean handleInput(int code, HandlePanel p) {
 		String base = getCodeMapping(code);
 		try {

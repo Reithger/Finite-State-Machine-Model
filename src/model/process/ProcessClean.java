@@ -4,17 +4,21 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import model.AttributeList;
 import model.fsm.TransitionSystem;
 
 public class ProcessClean {
 	
-//---  Constants   ----------------------------------------------------------------------------
+//---  Instance Variables   -------------------------------------------------------------------
 	
-	public final static String ATTRIBUTE_INITIAL = AttributeList.ATTRIBUTE_INITIAL;
-	public final static String ATTRIBUTE_MARKED = AttributeList.ATTRIBUTE_MARKED;
+	public static String attributeInitialRef;
+	public static String attributeMarkedRef;
 	
 //---  Operations   ---------------------------------------------------------------------------
+	
+	public static void assignAttributeReferences(String init, String mark) {
+		attributeInitialRef = init;
+		attributeMarkedRef = mark;
+	}
 	
 	/**
 	 * This method performs a trim operation on the calling TransitionSystem (performing the
@@ -53,24 +57,27 @@ public class ProcessClean {
 		// Make a queue to keep track of states that are accessible and their neighbours.
 		TransitionSystem out = new TransitionSystem(in.getId() + "_accessible");
 		out.copyAttributes(in);
+		out.mergeEvents(in);
 		LinkedList<String> queue = new LinkedList<String>();
 		
 		// Initialize a new TransitionSystem with initial states.
-		for(String initial : in.getStatesWithAttribute(ATTRIBUTE_INITIAL)) {
-			out.addState(initial);
-			out.setStateAttribute(initial, ATTRIBUTE_INITIAL, true);
+		for(String initial : in.getStatesWithAttribute(attributeInitialRef)) {
 			queue.add(initial);
 		} // for initial state
 		
+		HashSet<String> visited = new HashSet<String>();
+		
 		while(!queue.isEmpty()) {
 			String curr = queue.poll();
-			if(out.stateExists(curr)) {
+			if(visited.contains(curr)) {
 				continue;
 			}
-			out.addState(curr);
+			visited.add(curr);
+			out.addState(curr, in);
 			
 			for(String t : in.getStateTransitionEvents(curr)) {
 				for(String d : in.getStateEventTransitionStates(curr, t)) {
+					out.addTransition(curr, t, d, in);
 					queue.add(d);
 				}
 			}
@@ -94,26 +101,27 @@ public class ProcessClean {
 	public static TransitionSystem makeCoAccessible(TransitionSystem in) {
 		TransitionSystem out = new TransitionSystem(in.getId() + "_coaccess");
 		out.copyAttributes(in);
+		out.mergeEvents(in);
 		// First, find what states we need to add.
 		ArrayList<String> processedStrings = getCoAccessibleMap(in);	//Use helper method to generate list of legal/illegal Strings
 
 		// Secondly, create the states and add the transitions
 		for(String s : processedStrings) {
-			out.addState(s, in.getStateMap());
+			out.addState(s, in);
 			
 			for(String e : in.getStateTransitionEvents(s)) {
 				for(String t : in.getStateEventTransitionStates(s, e)) {
 					if(processedStrings.contains(t)) {
-						out.addTransition(s, e, t, in.getTransitionFunction());
+						out.addTransition(s, e, t, in);
 					}
 				}
 			}
 		} // if coaccessible
 
 		// Finally, add the initial state
-		for(String state : in.getStatesWithAttribute(ATTRIBUTE_INITIAL)) {
+		for(String state : in.getStatesWithAttribute(attributeInitialRef)) {
 			if(processedStrings.contains(state))
-				out.setStateAttribute(state, ATTRIBUTE_INITIAL, true);
+				out.setStateAttribute(state, attributeInitialRef, true);
 		}
 		return out;
 	}
@@ -131,10 +139,11 @@ public class ProcessClean {
 		// When a state is processed, add it to the map and state if it reached a marked state.
 		HashSet<String> positive = new HashSet<String>();
 		HashSet<String> negative = new HashSet<String>();
+		HashSet<String> visited = new HashSet<String>();
 		
 		for(String curr : in.getStateNames()) {
 			if(!positive.contains(curr))
-				recursivelyFindMarked(curr, positive, negative, in);
+				recursivelyFindMarked(curr, positive, negative, visited, in);
 		}
 		ArrayList<String> out = new ArrayList<String>();
 		out.addAll(positive);
@@ -159,19 +168,21 @@ public class ProcessClean {
 	 * @return - Returns a boolean value: true if the State object curr is coaccessible, false otherwise.
 	 */
 	
-	private static boolean recursivelyFindMarked(String curr, HashSet<String> positive, HashSet<String> negative, TransitionSystem in) {
-		
-		if(positive.contains(curr) || in.getStateAttribute(curr, ATTRIBUTE_MARKED)) {
+	private static boolean recursivelyFindMarked(String curr, HashSet<String> positive, HashSet<String> negative, HashSet<String> visited, TransitionSystem in) {
+		if(positive.contains(curr) || (in.getStateAttribute(curr, attributeMarkedRef) != null && in.getStateAttribute(curr, attributeMarkedRef))) {
 			positive.add(curr);
 			return true;
 		}
 		else if(negative.contains(curr)) {
 			return false;
 		}
-		
+		else if(visited.contains(curr)) {
+			return false;
+		}
+		visited.add(curr);
 		for(String t : in.getStateTransitionEvents(curr)) {
 			for(String g : in.getStateEventTransitionStates(curr, t)) {
-				if(recursivelyFindMarked(g, positive, negative, in)) {
+				if(recursivelyFindMarked(g, positive, negative, visited, in)) {
 					positive.add(curr);
 					return true;
 				}

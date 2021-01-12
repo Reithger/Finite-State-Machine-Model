@@ -40,12 +40,23 @@ public class StateMap {
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
+	public void mergeStateMaps(StateMap in) {
+		mergeStates(in);
+		mergeStateCompositions(in);
+	}
+	
 	public void mergeStateCompositions(StateMap in) {
-		composition.putAll(in.getStateCompositions());
+		for(String s : in.getStateCompositions().keySet()) {
+			ArrayList<String> use = new ArrayList<String>();
+			use.addAll(in.getStateCompositions().get(s));
+			addStateComposition(s, use);
+		}
 	}
 	
 	public void mergeStates(StateMap in) {
-		states.putAll(in.getStates());
+		for(String s : in.getStates().keySet()) {
+			addState(s, in);
+		}
 	}
 	
 	/**

@@ -42,6 +42,9 @@ public class TransitionSystem {
 	
 	public TransitionSystem(String inId) {
 		id = inId;
+		states = new StateMap(new ArrayList<String>());
+		events = new EventMap(new ArrayList<String>());
+		transitions = new TransitionFunction(new ArrayList<String>());
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -82,8 +85,8 @@ public class TransitionSystem {
 		}
 	}
 	
-	public void compileStateAttributes(ArrayList<String> in, ArrayList<TransitionSystem> context) {
-		String nom = compileStateName(in);
+	public void compileStateAttributes(String source, ArrayList<String> in, ArrayList<TransitionSystem> context) {
+		String nom = source;
 		if(!states.stateExists(nom)) {
 			states.addState(nom);
 		}
@@ -127,7 +130,7 @@ public class TransitionSystem {
 	 */
 	
 	public void mergeStates(TransitionSystem other) {
-		states.mergeStates(other.getStateMap());
+		states.mergeStateMaps(other.getStateMap());
 	} 
 
 	/**
@@ -137,7 +140,7 @@ public class TransitionSystem {
 	 */
 	
 	public void mergeEvents(TransitionSystem other) {
-		events.mergeEvents(other.getEventMap());
+		events.mergeEventMaps(other.getEventMap());
 	} 
 	
 	/**
@@ -147,7 +150,7 @@ public class TransitionSystem {
 	 */
 	
 	public void mergeTransitions(TransitionSystem other) {
-		transitions.mergeTransitions(other.getTransitionFunction());
+		transitions.mergeTransitionFunctions(other.getTransitionFunction());
 	} 
 	
 	//-- Meta  ------------------------------------------------
@@ -181,9 +184,9 @@ public class TransitionSystem {
 			states.addState(stateName);
 	}
 
-	public void addState(String stateName, StateMap context) {
+	public void addState(String stateName, TransitionSystem context) {
 		if(!states.stateExists(stateName))
-			states.addState(stateName, context);
+			states.addState(stateName, context.getStateMap());
 	}
 	
 	/**
@@ -201,9 +204,9 @@ public class TransitionSystem {
 			events.addEvent(eventName);
 	}
 
-	public void addEvent(String eventName, EventMap context) {
+	public void addEvent(String eventName, TransitionSystem context) {
 		if(!events.eventExists(eventName))
-			events.addEvent(eventName, context);
+			events.addEvent(eventName, context.getEventMap());
 	}
 	
 	/**
@@ -223,8 +226,11 @@ public class TransitionSystem {
 		transitions.addTransition(state, event, state2);
 	}
 
-	public void addTransition(String state, String event, String state2, TransitionFunction context) {
-		transitions.addTransition(state, event, state2, context);
+	public void addTransition(String state, String event, String state2, TransitionSystem context) {
+		addState(state, context);
+		addState(state2, context);
+		addEvent(event, context);
+		transitions.addTransition(state, event, state2, context.getTransitionFunction());
 	}
 	
 //---  Remover Methods   ----------------------------------------------------------------------

@@ -19,7 +19,7 @@ public class UMLConfigValidation implements ValidateFiles {
 	public int validateFile(Config c, File f) {
 		switch(f.getName()) {
 			case "config.txt":
-				String entry = c.getConfigFileEntry(f.getAbsolutePath(), FiniteStateMachine.DOT_ADDRESS_VAR);
+				String entry = Config.getConfigFileEntry(f.getAbsolutePath(), FiniteStateMachine.DOT_ADDRESS_VAR);
 				return verifyDotAddress(entry);
 		}
 		return CODE_FAILURE_FILE_MISSING;

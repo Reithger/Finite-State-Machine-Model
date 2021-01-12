@@ -38,6 +38,10 @@ public class TransitionFunction {
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
+	public void mergeTransitionFunctions(TransitionFunction in) {
+		mergeTransitions(in);
+	}
+	
 	public void mergeTransitions(TransitionFunction in) {
 		for(String s : in.getStateNames()) {
 			addTransitions(s, in.getTransitions(s));

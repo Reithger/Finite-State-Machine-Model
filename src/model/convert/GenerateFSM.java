@@ -1,6 +1,7 @@
 package model.convert;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
 /**
@@ -99,10 +100,18 @@ public class GenerateFSM {
 		out.append(REGION_SEPARATOR + "\n");
 		for(int i = 0; i < sizeStates; i++) {
 			int numTr = rand.nextInt(sizeTrans) + 1;
+			HashSet<Integer> det = new HashSet<Integer>();
 			for(int j = 0; j < numTr; j++) {
 				int state1 = i;
 				int state2 = rand.nextInt(sizeStates);
 				int event = rand.nextInt(sizeEvents);
+				while(nonDet && det.contains(event) && det.size() < sizeEvents) {
+					event = rand.nextInt(sizeEvents);
+				}
+				if(nonDet && det.contains(event)) {
+					continue;
+				}
+				det.add(event);
 				String line = generateName(state1, false) + SEPARATOR + generateName(event, true) + SEPARATOR + generateName(state2, false);
 				line += writeAttributes(getRandomValue(rand), sizeTrans, i, transAttri, stateAttri.size() + eventAttri.size(), numbers, track);
 				out.append(line + "\n");

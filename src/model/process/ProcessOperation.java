@@ -1,21 +1,26 @@
 package model.process;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import model.AttributeList;
 import model.fsm.TransitionSystem;
 
 public class ProcessOperation {
 
-//---  Constants   ----------------------------------------------------------------------------
+//---  Instance Variables   -------------------------------------------------------------------
 	
-	public final static String ATTRIBUTE_OBSERVABLE = AttributeList.ATTRIBUTE_OBSERVABLE;
-	public final static String ATTRIBUTE_INITIAL = AttributeList.ATTRIBUTE_INITIAL;
+	public static String attributeObservableRef;
+	public static String attributeInitialRef;
 	
 //---  Operations   ---------------------------------------------------------------------------
+	
+	public static void assignAttributeReferences(String init, String obs) {
+		attributeInitialRef = init;
+		attributeObservableRef = obs;
+	}
 	
 	/**
 	 * This method creates a modified TransitionSystem or Modal Specification derived from the calling object by removing Observable Events
@@ -32,16 +37,22 @@ public class ProcessOperation {
 	public static TransitionSystem buildObserver(TransitionSystem in) {
 		TransitionSystem out = new TransitionSystem(in.getId() + "_observer");
 		out.copyAttributes(in);
+		out.mergeEvents(in);
 		
 		HashMap<String, ArrayList<String>> map = collapseStates(in);
 		
 		ArrayList<String> initialStrings = new ArrayList<String>();
-		for(String s : in.getStatesWithAttribute(ATTRIBUTE_INITIAL))
-			if(!initialStrings.contains(s))
-				initialStrings.addAll(map.get(s));
+		for(String s : in.getStatesWithAttribute(attributeInitialRef))
+			if(!initialStrings.contains(s)) {
+				for(String t : map.get(s)) {
+					if(!initialStrings.contains(t))
+						initialStrings.add(t);
+				}
+			}
 		String init = in.compileStateName(initialStrings);
 		out.addState(init);
 		out.compileStateAttributes(initialStrings, in);
+		out.setStateAttribute(init, attributeInitialRef, true);
 		out.setStateComposition(init, initialStrings);
 
 		LinkedList<String> queue = new LinkedList<String>();
@@ -57,7 +68,7 @@ public class ProcessOperation {
 			HashMap<String, ArrayList<String>> tran = new HashMap<String, ArrayList<String>>();
 			for(String s : out.getStateComposition(top)) {
 				for(String e : in.getStateTransitionEvents(s)) {
-					if(in.getEventAttribute(e, ATTRIBUTE_OBSERVABLE)) {
+					if(in.getEventAttribute(e, attributeObservableRef)) {
 						if(tran.get(e) == null) {
 							tran.put(e, new ArrayList<String>());
 						}
@@ -122,24 +133,33 @@ public class ProcessOperation {
 	private static HashMap<String, ArrayList<String>> collapseStates(TransitionSystem in){
 		HashMap<String, ArrayList<String>> out = new HashMap<String, ArrayList<String>>();
 		for(String s : in.getStateNames()) {
-			collapseStatesRecurs(s, in, out);
+			collapseStatesRecurs(s, in, out, new HashSet<String>());
 		}
 		return out;
 	}
 	
-	private static ArrayList<String> collapseStatesRecurs(String curr, TransitionSystem in, HashMap<String, ArrayList<String>> map){
+	private static ArrayList<String> collapseStatesRecurs(String curr, TransitionSystem in, HashMap<String, ArrayList<String>> map, HashSet<String> visited){
 		if(map.get(curr) != null) {
 			return map.get(curr);
 		}
 		ArrayList<String> local = new ArrayList<String>();
 		local.add(curr);
+		if(visited.contains(curr)) {
+			return local;
+		}
+		visited.add(curr);
 		for(String e : in.getStateTransitionEvents(curr)) {
-			if(!in.getTransitionAttribute(curr, e, ATTRIBUTE_OBSERVABLE)){
+			if(!in.getEventAttribute(e, attributeObservableRef)){
 				for(String t : in.getStateEventTransitionStates(curr, e)) {
-					local.addAll(collapseStatesRecurs(t, in, map));
+					for(String g : collapseStatesRecurs(t, in, map, visited)) {
+						if(!local.contains(g)) {
+							local.add(g);
+						}
+					}
 				}
 			}
 		}
+		Collections.sort(local);
 		map.put(curr, local);
 		return local;
 	}
@@ -173,33 +193,40 @@ public class ProcessOperation {
 		LinkedList<String> thisNextString = new LinkedList<String>();
 		LinkedList<String> otherNextString = new LinkedList<String>();
 		
-		for(String thisInitial : in.getStatesWithAttribute(ATTRIBUTE_INITIAL)) {
-			for(String otherInitial : other.getStatesWithAttribute(ATTRIBUTE_INITIAL)) {
+		for(String thisInitial : in.getStatesWithAttribute(attributeInitialRef)) {
+			for(String otherInitial : other.getStatesWithAttribute(attributeInitialRef)) {
 				thisNextString.add(thisInitial);
 				otherNextString.add(otherInitial);
 			}
 		}
+		
+		HashSet<String> visited = new HashSet<String>();
+		
 		while(!thisNextString.isEmpty() && !otherNextString.isEmpty()) { // Go through all the states connected
 			String stateA = thisNextString.poll();
 			String stateB = otherNextString.poll();
 			ArrayList<String> nom = new ArrayList<String>();
-			nom.add(stateA);
-			nom.add(stateB);
+			nom.addAll(in.getStateComposition(stateA));
+			nom.addAll(other.getStateComposition(stateB));
 			String newString = out.compileStateName(nom); // Add the new state
 			
-			if(out.stateExists(newString)) {
+			if(visited.contains(newString)) {
 				continue;
 			}
+			visited.add(newString);
+			out.setStateComposition(newString, nom);
+			nom.clear();
+			nom.add(stateA);
+			nom.add(stateB);
 			
 			out.addState(newString);
-			out.compileStateAttributes(nom, use);
-			out.setStateComposition(newString, nom);
+			out.compileStateAttributes(newString, nom, use);
 			
 			for(String s : in.getStateTransitionEvents(stateA)) {
 				if(other.getStateTransitionEvents(stateB).contains(s)) {
 					for(String t : in.getStateEventTransitionStates(stateA, s)) {
 						for(String u : other.getStateEventTransitionStates(stateB, s)) {
-							compileDestination(t, u, newString, s, out, use);
+							compileDestination(t, u, in.getStateComposition(t), other.getStateComposition(u), newString, s, out, use);
 							thisNextString.add(t);
 							otherNextString.add(u);
 						}
@@ -240,32 +267,45 @@ public class ProcessOperation {
 		// Add all the events unique to each TransitionSystem
 		for(String e : in.getEventNames())
 			if(!out.eventExists(e))
-				out.addEvent(e, in.getEventMap());
+				out.addEvent(e, in);
 
 		for(String e : other.getEventNames())
 			if(!out.eventExists(e))
-				out.addEvent(e, other.getEventMap());
+				out.addEvent(e, other);
 
 		LinkedList<String> thisNextString = new LinkedList<String>();
 		LinkedList<String> otherNextString = new LinkedList<String>();
 
-		for(String stateA : in.getStatesWithAttribute(ATTRIBUTE_INITIAL)) {
-			for(String stateB : other.getStatesWithAttribute(ATTRIBUTE_INITIAL)) {
+		for(String stateA : in.getStatesWithAttribute(attributeInitialRef)) {
+			for(String stateB : other.getStatesWithAttribute(attributeInitialRef)) {
 				thisNextString.add(stateA);
 				otherNextString.add(stateB);
 			}
 		}
+		HashSet<String> visited = new HashSet<String>();
 		while(!thisNextString.isEmpty() && !otherNextString.isEmpty()) { // Go through all the states connected
 			String stateA = thisNextString.poll();
 			String stateB = otherNextString.poll();
 			ArrayList<String> nom = new ArrayList<String>();
+			nom.addAll(in.getStateComposition(stateA));
+			nom.addAll(other.getStateComposition(stateB));
+			String newString = out.compileStateName(nom); // Add the new state
+			System.out.println(newString);
+			if(visited.contains(newString)) {
+				continue;
+			}
+			
+			visited.add(newString);
+			
+			out.addState(newString);
+			out.setStateComposition(newString, nom);
+			
+			nom.clear();
 			nom.add(stateA);
 			nom.add(stateB);
-			String newString = out.compileStateName(nom); // Add the new state
-			out.addState(newString);
-			out.compileStateAttributes(nom, use);
 			
-			out.setStateComposition(newString, nom);
+			out.compileStateAttributes(newString, nom, use);
+			
 			
 			ArrayList<String> events = in.getStateTransitionEvents(stateA);
 			events.addAll(other.getStateTransitionEvents(stateB));
@@ -276,7 +316,7 @@ public class ProcessOperation {
 				if(inStates != null && inStates.size() != 0 && otherStates != null && otherStates.size() != 0) {
 					for(String t : inStates) {
 						for(String u : otherStates) {
-							compileDestination(t, u, newString, s, out, use);
+							compileDestination(t, u, in.getStateComposition(t), other.getStateComposition(u), newString, s, out, use);
 							thisNextString.add(t);
 							otherNextString.add(u);
 						}
@@ -284,14 +324,14 @@ public class ProcessOperation {
 				}
 				else if(inStates == null || inStates.size() == 0) {
 					for(String t : otherStates) {
-						compileDestination(stateA, t, newString, s, out, use);
+						compileDestination(stateA, t, in.getStateComposition(stateA), other.getStateComposition(t), newString, s, out, use);
 						thisNextString.add(stateA);
 						otherNextString.add(t);
 					}
 				}
 				else {
 					for(String t : inStates) {
-						compileDestination(t, stateB, newString, s, out, use);
+						compileDestination(t, stateB, in.getStateComposition(t), other.getStateComposition(stateB), newString, s, out, use);
 						thisNextString.add(t);
 						otherNextString.add(stateB);
 					}
@@ -302,14 +342,17 @@ public class ProcessOperation {
 	} // parallelCompositionHelper(TransitionSystem)
 
 	
-	private static void compileDestination(String compA, String compB, String source, String event, TransitionSystem out, ArrayList<TransitionSystem> use) {
+	private static void compileDestination(String stateA, String stateB, ArrayList<String> compA, ArrayList<String> compB, String source, String event, TransitionSystem out, ArrayList<TransitionSystem> use) {
 		ArrayList<String> bun = new ArrayList<String>();
-		bun.add(compA);
-		bun.add(compB);
+		bun.addAll(compA);
+		bun.addAll(compB);
 		String target = out.compileStateName(bun);
-		out.addState(target);
-		out.compileStateAttributes(bun, use);
 		out.addStateComposition(target, bun);
+		bun.clear();
+		bun.add(stateA);
+		bun.add(stateB);
+		out.addState(target);
+		out.compileStateAttributes(target, bun, use);
 		out.addTransition(source, event, target);
 	}
 	

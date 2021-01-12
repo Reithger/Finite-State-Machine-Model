@@ -49,8 +49,18 @@ public class EventMap {
 		events.put(newName, event);
 	}
 
+	public void mergeEventMaps(EventMap in) {
+		mergeEvents(in);
+	}
+	
 	public void mergeEvents(EventMap in) {
-		events.putAll(in.getEvents());
+		for(String s : in.getEvents().keySet()) {
+			if(events.get(s) == null)
+				addEvent(s, in);
+			else {
+				//TODO: Merge events?
+			}
+		}
 	}
 	
 //---  Adder Methods   ------------------------------------------------------------------------
@@ -134,7 +144,10 @@ public class EventMap {
 	}
 	
 	public Boolean getEventAttribute(String nom, String ref) {
-		return events.get(nom).getAttributeValue(ref);
+		if(events.get(nom) != null) {
+			return events.get(nom).getAttributeValue(ref);
+		}
+		return null;
 	}
 	
 	/**

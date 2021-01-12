@@ -8,37 +8,35 @@ public class Attribute {
 	
 	private String id;
 	private boolean value;
-	private boolean mergeRule;
 	private Attribute wrap;
 
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public Attribute(String inId, boolean inRule) {
+	public Attribute(String inId) {
 		id = inId;
-		mergeRule = inRule;
 		value = false;
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public void addWrapper(String ref, boolean rule) {
+	public void addWrapper(String ref) {
 		if(id.equals(ref)) {
 			return;
 		}
 		if(wrap != null) {
-			wrap.addWrapper(ref, rule);
+			wrap.addWrapper(ref);
 		}
 		else {
-			wrap = new Attribute(ref, rule);
+			wrap = new Attribute(ref);
 		}
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
-	public void setAttributes(LinkedList<String> in, LinkedList<Boolean> rule) {
+	public void setAttributes(LinkedList<String> in) {
 		if(in != null && in.size() != 0) {
-			wrap = new Attribute(in.poll(), rule.poll());
-			wrap.setAttributes(in, rule);
+			wrap = new Attribute(in.poll());
+			wrap.setAttributes(in);
 		}
 	}
 	
@@ -63,10 +61,6 @@ public class Attribute {
 		return null;
 	}
 	
-	public boolean getMergeRule() {
-		return mergeRule;
-	}
-
 	public LinkedList<String> getAttributes(){
 		LinkedList<String> out = new LinkedList<String>();
 		out.add(id);

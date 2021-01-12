@@ -24,7 +24,7 @@ public class GenerateDot {
 		
 		for(String e : in.getStateNames()) {
 			nameMap.put(e, "n" + counter++);
-			String line = "\"" + nameMap.get(e) + "\"[label=\"" + nameMap.get(e).substring(1) + "\"shape=" + generateStateDot(in, e);
+			String line = "\"" + nameMap.get(e) + "\"[label=\"" + e + "\"shape=" + generateStateDot(in, e);
 			states.add(line);
 			Boolean init = in.getStateAttribute(e, AttributeList.ATTRIBUTE_INITIAL);
 			if(init != null && init) {

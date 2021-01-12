@@ -45,6 +45,7 @@ public class Transition extends Entity implements Comparable<Transition> {
 	protected Transition(Entity base) {
 		super(base.getName());
 		copyAttributes(base);
+		states = new ArrayList<String>();
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------

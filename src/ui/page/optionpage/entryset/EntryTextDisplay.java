@@ -1,7 +1,6 @@
 package ui.page.optionpage.entryset;
 
 import java.awt.Color;
-
 import visual.composite.HandlePanel;
 
 public class EntryTextDisplay extends EntrySet{

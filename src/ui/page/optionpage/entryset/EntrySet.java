@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import visual.composite.HandlePanel;
 
@@ -71,12 +70,13 @@ public abstract class EntrySet {
 		return getCodeMapping(code).equals("");
 	}
 	
-	public void resetContent() {
+	public String resetContent() {
 		int i = contents.size();
 		contents.clear();
 		for(int a = 0; a < i; a++) {
 			contents.add("");
 		}
+		return prefix();
 	}
 	
 	public void reset(HandlePanel p) {

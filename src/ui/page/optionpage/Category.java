@@ -100,11 +100,12 @@ public class Category {
 		}
 	}
 	
-	public void resetEntrySetContents(int code) {
+	public String resetEntrySetContents(int code) {
 		EntrySet e = getEntrySet(code);
 		if(e != null) {
-			e.resetContent();
+			return e.resetContent();
 		}
+		return "";
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------

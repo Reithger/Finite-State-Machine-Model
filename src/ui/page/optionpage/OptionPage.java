@@ -147,7 +147,7 @@ public abstract class OptionPage {
 	}
 	
 	public void resetContents(int code) {
-		getCategoryFromCode(code).resetEntrySetContents(code);
+		p.removeElementPrefixed(getCategoryFromCode(code).resetEntrySetContents(code));
 		drawPage();
 	}
 	

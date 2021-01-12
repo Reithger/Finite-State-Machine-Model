@@ -2,17 +2,16 @@ package model.process;
 
 import java.util.ArrayList;
 
-import model.AttributeList;
 import model.fsm.component.EventMap;
 
 public class Agent {
 
 //---  Constants   ----------------------------------------------------------------------------
 	
-	public final static String ATTRIBUTE_OBSERVABLE = AttributeList.ATTRIBUTE_OBSERVABLE;
-	public final static String ATTRIBUTE_CONTROLLABLE = AttributeList.ATTRIBUTE_CONTROLLABLE;
+	public static String attributeObservableRef;
+	public static String attributeControllableRef;
 	
-	private final static String[] ATTRIBUTES = new String[] {ATTRIBUTE_OBSERVABLE, ATTRIBUTE_CONTROLLABLE};
+	private static String[] attributeList;
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -22,7 +21,7 @@ public class Agent {
 	
 	public Agent(ArrayList<String> inEvents) {
 		ArrayList<String> attrib = new ArrayList<String>();
-		for(String s : ATTRIBUTES) {
+		for(String s : attributeList) {
 			attrib.add(s);
 		}
 		events = new EventMap(attrib);
@@ -31,6 +30,12 @@ public class Agent {
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
+	
+	public static void assignAttributeReferences(String obs, String cont) {
+		attributeObservableRef = obs;
+		attributeControllableRef = cont;
+		attributeList = new String[] {attributeObservableRef, attributeControllableRef};
+	}
 	
 	public void addUnknownEvent(String in) {
 		events.addEvent(in);

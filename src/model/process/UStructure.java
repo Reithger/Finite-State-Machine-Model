@@ -3,12 +3,9 @@ package model.process;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import model.AttributeList;
 import model.fsm.TransitionSystem;
-import model.fsm.component.transition.TransitionFunction;
 
 import java.util.ArrayList;
-
 import java.util.HashMap;
 
 public class UStructure {
@@ -22,6 +19,8 @@ public class UStructure {
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
+	private static String attributeInitialRef;
+	
 	private TransitionSystem plantFSM;
 	private Agent[] agents;
 	private HashMap<String, ArrayList<String>> badTransitions;
@@ -33,16 +32,9 @@ public class UStructure {
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public UStructure(TransitionSystem thePlant, TransitionFunction theBadTransitions, ArrayList<Agent> theAgents) {
+	public UStructure(TransitionSystem thePlant, HashMap<String, ArrayList<String>> theBadTransitions, ArrayList<Agent> theAgents) {
 		plantFSM = thePlant;
-		badTransitions = new HashMap<String, ArrayList<String>>();
-		for(String s : theBadTransitions.getStateNames()) {
-			ArrayList<String> newTrans = new ArrayList<String>();
-			for(String t : theBadTransitions.getStateEvents(s)) {
-				newTrans.add(t);
-			}
-			badTransitions.put(s, newTrans);
-		}
+		badTransitions = theBadTransitions;
 		for(String s : thePlant.getStateNames()) {
 			if(badTransitions.get(s) == null)
 				badTransitions.put(s, new ArrayList<String>());
@@ -72,6 +64,10 @@ public class UStructure {
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
+	public static void assignAttributeReferences(String init) {
+		attributeInitialRef = init;
+	}
+	
 	public void createUStructure() {
 		uStructure = new TransitionSystem("U-struc", plantFSM.getStateAttributes(), plantFSM.getEventAttributes(), plantFSM.getTransitionAttributes());
 		compositeMapping = new HashMap<String, String[]>();
@@ -80,12 +76,12 @@ public class UStructure {
 		String[] starting = new String[agents.length];
 		String initName = "<";
 		for(int i = 0; i < starting.length; i++) {
-			starting[i] = plantFSM.getStatesWithAttribute(AttributeList.ATTRIBUTE_INITIAL).get(0);
+			starting[i] = plantFSM.getStatesWithAttribute(attributeInitialRef).get(0);
 			initName += starting[i] + (i + 1 < starting.length ? "," : "");
 		}
 		initName += ">";
 		uStructure.addState(initName);									//create first state, start queue
-		uStructure.setStateAttribute(initName, AttributeList.ATTRIBUTE_INITIAL, true);
+		uStructure.setStateAttribute(initName, attributeInitialRef, true);
 		compositeMapping.put(initName, starting);
 		queue.add(new BatchAgentStates(starting, initName));
 		
@@ -105,7 +101,7 @@ public class UStructure {
 			for(String s : viableEvents) {
 				boolean[] canAct = new boolean[stateSet.getStates().length];		//find out what each individual agent is able to do for the given event at the given state
 				for(int i = 0; i < stateSet.getStates().length; i++) {
-					if(!agents[i].getEventAttribute(s, Agent.ATTRIBUTE_OBSERVABLE)) {					//if the agent cannot see the event, it has to guess whether it happened
+					if(!agents[i].getEventAttribute(s, Agent.attributeObservableRef)) {					//if the agent cannot see the event, it has to guess whether it happened
 						String[] newSet = new String[stateSet.getStates().length];
 						String eventName = "<";
 						for(int j = 0; j < stateSet.getStates().length; j++) {
@@ -210,7 +206,7 @@ public class UStructure {
 			return tags;
 		}
 		else {
-			ArrayList<String> events = agents[index].getEventsAttributeSet(Agent.ATTRIBUTE_OBSERVABLE, true);
+			ArrayList<String> events = agents[index].getEventsAttributeSet(Agent.attributeObservableRef, true);
 			for(int i = 0; i < events.size(); i++) {
 				tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + events.get(i), sight));
 			}
@@ -228,7 +224,7 @@ public class UStructure {
 				String[] states = compositeMapping.get(state);
 				Boolean[] legality = new Boolean[states.length];
 				for(int i = 0; i < states.length; i++) {
-					if(agents[i].getEventAttribute(eventBrk[i], Agent.ATTRIBUTE_CONTROLLABLE)) {
+					if(agents[i].getEventAttribute(eventBrk[i], Agent.attributeControllableRef)) {
 						legality[i] = true;
 						for(String bad : badTransitions.get(states[i])) {
 							if(bad.equals(eventBrk[i])) {
@@ -248,9 +244,7 @@ public class UStructure {
 					boolean first = legality[0];
 					outcome = first;
 					for(int i = 1; i < legality.length; i++)
-						if(legality[i] == null || legality[i] != first)
-							outcome = outcome;
-						else
+						if(legality[i] != null && legality[i] == first)
 							outcome = null;
 				}
 				if(outcome != null) {

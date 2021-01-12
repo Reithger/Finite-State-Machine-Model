@@ -70,7 +70,6 @@ public class ReadWrite {
 	}
 	
 	public static TransitionSystem readFile(String in) {
-		System.out.println(in);
 		String[] lines = in.split("\n");
 		
 		ArrayList<String> stateAttr = new ArrayList<String>();

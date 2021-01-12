@@ -12,7 +12,7 @@ public class AttributeList {
 	
 	public final static String[] STATE_ATTRIBUTES = new String[] {AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_BAD};
 	public final static String ATTRIBUTE_INITIAL = "Initial";
-	public final static boolean ATTRIBUTE_AON_INITIAL = false;
+	public final static boolean ATTRIBUTE_AON_INITIAL = true;
 	public final static String ATTRIBUTE_MARKED = "Marked";
 	public final static boolean ATTRIBUTE_AON_MARKED = true;
 	public final static String ATTRIBUTE_PRIVATE = "Private";
@@ -32,7 +32,7 @@ public class AttributeList {
 	
 	//-- Transitions  -----------------------------------------
 	
-	public final static String[] TRANS_ATTRIBUTES = new String[] {AttributeList.ATTRIBUTE_BAD};
+	public final static String[] TRANSITION_ATTRIBUTES = new String[] {AttributeList.ATTRIBUTE_BAD};
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
