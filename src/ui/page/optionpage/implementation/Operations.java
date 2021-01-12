@@ -45,10 +45,10 @@ public class Operations extends OptionPage{
 		addEntryEmpty(CATEGORY_FSM, "Build Observer", true, CodeReference.CODE_OBSERVER);
 		addEntryList(CATEGORY_FSM, "Product", true, CodeReference.CODE_PRODUCT, CodeReference.CODE_PRODUCT_SELECT);
 		addEntryList(CATEGORY_FSM, "Parallel Composition", true, CodeReference.CODE_PARALLEL_COMPOSITION, CodeReference.CODE_PARALLEL_COMPOSITION_SELECT);
-		addEntryList(CATEGORY_FSM, "Supremal Controllable Sublanguage", true, CodeReference.CODE_SUP_CNT_SBL, CodeReference.CODE_SUP_CNT_SBL_SELECT);
 	
 		addEntryEmpty(CATEGORY_QUERIES, "Is Blocking", true, CodeReference.CODE_BLOCKING);
 		addEntryText(CATEGORY_QUERIES, "State Exists", true, CodeReference.CODE_STATE_EXISTS, 1, false);
+		
 	}
 
 }

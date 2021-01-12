@@ -62,6 +62,11 @@ public class TransitionSystem {
 		states.renameState(old, newName);
 	}
 	
+	public void renameEvent(String old, String newName) {
+		events.renameEvent(old, newName);
+		transitions.renameEvent(old, newName);
+	}
+	
 	public String compileStateName(ArrayList<String> in) {
 		String out = "(";
 		for(int i = 0; i < in.size(); i++) {

@@ -101,6 +101,14 @@ public class FSMUI implements InputReceiver{
 		return out;
 	}
 	
+	public String requestUserInputList(ArrayList<String> refs, boolean search) {
+		String[] use = new String[refs.size()];
+		for(int i = 0; i < use.length; i++) {
+			use[i] = refs.get(i);
+		}
+		return requestUserInputList(use, search);
+	}
+	
 	public String requestUserInput(String phrase) {
 		PopoutInputRequest pIR = new PopoutInputRequest(phrase);
 		String result = pIR.getSubmitted();

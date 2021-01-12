@@ -84,15 +84,19 @@ public class ImagePage {
 	}
 
 	public void refreshActiveImage() {
+		if(images.size() == 0) {
+			return;
+		}
+		while(images.size() <= getCurrentImageIndex()) {
+			index--;
+		}
 		iD.setImage(images.get(getCurrentImageIndex()).getPath());
 		drawPage();
 	}
 	
 	public void allotFSM(String ref, String path) {
-		System.out.println("Allot");
 		images.add(new FSMImage(ref, p.retrieveImage(path)));
 		setCurrentImageIndex(images.size() - 1);
-		System.out.println("Zoom: " + iD.getZoom());
 	}
 	
 	public void updateFSM(String ref, String path) {
@@ -111,6 +115,7 @@ public class ImagePage {
 			if(images.get(i).getReferenceName().equals(ref)) {
 				removeFSM(i);
 				index -= index >= i ? 1 : 0;
+				index = index < 0 ? 0 : index;
 				setCurrentImageIndex(index);
 				break;
 			}
@@ -121,7 +126,7 @@ public class ImagePage {
 		if(ind < 0 || ind >= images.size()) {
 			return;
 		}
-		if(ind <= index) {
+		if(ind <= index && ind - 1 >= 0) {
 			index--;
 			setCurrentImageIndex(index);
 		}

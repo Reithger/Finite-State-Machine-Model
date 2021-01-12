@@ -61,17 +61,32 @@ public class FiniteStateMachine implements InputReceiver{
 		if(code == -1) {
 			return;
 		}
+		codeHandlingAdjustFSM(code, mouseType);
+		codeHandlingOperations(code, mouseType);
+		codeHandlingUStructure(code, mouseType);
+
+		updateViewFSM(view.getCurrentFSM());
+	}
+
+	public void receiveKeyInput(char code, int keyType) {
+		
+	}
+	
+	public void updateViewFSM(String ref) {
+		if(ref == null || !model.hasFSM(ref)) {
+			return;
+		}
+		view.updateFSMImage(ref, generateDotImage(ref));
+	}
+	
+	//-- Input Handling Separation  ---------------------------
+	
+	private void codeHandlingAdjustFSM(int code, int mouseType) {
 		String currFSM = view.getCurrentFSM();
 		switch(code) {
-			case CodeReference.CODE_ADD_STATE:
-				String newState = view.getTextContent(code);
-				model.addState(currFSM, newState);
-				view.clearTextContents(code);
-				break;
-			case CodeReference.CODE_REMOVE_STATE:
-				String removeState = view.getTextContent(code);
-				model.removeState(currFSM, removeState);
-				view.clearTextContents(code);
+		
+		//-- Generate FSM  ------------------------------------
+				
 			case CodeReference.CODE_GENERATE_FSM:
 				generateRandomFSM(code);
 				break;
@@ -84,23 +99,127 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_ADD_TRANS_ATTRIBUTE:
 				requestAttributeChoice(code, model.getTransitionAttributeList(), "How many transitions of this type do you want?");
 				break;
-			case CodeReference.CODE_RENAME_STATE:
-				String old = view.getTextContent(code, 0);
-				String newName = view.getTextContent(code, 1);
-				model.renameState(currFSM, old, newName);
+				
+		//-- FSM Properties  ----------------------------------
+
+			case CodeReference.CODE_RENAME_FSM:
+				String newFSM = view.getTextContent(code);
+				model.renameFSM(currFSM, newFSM);
+				view.removeFSM(currFSM);
+				allotFSMToView(newFSM);
+				break;
+			case CodeReference.CODE_FSM_ADD_STATE_ATTRIBUTE:
+				model.setFSMStateAttributes(currFSM, addAttributeLists(view.getContent(code), model.getFSMStateAttributes(currFSM)));
+				break;
+			case CodeReference.CODE_FSM_ACCESS_ADD_STATE_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getStateAttributeList(), code);
+				break;
+			case CodeReference.CODE_FSM_ADD_EVENT_ATTRIBUTE:
+				model.setFSMEventAttributes(currFSM, addAttributeLists(view.getContent(code), model.getFSMEventAttributes(currFSM)));
+				break;
+			case CodeReference.CODE_FSM_ACCESS_ADD_EVENT_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getEventAttributeList(), code);
+				break;
+			case CodeReference.CODE_FSM_ADD_TRANS_ATTRIBUTE:
+				model.setFSMTransitionAttributes(currFSM, addAttributeLists(view.getContent(code), model.getFSMTransitionAttributes(currFSM)));
+				break;
+			case CodeReference.CODE_FSM_ACCESS_ADD_TRANS_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getTransitionAttributeList(), code);
+				break;
+			case CodeReference.CODE_FSM_REMOVE_STATE_ATTRIBUTE:
+				model.setFSMStateAttributes(currFSM, subtractAttributeLists(view.getContent(code), model.getFSMStateAttributes(currFSM)));
+				break;
+			case CodeReference.CODE_FSM_ACCESS_REMOVE_STATE_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getFSMStateAttributes(currFSM), code);
+				break;
+			case CodeReference.CODE_FSM_REMOVE_EVENT_ATTRIBUTE:
+				model.setFSMEventAttributes(currFSM, subtractAttributeLists(view.getContent(code), model.getFSMEventAttributes(currFSM)));
+				break;
+			case CodeReference.CODE_FSM_ACCESS_REMOVE_EVENT_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getFSMEventAttributes(currFSM), code);
+				break;
+			case CodeReference.CODE_FSM_REMOVE_TRANS_ATTRIBUTE:
+				model.setFSMTransitionAttributes(currFSM, subtractAttributeLists(view.getContent(code), model.getFSMTransitionAttributes(currFSM)));
+				break;
+			case CodeReference.CODE_FSM_ACCESS_REMOVE_TRANS_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getFSMTransitionAttributes(currFSM), code);
+				break;
+				
+		//-- States  ------------------------------------------
+		
+			case CodeReference.CODE_ADD_STATE:
+				model.addState(currFSM, view.getTextContent(code));
 				view.clearTextContents(code);
 				break;
 			case CodeReference.CODE_ADD_STATES:
-				int num = view.getIntegerContent(code);
-				model.addStates(currFSM, num);
+				model.addStates(currFSM, view.getIntegerContent(code));
 				view.clearTextContents(code);
 				break;
+			case CodeReference.CODE_REMOVE_STATE:
+				model.removeState(currFSM, view.getTextContent(code));
+				view.clearTextContents(code);
+			case CodeReference.CODE_RENAME_STATE:
+				model.renameState(currFSM, view.getTextContent(code, 0), view.getTextContent(code, 1));
+				view.clearTextContents(code);
+				break;
+			case CodeReference.CODE_ADD_EDIT_STATE_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getFSMStateAttributes(currFSM), code);
+				break;
+			case CodeReference.CODE_EDIT_STATE_ATTRIBUTE:
+				ArrayList<String> grab = view.getContent(code);
+				for(String s : model.getFSMStateAttributes(currFSM)) {
+					model.setStateAttribute(currFSM, view.getTextContent(CodeReference.CODE_ACCESS_EDIT_STATE), s, grab.contains(s));
+				}
+				break;
+				
+
+		//-- Events  ------------------------------------------
+				
+			case CodeReference.CODE_ADD_EVENT:
+				model.addEvent(currFSM, view.getTextContent(code));
+				view.clearTextContents(code);
+				break;
+			case CodeReference.CODE_ADD_EVENTS:
+				model.addEvents(currFSM, view.getIntegerContent(code));
+				view.clearTextContents(code);
+				break;
+			case CodeReference.CODE_REMOVE_EVENT:
+				model.removeEvent(currFSM, view.getTextContent(code));
+				view.clearTextContents(code);
+			case CodeReference.CODE_RENAME_EVENT:
+				model.renameEvent(currFSM, view.getTextContent(code, 0), view.getTextContent(code, 1));
+				view.clearTextContents(code);
+				break;
+			case CodeReference.CODE_ADD_EDIT_EVENT_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getFSMEventAttributes(currFSM), code);
+				break;
+			case CodeReference.CODE_EDIT_EVENT_ATTRIBUTE:
+				ArrayList<String> grab2 = view.getContent(code);
+				for(String s : model.getFSMEventAttributes(currFSM)) {
+					model.setEventAttribute(currFSM, view.getTextContent(CodeReference.CODE_ACCESS_EDIT_EVENT), s, grab2.contains(s));
+				}
+				break;
+				
+		//-- Transitions  -------------------------------------
+
 			case CodeReference.CODE_ADD_TRANSITION:
 				addTransition(currFSM, code);
 				break;
 			case CodeReference.CODE_REMOVE_TRANSITION:
 				removeTransition(currFSM, code);
 				break;
+			case CodeReference.CODE_ADD_EDIT_TRANS_ATTRIBUTE:
+				appendSingleChosenAttribute(model.getFSMTransitionAttributes(currFSM), code);
+				break;
+			case CodeReference.CODE_EDIT_TRANS_ATTRIBUTE:
+				ArrayList<String> grab3 = view.getContent(code);
+				for(String s : model.getFSMTransitionAttributes(currFSM)) {
+					model.setEventAttribute(currFSM, view.getTextContent(CodeReference.CODE_ACCESS_EDIT_TRANS), s, grab3.contains(s));
+				}
+				break;
+				
+		//-- Admin  -------------------------------------------
+				
 			case CodeReference.CODE_SAVE_FSM:
 				saveFSM(currFSM);
 				break;
@@ -120,18 +239,20 @@ public class FiniteStateMachine implements InputReceiver{
 				File remv = new File(ADDRESS_SOURCES + "/" + currFSM + ".fsm");
 				remv.delete();
 				break;
-			case CodeReference.CODE_RENAME_FSM:
-				String newFSM = view.getTextContent(code);
-				model.renameFSM(currFSM, newFSM);
-				view.removeFSM(currFSM);
-				allotFSMToView(newFSM);
-				break;
 			case CodeReference.CODE_DUPLICATE_FSM:
 				allotFSMToView(model.duplicate(currFSM));
 				break;
 			case CodeReference.CODE_CLOSE_FSM:
 				view.removeFSM(currFSM);
 				break;
+			default:
+				break;
+		}
+	}
+	
+	private void codeHandlingOperations(int code, int mouseType) {
+		String currFSM = view.getCurrentFSM();
+		switch(code) {
 			case CodeReference.CODE_TRIM:
 				allotFSMToView(model.trim(currFSM));
 				break;
@@ -167,9 +288,13 @@ public class FiniteStateMachine implements InputReceiver{
 				String chkSt = view.getTextContent(code);
 				new PopoutAlert(250, 200, "FSM is " + (model.stateExists(currFSM, chkSt) ? "" : "not") + " blocking");
 				break;
-				
-			//-- U-Structure  ---------------------------------
-				
+			default:
+				break;
+			}
+		}
+	
+	private void codeHandlingUStructure(int code, int mouseType) {
+		switch(code) {
 			case CodeReference.CODE_SELECT_PLANT:
 				break;
 			case CodeReference.CODE_ADD_BAD_TRANS:
@@ -182,25 +307,10 @@ public class FiniteStateMachine implements InputReceiver{
 				break;
 			case CodeReference.CODE_DISPLAY_BAD_TRANS_START:
 				break;
-				
 			default:
 				break;
 		}
-		updateViewFSM(currFSM);
 	}
-
-	public void receiveKeyInput(char code, int keyType) {
-		
-	}
-	
-	public void updateViewFSM(String ref) {
-		if(ref == null || !model.hasFSM(ref)) {
-			return;
-		}
-		view.updateFSMImage(ref, generateDotImage(ref));
-	}
-	
-	//-- Input Handling Separation  ---------------------------
 	
 	private void loadSource() {
 		String path = view.requestFilePath(ADDRESS_SOURCES, "");
@@ -281,8 +391,45 @@ public class FiniteStateMachine implements InputReceiver{
 		view.clearTextContents(code);
 	}
 	
+	private ArrayList<String> addAttributeLists(ArrayList<String> newStuff, ArrayList<String> oldStuff){
+		ArrayList<String> use = new ArrayList<String>();
+		use.addAll(oldStuff);
+		for(String s : newStuff) {
+			if(!use.contains(s)) {
+				use.add(s);
+			}
+		}
+		return use;
+	}
+	
+	private ArrayList<String> subtractAttributeLists(ArrayList<String> remv, ArrayList<String> oldStuff){
+		ArrayList<String> use = new ArrayList<String>();
+		for(String s : oldStuff) {
+			if(!remv.contains(s)) {
+				use.add(s);
+			}
+		}
+		return use;
+	}
+	
 	//-- User Request  ----------------------------------------
 
+	private void appendSingleChosenAttribute(String[] in, int code) {
+		String select = view.requestUserInputList(in, true);
+		ArrayList<String> use = view.getContent(code);
+		if(!use.contains(select)) {
+			view.setTextContent(code, use.size(), select);
+		}
+	}
+	
+	private void appendSingleChosenAttribute(ArrayList<String> in, int code) {
+		String select = view.requestUserInputList(in, true);
+		ArrayList<String> use = view.getContent(code);
+		if(!use.contains(select)) {
+			view.setTextContent(code, use.size(), select);
+		}
+	}
+	
 	private void requestAttributeChoice(int code, String[] attributes, String phrase) {
 		ArrayList<String> statAttr = view.getContent(code);	//remove existing Attributes from current list
 		String use = view.requestUserInputList(attributes, true);
@@ -325,7 +472,7 @@ public class FiniteStateMachine implements InputReceiver{
 			switch(c.getErrorCode()) {
 				case UMLConfigValidation.CODE_FAILURE_DOT_ADDRESS:
 					PopoutAlert pA = new PopoutAlert(400, 250, "Please navigate to and select the path for your graphviz/bin/dot.exe file in the following navigation tool");
-					c.setConfigFileEntry("Diagram/settings/config.txt", DOT_ADDRESS_VAR, FileChooser.promptSelectFile("C:/", true, true).getAbsolutePath());
+					Config.setConfigFileEntry("Diagram/settings/config.txt", DOT_ADDRESS_VAR, FileChooser.promptSelectFile("C:/", true, true).getAbsolutePath());
 					pA.dispose();
 					break;
 				case UMLConfigValidation.CODE_FAILURE_FILE_MISSING:

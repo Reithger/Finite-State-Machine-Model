@@ -58,16 +58,7 @@ public class Manager {
 	public boolean hasFSM(String ref) {
 		return fsms.containsKey(ref);
 	}
-	
-	public void renameFSM(String old, String newFSM) {
-		if(fsms.get(old) != null) {
-			TransitionSystem oldFS = fsms.get(old).copy();
-			oldFS.setId(newFSM);
-			fsms.remove(old);
-			fsms.put(newFSM, oldFS);
-		}
-	}
-	
+
 	public String duplicate(String fsm) {
 		if(fsms.get(fsm) != null) {
 			TransitionSystem out = fsms.get(fsm).copy();
@@ -143,6 +134,13 @@ public class Manager {
 		return fsms.get(ref).stateExists(nom);
 	}
 	
+	public Boolean eventExists(String ref, String nom) {
+		if(fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).eventExists(nom);
+	}
+	
 	public Boolean isBlocking(String ref) {
 		if(fsms.get(ref) == null) {
 			return null;
@@ -171,6 +169,15 @@ public class Manager {
 	
 	public void removeFSM(String id) {
 		fsms.remove(id);
+	}
+	
+	public void renameFSM(String old, String newFSM) {
+		if(fsms.get(old) != null) {
+			TransitionSystem oldFS = fsms.get(old).copy();
+			oldFS.setId(newFSM);
+			fsms.remove(old);
+			fsms.put(newFSM, oldFS);
+		}
 	}
 	
 	public void assignStateAttributes(String ref, ArrayList<String> stateAttr) {
@@ -230,8 +237,33 @@ public class Manager {
 		fsms.get(ref).addEvent(eventName);
 	}
 	
+	public void addEvents(String ref, int num) {
+		String alph = "0123456789";
+		int used = 0;
+		int curr = 0;
+		while(used < num) {
+			String nom = "";
+			int cop = curr;
+			do {
+				nom += alph.charAt(cop % alph.length());
+				cop /= alph.length();
+			}while(cop != 0);
+			if(!eventExists(ref, nom)) {
+				addState(ref, nom);
+				used++;
+			}
+			curr++;
+		}
+	}
+	
 	public void removeEvent(String ref, String eventName) {
 		fsms.get(ref).removeEvent(eventName);
+	}
+	
+	public void renameEvent(String ref, String old, String newNom) {
+		if(fsms.get(ref) != null) {
+			fsms.get(ref).renameEvent(old, newNom);
+		}
 	}
 	
 	public void setEventAttribute(String ref, String eventName, String attrib, boolean inValue) {
@@ -252,6 +284,20 @@ public class Manager {
 		fsms.get(ref).setTransitionAttribute(star, even, attrib, inValue);
 	}
 	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
+	public void setFSMStateAttributes(String fsm, ArrayList<String> attri) {
+		fsms.get(fsm).setStateAttributes(attri);
+	}
+	
+	public void setFSMEventAttributes(String fsm, ArrayList<String> attri) {
+		fsms.get(fsm).setEventAttributes(attri);
+	}
+	
+	public void setFSMTransitionAttributes(String fsm, ArrayList<String> attri) {
+		fsms.get(fsm).setTransitionAttributes(attri);
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String[] getStateAttributeList() {
@@ -264,6 +310,18 @@ public class Manager {
 	
 	public String[] getTransitionAttributeList() {
 		return AttributeList.TRANSITION_ATTRIBUTES;
+	}
+	
+	public ArrayList<String> getFSMStateAttributes(String fsm){
+		return fsms.get(fsm).getStateAttributes();
+	}
+	
+	public ArrayList<String> getFSMEventAttributes(String fsm){
+		return fsms.get(fsm).getEventAttributes();
+	}
+	
+	public ArrayList<String> getFSMTransitionAttributes(String fsm){
+		return fsms.get(fsm).getTransitionAttributes();
 	}
 	
 	public ArrayList<String> getReferences(){

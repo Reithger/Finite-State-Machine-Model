@@ -48,6 +48,22 @@ public class TransitionFunction {
 		}
 	}
 	
+	public void renameEvent(String old, String newNom) {
+		for(String s : getStateNames()) {
+			Transition ol = getTransition(s, old);
+			Transition noo = getTransition(s, newNom);
+			if(noo != null) {
+				for(String t : ol.getStates()) {
+					noo.addTransitionState(t);
+				}
+				removeTransition(s, old);
+			}
+			else {
+				ol.setName(newNom);
+			}
+		}
+	}
+	
 //---  Adder Methods   ------------------------------------------------------------------------
 	
 	/**
@@ -172,6 +188,16 @@ public class TransitionFunction {
 		}
 	}
 
+	public void removeTransition(String stateFrom, String event) {
+		for(int i = 0; i < getTransitions(stateFrom).size(); i++) {
+			Transition t = getTransitions(stateFrom).get(i);
+			if(t.getEvent().equals(event)) {
+				getTransitions(stateFrom).remove(i);
+				i--;
+			}
+		}
+	}
+	
 //---  Setter Methods   -----------------------------------------------------------------------
 
 	public void setAttributes(ArrayList<String> attrib) {
