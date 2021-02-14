@@ -13,12 +13,16 @@ import ui.headers.HeaderSelect;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.OptionPageManager;
 import ui.popups.PopoutInputRequest;
+import visual.composite.popout.PopoutAlert;
 import visual.composite.popout.PopoutSelectList;
 import visual.frame.WindowFrame;
 
 /**
  * 
  * TODO: Auto-load some FSMs on start up (settings menu?) (as an option to the user)
+ * TODO: Trim is kinda broken, leaves out part of the resulting path; CoAccessible is broken
+ * TODO: ImagePage is a headache to look at
+ * TODO: Generate Image/FSM into file system seems broken
  * 
  * @author Ada Clevinger
  *
@@ -48,6 +52,8 @@ public class FSMUI implements InputReceiver{
 	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
 	private HeaderSelect optionHeader;
 	
+	private WindowFrame loading;
+	
 	//-- System Information  ----------------------------------
 	
 	private InputReceiver reference;
@@ -56,8 +62,27 @@ public class FSMUI implements InputReceiver{
 	
 	public FSMUI(int wid, int hei, InputReceiver ref) {
 		reference = ref;
-		frame = new WindowFrame(wid, hei);
+		frame = new WindowFrame(wid, hei) {
+			@Override
+			public void reactToResize() {
+				int newWid = getWidth();
+				int newHei = getHeight();
+				if(imageHeader != null) {
+					int topHei = (int)(newHei * (1 - PANEL_RATIO_VERTICAL));
+					int genWid = newWid / 2;
+					imageHeader.updateSize(genWid, 0, genWid, topHei);
+					optionHeader.updateSize(0, 0, genWid, topHei);
+
+					imagePage.updateSize(genWid, topHei, genWid, newHei - topHei);
+					optionPageManager.updateSize(0, topHei, genWid, newHei - topHei);
+					
+					updateDisplay();
+				}
+			}
+		};
 		frame.setName("Finite State Machine Model");
+		frame.setResizable(true);
+		frame.getFrame().setLocation(-8, -3);
 		createPages();
 		updateDisplay();
 	}
@@ -85,6 +110,10 @@ public class FSMUI implements InputReceiver{
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
+	
+	public void displayAlert(String text) {
+		new PopoutAlert(250, 200, text);
+	}
 	
 	public String requestFolderPath(String defDir, String display) {
 		return FileChooser.promptSelectFile(defDir, true, false).toString();
@@ -165,6 +194,14 @@ public class FSMUI implements InputReceiver{
 	
 	public void clearTextContents(int code) {
 		optionPageManager.clearTextContents(code);
+	}
+	
+	public void startLoading() {
+		optionPageManager.startLoading();
+	}
+	
+	public void endLoading() {
+		optionPageManager.endLoading();
 	}
 	
 	//-- Update ElementPanels  --------------------------------

@@ -93,10 +93,17 @@ public class Category {
 		}
 	}
 	
-	public void removeEntrySetContent(int code, int index) {
+	public void resetEntrySetContent(int code, int index) {
 		EntrySet e = getEntrySet(code);
 		if(e != null) {
-			e.removeContentAt(index);
+			e.resetContentAt(index);
+		}
+	}
+	
+	public void deleteEntrySetContent(int code, int index) {
+		EntrySet e = getEntrySet(code);
+		if(e != null) {
+			e.deleteContentAt(index);
 		}
 	}
 	

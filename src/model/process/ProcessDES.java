@@ -38,7 +38,7 @@ public class ProcessDES {
 	
 	//-- Analysis  --------------------------------------------
 	
-	public static boolean isBlocking(TransitionSystem in) {
+	public static Boolean isBlocking(TransitionSystem in) {
 		return ProcessAnalysis.isBlocking(in);
 	}
 	
@@ -46,14 +46,14 @@ public class ProcessDES {
 		return ProcessAnalysis.findPrivateStates(in);
 	}
 	
-	public static boolean testOpacity(TransitionSystem in) {
+	public static Boolean testOpacity(TransitionSystem in) {
 		return ProcessAnalysis.testOpacity(in);
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public static void assignAttributeReferences(String init, String mark, String priv, String obs) {
-		ProcessAnalysis.assignAttributeReferences(priv);
+		ProcessAnalysis.assignAttributeReferences(priv, init);
 		ProcessOperation.assignAttributeReferences(init, obs);
 		ProcessClean.assignAttributeReferences(init, mark);
 	}

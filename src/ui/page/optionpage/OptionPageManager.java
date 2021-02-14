@@ -1,5 +1,6 @@
 package ui.page.optionpage;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import controller.InputReceiver;
@@ -20,6 +21,9 @@ public class OptionPageManager {
 	private OptionPage[] optionPages;
 	private static int currentOptionPageIndex;
 	private HandlePanel p;
+	private boolean loading;
+	private int lastX;
+	private int lastY;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -35,6 +39,11 @@ public class OptionPageManager {
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
+	
+	public void updateSize(int x, int y, int wid, int hei) {
+		p.setLocation(x, y);
+		p.resize(wid, hei);
+	}
 	
 	private void generateHandlePanel(int x, int y, int width, int height) {
 		p = new HandlePanel(x, y, width, height) {
@@ -68,6 +77,13 @@ public class OptionPageManager {
 			}
 			
 			@Override
+			public void mouseMoveEvent(int code, int x, int y) {
+				lastX = x;
+				lastY = y;
+				p.moveElement("loading_rect", lastX, lastY);
+			}
+			
+			@Override
 			public void mouseWheelEvent(int rotation) {
 				if(p.getMaximumScreenY() < p.getHeight()) {
 					return;
@@ -85,6 +101,23 @@ public class OptionPageManager {
 
 	public void drawPage() {
 		getCurrentPage().drawPage();
+		if(loading) {
+			int size = 32;
+			p.addRectangle("loading_rect", 30, true, lastX - size / 2, lastY - size / 2, size, size, true, Color.yellow, Color.black);
+		}
+		else {
+			p.removeElementPrefixed("loading");
+		}
+	}
+	
+	public void startLoading() {
+		loading = true;
+		drawPage();
+	}
+	
+	public void endLoading() {
+		loading = false;
+		drawPage();
 	}
 	
 	public void clearTextContents(int code) {
@@ -94,8 +127,12 @@ public class OptionPageManager {
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public void setCurrentOptionPageIndex(int in) {
-		currentOptionPageIndex = in;
-		p.removeElementPrefixed("");
+		if(currentOptionPageIndex != in) {
+			currentOptionPageIndex = in;
+			p.setOffsetX(0);
+			p.setOffsetY(0);
+			p.removeElementPrefixed("");
+		}
 	}
 
 	public void setEntrySetContent(int code, int posit, String ref) {

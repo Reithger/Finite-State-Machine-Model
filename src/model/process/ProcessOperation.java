@@ -35,6 +35,10 @@ public class ProcessOperation {
 	 */
 	
 	public static TransitionSystem buildObserver(TransitionSystem in) {
+		if(!in.hasEventAttribute(attributeObservableRef) || !in.hasStateAttribute(attributeInitialRef)) {
+			return null;
+		}
+		
 		TransitionSystem out = new TransitionSystem(in.getId() + "_observer");
 		out.copyAttributes(in);
 		out.mergeEvents(in);
@@ -103,6 +107,18 @@ public class ProcessOperation {
 	 */
 
  	public static TransitionSystem product(TransitionSystem in, ArrayList<TransitionSystem> other) {
+ 		boolean work = true;
+ 		if(!in.hasStateAttribute(attributeInitialRef)) {
+ 			work = false;
+ 		}
+ 		for(TransitionSystem t : other) {
+ 			if(!t.hasStateAttribute(attributeInitialRef)) {
+ 				work = false;
+ 			}
+ 		}
+ 		if(!work) {
+ 			return null;
+ 		}
 		TransitionSystem out = productHelper(in, other.get(0));
 		for(int i = 1; i < other.size(); i++) {
 			out = productHelper(out, other.get(i));
@@ -120,6 +136,18 @@ public class ProcessOperation {
 	 */
 	
 	public static TransitionSystem parallelComposition(TransitionSystem in, ArrayList<TransitionSystem> other){
+ 		boolean work = true;
+ 		if(!in.hasStateAttribute(attributeInitialRef)) {
+ 			work = false;
+ 		}
+ 		for(TransitionSystem t : other) {
+ 			if(!t.hasStateAttribute(attributeInitialRef)) {
+ 				work = false;
+ 			}
+ 		}
+ 		if(!work) {
+ 			return null;
+ 		}
 		TransitionSystem out = parallelCompositionHelper(in, other.get(0));
 		for(int i = 1; i < other.size(); i++) {
 			out = parallelCompositionHelper(out, other.get(1));

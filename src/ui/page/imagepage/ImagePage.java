@@ -11,6 +11,7 @@ import visual.panel.ElementPanel;
 
 //TODO: There's something screwy with the zoom in and zoom out in keeping the image centered, fix it
 //TODO: Default zoomout range on creation so you can actually see the thing
+
 public class ImagePage {
 
 //---  Instance Variables   -------------------------------------------------------------------
@@ -26,10 +27,20 @@ public class ImagePage {
 		images = new ArrayList<FSMImage>();
 		generateElementPanel(x, y, width, height);
 		iD = new ImageDisplay("./assets/default.png", p);
+		iD.autofitImage();
+		iD.toggleUI();
+		iD.toggleDisableToggleUI();
+		iD.refresh();
 		index = 0;
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
+	
+	public void updateSize(int x, int y, int wid, int hei) {
+		p.setLocation(x, y);
+		p.resize(wid, hei);
+		iD.refresh();
+	}
 	
 	public void generateElementPanel(int x, int y, int width, int height) {
 		p = new HandlePanel(x, y, width, height);
@@ -82,7 +93,18 @@ public class ImagePage {
 		new ImageDisplay(iD.getImage(), p2);
 		newF.addPanel("p2", p2);
 	}
-
+	
+	public void allotFSM(String ref, String path) {
+		logCurrentFSMImageProperties();
+		FSMImage nIm = new FSMImage(ref, p.retrieveImage(path));
+		images.add(nIm);
+		iD.setImage(nIm.getImage());
+		iD.autofitImage();
+		nIm.setZoom(iD.getZoom());
+		iD.refresh();
+		index = images.size() - 1;
+	}
+	
 	public void refreshActiveImage() {
 		if(images.size() == 0) {
 			return;
@@ -90,20 +112,29 @@ public class ImagePage {
 		while(images.size() <= getCurrentImageIndex()) {
 			index--;
 		}
-		iD.setImage(images.get(getCurrentImageIndex()).getPath());
-		drawPage();
+		iD.setImage(getCurrentFSMImage().getImage());
+		iD.refresh();
+	}
+
+	private void logCurrentFSMImageProperties() {
+		if(images.size() != 0) {
+			getCurrentFSMImage().setZoom(iD.getZoom());
+			getCurrentFSMImage().setX(iD.getOffsetX());
+			getCurrentFSMImage().setY(iD.getOffsetY());
+		}
 	}
 	
-	public void allotFSM(String ref, String path) {
-		images.add(new FSMImage(ref, p.retrieveImage(path)));
-		setCurrentImageIndex(images.size() - 1);
+	private void updateDisplayWithFSMImageProperties() {
+		iD.setZoom(getCurrentFSMImage().getZoom());
+		iD.setOffsetX(getCurrentFSMImage().getX());
+		iD.setOffsetY(getCurrentFSMImage().getY());
 	}
 	
 	public void updateFSM(String ref, String path) {
 		for(FSMImage fI : images) {
 			if(fI.getReferenceName().equals(ref)) {
 				p.removeCachedImage(path);
-				fI.setPath(p.retrieveImage(path));
+				fI.setImage(p.retrieveImage(path));
 				refreshActiveImage();
 				break;
 			}
@@ -137,26 +168,30 @@ public class ImagePage {
 	//-- Drawing  ---------------------------------------------
 	
 	public void drawPage() {
-		if(images.size() > 0) {
-			iD.drawPage();
-		}
+		iD.drawPage();
 		addFraming();
 	}
 
 	private void addFraming() {
 		int width = p.getWidth();
 		int height = p.getHeight();
-		p.addLine("frame_line_3", 15, true, 0, 0, 0, height, 5, Color.BLACK);
-		p.addLine("frame_line_4", 15, true,  0, 1, width, 1, 2, Color.BLACK);
-		p.addLine("frame_line_5", 15, true,  width, height, width, 0, 5, Color.BLACK);
-		p.addLine("frame_line_6", 15, true,  width, height, 0, height, 5, Color.BLACK);
+		int thick = 3;
+		int buf = thick / 2;
+		p.addLine("frame_line_3", 15, true, buf, buf, buf, height - buf, thick, Color.BLACK);
+		p.addLine("frame_line_4", 15, true,  buf, buf, width - buf, buf, thick, Color.BLACK);
+		p.addLine("frame_line_5", 15, true,  width - buf, height - buf, width - buf, buf, thick, Color.BLACK);
+		p.addLine("frame_line_6", 15, true,  width - buf, height - buf, buf, height - buf, thick, Color.BLACK);
 	}
 
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public void setCurrentImageIndex(int in) {
-		index = in;
-		refreshActiveImage();
+		if(index != in) {
+			logCurrentFSMImageProperties();
+			index = in;
+			updateDisplayWithFSMImageProperties();
+			refreshActiveImage();
+		}
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -170,6 +205,10 @@ public class ImagePage {
 	
 	public HandlePanel getPanel() {
 		return p;
+	}
+	
+	private FSMImage getCurrentFSMImage() {
+		return images.get(getCurrentImageIndex());
 	}
 	
 	public ArrayList<String> getImageNames(){

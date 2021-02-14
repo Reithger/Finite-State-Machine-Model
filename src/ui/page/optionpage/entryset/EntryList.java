@@ -40,7 +40,7 @@ public class EntryList extends EntryTextDisplay{
 		String base = getCodeMapping(code);
 		try {
 			int val = Integer.parseInt(base.substring(base.lastIndexOf("_") + 1));
-			removeContentAt(val);
+			deleteContentAt(val);
 			p.removeElementPrefixed(formTextButtonName(val));
 			return false;
 		}

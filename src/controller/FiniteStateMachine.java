@@ -1,5 +1,9 @@
 package controller;
 
+import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -13,7 +17,6 @@ import ui.FSMUI;
 import visual.composite.popout.PopoutAlert;
 
 /*
- * TODO: Add multiple states renames some of them but maintains the overall structure? What?
  * 
  * 
  */
@@ -35,9 +38,6 @@ public class FiniteStateMachine implements InputReceiver{
 			"##############################################################\r\n" + 
 			"# Format as 'name = address', the \" = \" spacing is necessary\r\n" + 
 			"# It's awkward but it makes the file reading easier and I'm telling you this directly";
-
-	public final static int WINDOW_WIDTH = 1000;
-	public final static int WINDOW_HEIGHT = 600;
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -47,7 +47,16 @@ public class FiniteStateMachine implements InputReceiver{
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FiniteStateMachine() {
-		view = new FSMUI(WINDOW_WIDTH, WINDOW_HEIGHT, this);
+		
+		Dimension scrnSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Rectangle winSize = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+
+		int taskBarHeight = scrnSize.height - winSize.height;
+		
+		System.out.println(scrnSize.height + " " + winSize.height + " " + taskBarHeight);
+		
+		Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+		view = new FSMUI((int)(r.getWidth()), (int)(r.getHeight()), this);
 		model = new Manager();
 		FormatConversion.assignPaths(ADDRESS_SOURCES, ADDRESS_CONFIG);
 		fileConfiguration();
@@ -61,10 +70,12 @@ public class FiniteStateMachine implements InputReceiver{
 		if(code == -1) {
 			return;
 		}
+		view.startLoading();
 		codeHandlingAdjustFSM(code, mouseType);
 		codeHandlingOperations(code, mouseType);
 		codeHandlingUStructure(code, mouseType);
-
+		view.endLoading();
+		
 		updateViewFSM(view.getCurrentFSM());
 	}
 
@@ -252,22 +263,53 @@ public class FiniteStateMachine implements InputReceiver{
 	
 	private void codeHandlingOperations(int code, int mouseType) {
 		String currFSM = view.getCurrentFSM();
+		String ret = "";
 		switch(code) {
 			case CodeReference.CODE_TRIM:
-				allotFSMToView(model.trim(currFSM));
+				ret = model.trim(currFSM);
+				if(ret == null) {
+					view.displayAlert("Error: FSM given to trim did not possess attributes: State - Initial, Marked");
+				}
+				else {
+					allotFSMToView(ret);
+				}
 				break;
 			case CodeReference.CODE_ACCESSIBLE:
-				allotFSMToView(model.makeAccessible(currFSM));
+				ret = model.makeAccessible(currFSM);
+				if(ret == null) {
+					view.displayAlert("Error: FSM given to make accessible did not possess attributes: State - Initial");
+				}
+				else {
+					allotFSMToView(ret);
+				}
 				break;
 			case CodeReference.CODE_CO_ACCESSIBLE:
-				allotFSMToView(model.makeCoAccessible(currFSM));
+				ret = model.makeCoAccessible(currFSM);
+				if(ret == null) {
+					view.displayAlert("Error: FSM given to make coaccessible did not possess attributes: State - Initial, Marked");
+				}
+				else {
+					allotFSMToView(ret);
+				}
 				break;
 			case CodeReference.CODE_OBSERVER:
-				allotFSMToView(model.buildObserver(currFSM));
+				ret = model.buildObserver(currFSM);
+				if(ret == null) {
+					view.displayAlert("Error: FSM given to build an Observer did not possess attributes: State - Initial, Event - Observable");
+				}
+				else {
+					allotFSMToView(ret);
+				}
 				break;
 			case CodeReference.CODE_PRODUCT:
 				ArrayList<String> noms = view.getContent(code);
-				allotFSMToView(model.performProduct(noms));
+				ret = model.performProduct(noms);
+				if(ret == null) {
+					view.displayAlert("Error: An FSM given to make Product did not possess attributes: State - Initial");
+				}
+				else {
+					allotFSMToView(ret);
+				}
 				view.clearTextContents(code);
 				break;
 			case CodeReference.CODE_PRODUCT_SELECT:
@@ -275,18 +317,36 @@ public class FiniteStateMachine implements InputReceiver{
 				break;
 			case CodeReference.CODE_PARALLEL_COMPOSITION:
 				ArrayList<String> noms2 = view.getContent(code);
-				allotFSMToView(model.performParallelComposition(noms2));
+				ret = model.performParallelComposition(noms2);
+				if(ret == null) {
+					view.displayAlert("Error: An FSM given to make Parallel Composition did not possess attributes: State - Initial");
+				}
+				else {
+					allotFSMToView(ret);
+				}
 				view.clearTextContents(code);
 				break;
 			case CodeReference.CODE_PARALLEL_COMPOSITION_SELECT:
 				requestFSMChoice(code);
 				break;
 			case CodeReference.CODE_BLOCKING:
-				new PopoutAlert(250, 200, "FSM is " + (model.isBlocking(currFSM) ? "" : "not") + " blocking");
+				Boolean res = model.isBlocking(currFSM);
+				if(res == null) {
+					view.displayAlert("Error: FSM given to query Blocking did not possess attributes: State - Initial");
+				}
+				else {
+					view.displayAlert("FSM is " + (res ? "" : "not") + " blocking");
+				}
 				break;
 			case CodeReference.CODE_STATE_EXISTS:
 				String chkSt = view.getTextContent(code);
-				new PopoutAlert(250, 200, "FSM is " + (model.stateExists(currFSM, chkSt) ? "" : "not") + " blocking");
+				Boolean res2 = model.stateExists(currFSM, chkSt);
+				if(res2 == null) {
+					view.displayAlert("Requisite FSM to query presence of State does not exist");
+				}
+				else {
+					view.displayAlert("FSM is " + (res2 ? "" : "not") + " blocking");
+				}
 				break;
 			default:
 				break;
@@ -296,6 +356,7 @@ public class FiniteStateMachine implements InputReceiver{
 	private void codeHandlingUStructure(int code, int mouseType) {
 		switch(code) {
 			case CodeReference.CODE_SELECT_PLANT:
+				requestFSMChoice(code);
 				break;
 			case CodeReference.CODE_ADD_BAD_TRANS:
 				break;
@@ -313,7 +374,9 @@ public class FiniteStateMachine implements InputReceiver{
 	}
 	
 	private void loadSource() {
+		view.endLoading();
 		String path = view.requestFilePath(ADDRESS_SOURCES, "");
+		view.startLoading();
 		File f = new File(path);
 		StringBuilder use = new StringBuilder();
 		try {
@@ -415,7 +478,9 @@ public class FiniteStateMachine implements InputReceiver{
 	//-- User Request  ----------------------------------------
 
 	private void appendSingleChosenAttribute(String[] in, int code) {
+		view.endLoading();
 		String select = view.requestUserInputList(in, true);
+		view.startLoading();
 		ArrayList<String> use = view.getContent(code);
 		if(!use.contains(select)) {
 			view.setTextContent(code, use.size(), select);
@@ -423,7 +488,9 @@ public class FiniteStateMachine implements InputReceiver{
 	}
 	
 	private void appendSingleChosenAttribute(ArrayList<String> in, int code) {
+		view.endLoading();
 		String select = view.requestUserInputList(in, true);
+		view.startLoading();
 		ArrayList<String> use = view.getContent(code);
 		if(!use.contains(select)) {
 			view.setTextContent(code, use.size(), select);
@@ -432,8 +499,10 @@ public class FiniteStateMachine implements InputReceiver{
 	
 	private void requestAttributeChoice(int code, String[] attributes, String phrase) {
 		ArrayList<String> statAttr = view.getContent(code);	//remove existing Attributes from current list
+		view.endLoading();
 		String use = view.requestUserInputList(attributes, true);
 		int num = view.requestUserIntegerInput(phrase);
+		view.startLoading();
 		int ind = statAttr.size();
 		for(int i = 0; i < statAttr.size(); i++) {
 			if(statAttr.get(i).split(" - ")[0].equals(use)) {
@@ -451,7 +520,9 @@ public class FiniteStateMachine implements InputReceiver{
 		for(int i = 0; i < use.length; i++) {
 			use[i] = start.get(i);
 		}
+		view.endLoading();
 		String choice = view.requestUserInputList(use, true);
+		view.startLoading();
 		view.setTextContent(code, content.size(), choice);
 	}
 	
@@ -491,6 +562,9 @@ public class FiniteStateMachine implements InputReceiver{
 	}
 	
 	private void allotFSMToView(String fsm) {
+		if(fsm == null) {
+			return;
+		}
 		view.addFSM(fsm, generateDotImage(fsm));
 	}
 	

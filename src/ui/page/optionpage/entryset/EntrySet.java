@@ -8,7 +8,6 @@ import java.util.HashMap;
 import visual.composite.HandlePanel;
 
 /**
- * TODO: Probably wanna break this up with an interface or abstract class?
  * 
  * @author Ada Clevinger
  *
@@ -125,9 +124,13 @@ public abstract class EntrySet {
 		contents.add(in);
 	}
 	
-	public void removeContentAt(int i) {
+	public void resetContentAt(int i) {
 		contents.remove(i);
 		contents.add("");
+	}
+	
+	public void deleteContentAt(int i) {
+		contents.remove(i);
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------

@@ -73,8 +73,8 @@ public class AdjustFSM extends OptionPage {
 
 		addEntryText(CATEGORY_EDIT_TRANSITIONS, "Add Transition", true, CodeReference.CODE_ADD_TRANSITION, 3, false);
 		addEntryText(CATEGORY_EDIT_TRANSITIONS, "Remove Transition", true, CodeReference.CODE_REMOVE_TRANSITION, 3, false);
-		addEntryText(CATEGORY_EDIT_STATES, "Transition to Edit", false, CodeReference.CODE_ACCESS_EDIT_TRANS, 1, false);
-		addEntryList(CATEGORY_EDIT_STATES, "Edit Attribute", true, CodeReference.CODE_EDIT_TRANS_ATTRIBUTE, CodeReference.CODE_ADD_EDIT_TRANS_ATTRIBUTE);
+		addEntryText(CATEGORY_EDIT_TRANSITIONS, "Transition to Edit", false, CodeReference.CODE_ACCESS_EDIT_TRANS, 1, false);
+		addEntryList(CATEGORY_EDIT_TRANSITIONS, "Edit Attribute", true, CodeReference.CODE_EDIT_TRANS_ATTRIBUTE, CodeReference.CODE_ADD_EDIT_TRANS_ATTRIBUTE);
 		
 		addEntryEmpty(CATEGORY_ADMIN, "Save Source", true, CodeReference.CODE_SAVE_FSM);
 		addEntryEmpty(CATEGORY_ADMIN, "Save Image", true, CodeReference.CODE_SAVE_IMG);

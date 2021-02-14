@@ -56,6 +56,7 @@ public abstract class OptionPage {
 		else {
 			drawNormalPage();
 		}
+		addFraming();
 	}
 	
 	public void drawNormalPage() {
@@ -97,6 +98,17 @@ public abstract class OptionPage {
 			out = getCategoryFromCode(code).handleInput(code, p);
 		drawPage();
 		return out;
+	}
+
+	private void addFraming() {
+		int width = p.getWidth();
+		int height = p.getHeight();
+		int thick = 3;
+		int buf = thick / 2;
+		p.addLine("frame_line_3", 15, true, buf, buf, buf, height - buf, thick, Color.BLACK);
+		p.addLine("frame_line_4", 15, true,  buf, buf, width - buf, buf, thick, Color.BLACK);
+		p.addLine("frame_line_5", 15, true,  width - buf, height - buf, width - buf, buf, thick, Color.BLACK);
+		p.addLine("frame_line_6", 15, true,  width - buf, height - buf, buf, height - buf, thick, Color.BLACK);
 	}
 
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -142,7 +154,12 @@ public abstract class OptionPage {
 	}
 	
 	public void removeContentsFromCode(int code, int index) {
-		getCategoryFromCode(code).removeEntrySetContent(code, index);
+		getCategoryFromCode(code).resetEntrySetContent(code, index);
+		drawPage();
+	}
+	
+	public void deleteContentsFromCode(int code, int index) {
+		getCategoryFromCode(code).deleteEntrySetContent(code, index);
 		drawPage();
 	}
 	

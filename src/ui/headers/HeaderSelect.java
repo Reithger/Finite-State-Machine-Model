@@ -24,6 +24,7 @@ public class HeaderSelect extends HandlePanel{
 	
 	public HeaderSelect(int x, int y, int wid, int hei, int inCode) {
 		super(x, y, wid, hei);
+		this.setScrollBarVertical(false);
 		codeBase = inCode;
 		setEventReceiver(new CustomEventReceiver() {
 			@Override
@@ -42,6 +43,11 @@ public class HeaderSelect extends HandlePanel{
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
+	
+	public void updateSize(int x, int y, int wid, int hei) {
+		setLocation(x, y);
+		resize(wid, hei);
+	}
 	
 	public void update(ArrayList<String> header, int select) {
 		removeElementPrefixed("header");
@@ -70,6 +76,11 @@ public class HeaderSelect extends HandlePanel{
 				handleText("header_text_" + i, false, posX, posY, widUse, heiUse, HEADER_FONT, header.get(i));
 			}
 		}
+		int thick = 2;
+		this.handleLine("header_line_1", true, 15, thick / 2, thick / 2, this.getWidth() - thick / 2, thick / 2, thick, Color.black);
+		this.handleLine("header_line_2", true, 15, thick / 2, thick / 2, thick / 2, this.getHeight() - thick / 2, thick, Color.black);
+		this.handleLine("header_line_3", true, 15, this.getWidth() - thick / 2, this.getHeight() - thick / 2, thick / 2, this.getHeight() - thick / 2, thick, Color.black);
+		this.handleLine("header_line_4", true, 15, this.getWidth() - thick / 2, this.getHeight() - thick / 2, this.getWidth() - thick / 2, thick / 2, thick, Color.black);
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------

@@ -9,11 +9,13 @@ public class ProcessAnalysis {
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private static String attributePrivateRef;
+	private static String attributeInitialRef;
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public static void assignAttributeReferences(String priv) {
+	public static void assignAttributeReferences(String priv, String init) {
 		attributePrivateRef = priv;
+		attributeInitialRef = init;
 	}
 	
 	/**
@@ -25,16 +27,25 @@ public class ProcessAnalysis {
 	 * @return - Returns a boolean value; true if the FSM is found to be blocking, false otherwise.
 	 */
 	
-	public static boolean isBlocking(TransitionSystem in) {
+	public static Boolean isBlocking(TransitionSystem in) {
+		if(!in.hasStateAttribute(attributeInitialRef)) {
+			return null;
+		}
 		TransitionSystem coAccess = ProcessClean.makeCoAccessible(in);
 		return in.getStateNames().size() == coAccess.getStateNames().size();
 	} // isBlocking()
 	
 	public static ArrayList<String> findPrivateStates(TransitionSystem in){
+		if(!in.hasStateAttribute(attributePrivateRef)) {
+			return null;
+		}
 		return in.getStatesWithAttribute(attributePrivateRef);
 	}
 	
-	public static boolean testOpacity(TransitionSystem in) {
+	public static Boolean testOpacity(TransitionSystem in) {
+		if(!in.hasStateAttribute(attributePrivateRef)) {
+			return null;
+		}
 		return findPrivateStates(in).size() == 0;
 	}
 

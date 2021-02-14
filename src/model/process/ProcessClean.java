@@ -31,6 +31,9 @@ public class ProcessClean {
 	 */
 	
 	public static TransitionSystem trim(TransitionSystem in) {
+		if(!in.hasStateAttribute(attributeInitialRef) || !in.hasStateAttribute(attributeMarkedRef)) {
+			return null;
+		}
 		TransitionSystem out = in.copy();
 		out = makeAccessible(out);
 		out = makeCoAccessible(out);
@@ -54,6 +57,9 @@ public class ProcessClean {
 	 */
 	
 	public static TransitionSystem makeAccessible(TransitionSystem in) {
+		if(!in.hasStateAttribute(attributeInitialRef)) {
+			return null;
+		}
 		// Make a queue to keep track of states that are accessible and their neighbours.
 		TransitionSystem out = new TransitionSystem(in.getId() + "_accessible");
 		out.copyAttributes(in);
@@ -99,12 +105,17 @@ public class ProcessClean {
 	 */
 	
 	public static TransitionSystem makeCoAccessible(TransitionSystem in) {
+		if(!in.hasStateAttribute(attributeInitialRef) || !in.hasStateAttribute(attributeMarkedRef)) {
+			return null;
+		}
 		TransitionSystem out = new TransitionSystem(in.getId() + "_coaccess");
 		out.copyAttributes(in);
 		out.mergeEvents(in);
 		// First, find what states we need to add.
 		ArrayList<String> processedStrings = getCoAccessibleMap(in);	//Use helper method to generate list of legal/illegal Strings
 
+		System.out.println(processedStrings);		// [2, 3, 7, 8, 9]
+		
 		// Secondly, create the states and add the transitions
 		for(String s : processedStrings) {
 			out.addState(s, in);

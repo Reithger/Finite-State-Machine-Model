@@ -84,6 +84,9 @@ public class Manager {
 			use.add(fsms.get(roots.get(i)));
 		}
 		TransitionSystem out = ProcessDES.product(in, use);
+		if(out == null) {
+			return null;
+		}
 		fsms.put(out.getId(), out);
 		return out.getId();
 	}
@@ -95,12 +98,18 @@ public class Manager {
 			use.add(fsms.get(roots.get(i)));
 		}
 		TransitionSystem out = ProcessDES.parallelComposition(in, use);
+		if(out == null) {
+			return null;
+		}
 		fsms.put(out.getId(), out);
 		return out.getId();
 	}
 	
 	public String buildObserver(String ref) {
 		TransitionSystem out = ProcessDES.buildObserver(fsms.get(ref));
+		if(out == null) {
+			return null;
+		}
 		fsms.put(out.getId(), out);
 		return out.getId();
 	}
@@ -109,18 +118,27 @@ public class Manager {
 	
 	public String trim(String ref) {
 		TransitionSystem out = ProcessDES.trim(fsms.get(ref));
+		if(out == null) {
+			return null;
+		}
 		fsms.put(out.getId(), out);
 		return out.getId();
 	}
 	
 	public String makeAccessible(String ref) {
 		TransitionSystem out = ProcessDES.makeAccessible(fsms.get(ref));
+		if(out == null) {
+			return null;
+		}
 		fsms.put(out.getId(), out);
 		return out.getId();
 	}
 	
 	public String makeCoAccessible(String ref) {
 		TransitionSystem out = ProcessDES.makeCoAccessible(fsms.get(ref));
+		if(out == null) {
+			return null;
+		}
 		fsms.put(out.getId(), out);
 		return out.getId();
 	}

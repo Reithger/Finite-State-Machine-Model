@@ -137,7 +137,7 @@ public class GenerateFSM {
 		String language = character ? ALPHABET_EVENT : ALPHABET_STATE;
 		do {
 			int use = i % (language.length());
-			out += language.charAt(use);
+			out = language.charAt(use) + out;
 			i /= language.length();
 		}while(i > 0);
 		
