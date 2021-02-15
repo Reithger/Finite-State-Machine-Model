@@ -3,7 +3,10 @@ package ui.page.imagepage;
 import java.awt.Color;
 import java.util.ArrayList;
 
+import controller.CodeReference;
+import controller.InputReceiver;
 import input.CustomEventReceiver;
+import input.NestedEventReceiver;
 import visual.composite.HandlePanel;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
@@ -13,6 +16,8 @@ import visual.panel.ElementPanel;
 //TODO: Default zoomout range on creation so you can actually see the thing
 
 public class ImagePage {
+	
+	private final static String DEFAULT_IMAGE = "./assets/default.png";
 
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -20,13 +25,25 @@ public class ImagePage {
 	private ArrayList<FSMImage> images;
 	private ImageDisplay iD;
 	private int index;
+	private InputReceiver reference;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public ImagePage(int x, int y, int width, int height) {
+	public ImagePage(int x, int y, int width, int height, InputReceiver ref) {
 		images = new ArrayList<FSMImage>();
+		reference = ref;
 		generateElementPanel(x, y, width, height);
-		iD = new ImageDisplay("./assets/default.png", p);
+		iD = new ImageDisplay(DEFAULT_IMAGE, p);
+		NestedEventReceiver ner = new NestedEventReceiver(iD.generateEventReceiver());
+		ner.addNested(new CustomEventReceiver() {
+			
+			@Override
+			public void clickEvent(int code, int x, int y, int mouseType) {
+				reference.receiveCode(code, mouseType);
+			}
+			
+		});
+		p.setEventReceiver(ner);
 		iD.autofitImage();
 		iD.toggleUI();
 		iD.toggleDisableToggleUI();
@@ -44,44 +61,6 @@ public class ImagePage {
 	
 	public void generateElementPanel(int x, int y, int width, int height) {
 		p = new HandlePanel(x, y, width, height);
-		p.setEventReceiver(new CustomEventReceiver() {
-			@Override
-			public void keyEvent(char code) {
-				iD.processKeyInput(code);
-				drawPage();
-			}
-
-			@Override
-			public void clickEvent(int code, int x, int y, int mouseType) {
-				iD.processClickInput(code);
-				drawPage();
-			}
-
-			@Override
-			public void mouseWheelEvent(int scroll) {
-				iD.processMouseWheelInput(scroll);
-				drawPage();
-			}
-
-			@Override
-			public void clickPressEvent(int code, int x, int y, int mouseType) {
-				iD.processPressInput(code, x, y);
-				drawPage();
-			}
-
-			@Override
-			public void clickReleaseEvent(int code, int x, int y, int mouseType) {
-				iD.processReleaseInput(code, x, y);
-				drawPage();
-			}
-			
-			@Override
-			public void dragEvent(int code, int x, int y, int mouseType) {
-				iD.processDragInput(code, x, y);
-				drawPage();
-			}
-		});
-
 		addFraming();
 		p.setScrollBarHorizontal(false);
 		p.setScrollBarVertical(false);
@@ -107,6 +86,11 @@ public class ImagePage {
 	
 	public void refreshActiveImage() {
 		if(images.size() == 0) {
+			iD.setImage(DEFAULT_IMAGE);
+			iD.setOffsetX(0);
+			iD.setOffsetY(0);
+			iD.autofitImage();
+			iD.refresh();
 			return;
 		}
 		while(images.size() <= getCurrentImageIndex()) {
@@ -135,6 +119,10 @@ public class ImagePage {
 			if(fI.getReferenceName().equals(ref)) {
 				p.removeCachedImage(path);
 				fI.setImage(p.retrieveImage(path));
+				logCurrentFSMImageProperties();
+				iD.setImage(getCurrentFSMImage().getImage());
+				iD.autofitImage();
+				fI.setZoom(iD.getZoom());
 				refreshActiveImage();
 				break;
 			}
@@ -145,9 +133,6 @@ public class ImagePage {
 		for(int i = 0; i < images.size(); i++) {
 			if(images.get(i).getReferenceName().equals(ref)) {
 				removeFSM(i);
-				index -= index >= i ? 1 : 0;
-				index = index < 0 ? 0 : index;
-				setCurrentImageIndex(index);
 				break;
 			}
 		}
@@ -170,6 +155,7 @@ public class ImagePage {
 	public void drawPage() {
 		iD.drawPage();
 		addFraming();
+		p.handleImageButton("close_image", true, p.getWidth() - p.getWidth() / 25, p.getHeight() - p.getWidth() / 25, p.getWidth() / 15, p.getWidth() / 15, "./assets/ui/icon_close.png", CodeReference.CODE_CLOSE_FSM);
 	}
 
 	private void addFraming() {

@@ -114,7 +114,9 @@ public class EventMap {
 	}
 	
 	public void setEventAttribute(String nom, String ref, boolean val) {
-		events.get(nom).setAttributeValue(ref, val);
+		if(events.get(nom) != null) {
+			events.get(nom).setAttributeValue(ref, val);
+		}
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------

@@ -1,24 +1,11 @@
 digraph G {
-"n0"[label="1"shape=circle color="black"];
-"n1"[label="2"shape=doublecircle color="black"];
-"n2"[label="3"shape=circle color="black"];
-"n3"[label="4"shape=circle color="black"];
-"n4"[label="5"shape=circle color="black"];
-"n5"[label="7"shape=circle color="black"];
-"n6"[label="8"shape=circle color="black"];
-"n7"[label="9"shape=doublecircle color="black"];
-"ArbitraryUnusedNameNoWorriesJustGrooving8"[fontSize=1 shape=point];
-{"ArbitraryUnusedNameNoWorriesJustGrooving8"}->{"n7"};
-{"n0"}->{"n5"}[label = "e" color="red" arrowhead="normal"];
-{"n0"}->{"n5"}[label = "c" color="black" arrowhead="normal"];
-{"n1"}->{"n0"}[label = "e" color="red" arrowhead="normal"];
-{"n1"}->{"n7"}[label = "a" color="black" arrowhead="normal"];
-{"n2"}->{"n5"}[label = "a" color="black" arrowhead="normal"];
-{"n3"}->{"n1"}[label = "d" color="black" arrowhead="normal"];
-{"n4"}->{"n6"}[label = "b" color="black" arrowhead="normal"];
-{"n5"}->{"n0"}[label = "b" color="black" arrowhead="normal"];
-{"n5"}->{"n7"}[label = "e" color="red" arrowhead="normal"];
-{"n6"}->{"n3"}[label = "e" color="red" arrowhead="normal"];
-{"n7"}->{"n7"}[label = "b" color="black" arrowhead="normal"];
-{"n7"}->{"n1"}[label = "d" color="black" arrowhead="normal"];
+"n0"[label="0"shape=circle color="black"];
+"n1"[label="1"shape=circle color="black"];
+"n2"[label="2"shape=circle color="black"];
+"n3"[label="3"shape=circle color="black"];
+{"n0"}->{"n1"}[label = "a" color="black" arrowhead="normal"];
+{"n1"}->{"n2"}[label = "a" color="black" arrowhead="normal"];
+{"n2"}->{"n2"}[label = "a" color="black" arrowhead="normal"];
+{"n2"}->{"n1"}[label = "a" color="black" arrowhead="normal"];
+{"n3"}->{"n3"}[label = "a" color="black" arrowhead="normal"];
 }

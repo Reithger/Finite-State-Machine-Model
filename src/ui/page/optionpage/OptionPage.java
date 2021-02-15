@@ -20,6 +20,7 @@ public abstract class OptionPage {
 	
 //---  Constant Values   ----------------------------------------------------------------------
 	
+	private final static Font HELP_FONT = new Font("Serif", Font.BOLD, 18);
 	protected final static Font OPTIONS_FONT = new Font("Serif", Font.BOLD, 12);
 	
 //---  Instance Variables   -------------------------------------------------------------------
@@ -67,9 +68,9 @@ public abstract class OptionPage {
 		helpKey = codeStart;
 		settingsKey = ++codeStart;
 		codeStart++;
-		p.handleRectangle("help_rect", false, 5, wid - wid / 15, wid / 20, wid / 20, wid / 20, Color.gray, Color.black);
-		p.handleButton("help_button", false, wid - wid / 15,  wid / 20, wid / 20, wid / 20, helpKey);
-		p.handleImage("help_img", false, wid - wid / 15, wid / 20, "/assets/ui/question_mark.png", 3);
+		p.handleRectangle("help_butt_rect", false, 5, wid - wid / 15, wid / 20, wid / 20, wid / 20, Color.gray, Color.black);
+		p.handleButton("help_butt_button", false, wid - wid / 15,  wid / 20, wid / 20, wid / 20, helpKey);
+		p.handleImage("help_butt_img", false, wid - wid / 15, wid / 20, "/assets/ui/question_mark.png", 3);
 		for(int i = 0; i < categories.size(); i++) {
 			Category cat = categories.get(i);
 			startY = cat.draw(startY, hei / lineHeightFraction, p);
@@ -77,7 +78,8 @@ public abstract class OptionPage {
 	}
 	
 	public void drawHelpPage() {
-		p.handleText("help", false, p.getWidth() / 2, p.getHeight() / 2, p.getWidth(), p.getHeight(), OPTIONS_FONT, help);
+		p.handleText("help_text", true, p.getWidth() / 2, p.getHeight() / 2, p.getWidth() * 9 / 10, p.getHeight() * 9 / 10, HELP_FONT, help);
+		p.handleRectangle("help_rect", true, 5, p.getWidth() / 2, p.getHeight() / 2, p.getWidth() * 9 / 10, p.getHeight() * 9 / 10, Color.white, Color.black);
 	}
 	
 	public void handleMouseInput(int code, int x, int y, int mouseType) {
@@ -94,6 +96,9 @@ public abstract class OptionPage {
 	
 	public boolean handleInput(int code) {
 		boolean out = false;
+		if(code == -1) {
+			return out;
+		}
 		if(getCategoryFromCode(code) != null)
 			out = getCategoryFromCode(code).handleInput(code, p);
 		drawPage();

@@ -47,18 +47,13 @@ public class FiniteStateMachine implements InputReceiver{
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FiniteStateMachine() {
-		
 		Dimension scrnSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Rectangle winSize = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
 
-		int taskBarHeight = scrnSize.height - winSize.height;
-		
-		System.out.println(scrnSize.height + " " + winSize.height + " " + taskBarHeight);
-		
 		Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
 		view = new FSMUI((int)(r.getWidth()), (int)(r.getHeight()), this);
 		model = new Manager();
-		FormatConversion.assignPaths(ADDRESS_SOURCES, ADDRESS_CONFIG);
+		FormatConversion.assignPaths(ADDRESS_IMAGES, ADDRESS_CONFIG);
 		fileConfiguration();
 	}
 
@@ -75,8 +70,6 @@ public class FiniteStateMachine implements InputReceiver{
 		codeHandlingOperations(code, mouseType);
 		codeHandlingUStructure(code, mouseType);
 		view.endLoading();
-		
-		updateViewFSM(view.getCurrentFSM());
 	}
 
 	public void receiveKeyInput(char code, int keyType) {
@@ -100,6 +93,7 @@ public class FiniteStateMachine implements InputReceiver{
 				
 			case CodeReference.CODE_GENERATE_FSM:
 				generateRandomFSM(code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_ADD_STATE_ATTRIBUTE:
 				requestAttributeChoice(code, model.getStateAttributeList(), "How many states of this type do you want?");
@@ -121,36 +115,42 @@ public class FiniteStateMachine implements InputReceiver{
 				break;
 			case CodeReference.CODE_FSM_ADD_STATE_ATTRIBUTE:
 				model.setFSMStateAttributes(currFSM, addAttributeLists(view.getContent(code), model.getFSMStateAttributes(currFSM)));
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_FSM_ACCESS_ADD_STATE_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getStateAttributeList(), code);
 				break;
 			case CodeReference.CODE_FSM_ADD_EVENT_ATTRIBUTE:
 				model.setFSMEventAttributes(currFSM, addAttributeLists(view.getContent(code), model.getFSMEventAttributes(currFSM)));
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_FSM_ACCESS_ADD_EVENT_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getEventAttributeList(), code);
 				break;
 			case CodeReference.CODE_FSM_ADD_TRANS_ATTRIBUTE:
 				model.setFSMTransitionAttributes(currFSM, addAttributeLists(view.getContent(code), model.getFSMTransitionAttributes(currFSM)));
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_FSM_ACCESS_ADD_TRANS_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getTransitionAttributeList(), code);
 				break;
 			case CodeReference.CODE_FSM_REMOVE_STATE_ATTRIBUTE:
 				model.setFSMStateAttributes(currFSM, subtractAttributeLists(view.getContent(code), model.getFSMStateAttributes(currFSM)));
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_FSM_ACCESS_REMOVE_STATE_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getFSMStateAttributes(currFSM), code);
 				break;
 			case CodeReference.CODE_FSM_REMOVE_EVENT_ATTRIBUTE:
 				model.setFSMEventAttributes(currFSM, subtractAttributeLists(view.getContent(code), model.getFSMEventAttributes(currFSM)));
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_FSM_ACCESS_REMOVE_EVENT_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getFSMEventAttributes(currFSM), code);
 				break;
 			case CodeReference.CODE_FSM_REMOVE_TRANS_ATTRIBUTE:
 				model.setFSMTransitionAttributes(currFSM, subtractAttributeLists(view.getContent(code), model.getFSMTransitionAttributes(currFSM)));
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_FSM_ACCESS_REMOVE_TRANS_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getFSMTransitionAttributes(currFSM), code);
@@ -161,26 +161,33 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_ADD_STATE:
 				model.addState(currFSM, view.getTextContent(code));
 				view.clearTextContents(code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_ADD_STATES:
 				model.addStates(currFSM, view.getIntegerContent(code));
 				view.clearTextContents(code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_REMOVE_STATE:
 				model.removeState(currFSM, view.getTextContent(code));
 				view.clearTextContents(code);
+				updateViewFSM(view.getCurrentFSM());
+				break;
 			case CodeReference.CODE_RENAME_STATE:
 				model.renameState(currFSM, view.getTextContent(code, 0), view.getTextContent(code, 1));
 				view.clearTextContents(code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_ADD_EDIT_STATE_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getFSMStateAttributes(currFSM), code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_EDIT_STATE_ATTRIBUTE:
 				ArrayList<String> grab = view.getContent(code);
 				for(String s : model.getFSMStateAttributes(currFSM)) {
 					model.setStateAttribute(currFSM, view.getTextContent(CodeReference.CODE_ACCESS_EDIT_STATE), s, grab.contains(s));
 				}
+				updateViewFSM(view.getCurrentFSM());
 				break;
 				
 
@@ -189,44 +196,55 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_ADD_EVENT:
 				model.addEvent(currFSM, view.getTextContent(code));
 				view.clearTextContents(code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_ADD_EVENTS:
 				model.addEvents(currFSM, view.getIntegerContent(code));
 				view.clearTextContents(code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_REMOVE_EVENT:
 				model.removeEvent(currFSM, view.getTextContent(code));
 				view.clearTextContents(code);
+				updateViewFSM(view.getCurrentFSM());
+				break;
 			case CodeReference.CODE_RENAME_EVENT:
 				model.renameEvent(currFSM, view.getTextContent(code, 0), view.getTextContent(code, 1));
 				view.clearTextContents(code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_ADD_EDIT_EVENT_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getFSMEventAttributes(currFSM), code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_EDIT_EVENT_ATTRIBUTE:
 				ArrayList<String> grab2 = view.getContent(code);
 				for(String s : model.getFSMEventAttributes(currFSM)) {
 					model.setEventAttribute(currFSM, view.getTextContent(CodeReference.CODE_ACCESS_EDIT_EVENT), s, grab2.contains(s));
 				}
+				updateViewFSM(view.getCurrentFSM());
 				break;
 				
 		//-- Transitions  -------------------------------------
 
 			case CodeReference.CODE_ADD_TRANSITION:
 				addTransition(currFSM, code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_REMOVE_TRANSITION:
 				removeTransition(currFSM, code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_ADD_EDIT_TRANS_ATTRIBUTE:
 				appendSingleChosenAttribute(model.getFSMTransitionAttributes(currFSM), code);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_EDIT_TRANS_ATTRIBUTE:
 				ArrayList<String> grab3 = view.getContent(code);
 				for(String s : model.getFSMTransitionAttributes(currFSM)) {
 					model.setEventAttribute(currFSM, view.getTextContent(CodeReference.CODE_ACCESS_EDIT_TRANS), s, grab3.contains(s));
 				}
+				updateViewFSM(view.getCurrentFSM());
 				break;
 				
 		//-- Admin  -------------------------------------------
@@ -235,26 +253,31 @@ public class FiniteStateMachine implements InputReceiver{
 				saveFSM(currFSM);
 				break;
 			case CodeReference.CODE_SAVE_IMG:
-				new PopoutAlert(250, 200, "Image file saved to: " + generateDotImage(currFSM));
+				view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Image file saved to: " + generateDotImage(currFSM));
 				break;
 			case CodeReference.CODE_SAVE_TKZ:
-				new PopoutAlert(250, 200, ".tkz file saved to: " + FormatConversion.createTikZFromFSM(model.generateFSMDot(currFSM), currFSM));
+				view.displayAlert((currFSM == null) ? "Error: No selected FSM" : ".tkz file saved to: " + FormatConversion.createTikZFromFSM(model.generateFSMDot(currFSM), currFSM));
 				break;
 			case CodeReference.CODE_SAVE_SVG:
-				new PopoutAlert(250, 200, ".svg file saved to: " + FormatConversion.createSVGFromFSM(model.generateFSMDot(currFSM), currFSM));
+				view.displayAlert((currFSM == null) ? "Error: No selected FSM" : ".svg file saved to: " + FormatConversion.createSVGFromFSM(model.generateFSMDot(currFSM), currFSM));
 				break;
 			case CodeReference.CODE_LOAD_SOURCE:
 				loadSource();
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_DELETE_SOURCE:
 				File remv = new File(ADDRESS_SOURCES + "/" + currFSM + ".fsm");
 				remv.delete();
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_DUPLICATE_FSM:
 				allotFSMToView(model.duplicate(currFSM));
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_CLOSE_FSM:
+				model.removeFSM(currFSM);
 				view.removeFSM(currFSM);
+				updateViewFSM(view.getCurrentFSM());
 				break;
 			default:
 				break;
@@ -268,7 +291,7 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_TRIM:
 				ret = model.trim(currFSM);
 				if(ret == null) {
-					view.displayAlert("Error: FSM given to trim did not possess attributes: State - Initial, Marked");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to trim did not possess attributes: State - Initial, Marked");
 				}
 				else {
 					allotFSMToView(ret);
@@ -277,7 +300,7 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_ACCESSIBLE:
 				ret = model.makeAccessible(currFSM);
 				if(ret == null) {
-					view.displayAlert("Error: FSM given to make accessible did not possess attributes: State - Initial");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to make accessible did not possess attributes: State - Initial");
 				}
 				else {
 					allotFSMToView(ret);
@@ -286,7 +309,7 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_CO_ACCESSIBLE:
 				ret = model.makeCoAccessible(currFSM);
 				if(ret == null) {
-					view.displayAlert("Error: FSM given to make coaccessible did not possess attributes: State - Initial, Marked");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to make coaccessible did not possess attributes: State - Initial, Marked");
 				}
 				else {
 					allotFSMToView(ret);
@@ -295,7 +318,7 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_OBSERVER:
 				ret = model.buildObserver(currFSM);
 				if(ret == null) {
-					view.displayAlert("Error: FSM given to build an Observer did not possess attributes: State - Initial, Event - Observable");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to build an Observer did not possess attributes: State - Initial, Event - Observable");
 				}
 				else {
 					allotFSMToView(ret);
@@ -305,7 +328,7 @@ public class FiniteStateMachine implements InputReceiver{
 				ArrayList<String> noms = view.getContent(code);
 				ret = model.performProduct(noms);
 				if(ret == null) {
-					view.displayAlert("Error: An FSM given to make Product did not possess attributes: State - Initial");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: An FSM given to make Product did not possess attributes: State - Initial");
 				}
 				else {
 					allotFSMToView(ret);
@@ -319,7 +342,7 @@ public class FiniteStateMachine implements InputReceiver{
 				ArrayList<String> noms2 = view.getContent(code);
 				ret = model.performParallelComposition(noms2);
 				if(ret == null) {
-					view.displayAlert("Error: An FSM given to make Parallel Composition did not possess attributes: State - Initial");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: An FSM given to make Parallel Composition did not possess attributes: State - Initial");
 				}
 				else {
 					allotFSMToView(ret);
@@ -332,26 +355,27 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_BLOCKING:
 				Boolean res = model.isBlocking(currFSM);
 				if(res == null) {
-					view.displayAlert("Error: FSM given to query Blocking did not possess attributes: State - Initial");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to query Blocking did not possess attributes: State - Initial");
 				}
 				else {
-					view.displayAlert("FSM is " + (res ? "" : "not") + " blocking");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "FSM is " + (res ? "" : "not") + " blocking");
 				}
 				break;
 			case CodeReference.CODE_STATE_EXISTS:
 				String chkSt = view.getTextContent(code);
 				Boolean res2 = model.stateExists(currFSM, chkSt);
 				if(res2 == null) {
-					view.displayAlert("Requisite FSM to query presence of State does not exist");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Requisite FSM to query presence of State does not exist");
 				}
 				else {
-					view.displayAlert("FSM is " + (res2 ? "" : "not") + " blocking");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "FSM is " + (res2 ? "" : "not") + " blocking");
 				}
 				break;
 			default:
-				break;
+				return;
 			}
-		}
+		updateViewFSM(view.getCurrentFSM());
+	}
 	
 	private void codeHandlingUStructure(int code, int mouseType) {
 		switch(code) {
@@ -394,7 +418,7 @@ public class FiniteStateMachine implements InputReceiver{
 	
 	private void saveFSM(String currFSM) {
 		String src = model.exportFSM(currFSM);
-		File f = new File(ADDRESS_SOURCES + "/" + src + ".fsm");
+		File f = new File(ADDRESS_SOURCES + "/" + currFSM + ".fsm");
 		RandomAccessFile raf;
 		try {
 			raf = new RandomAccessFile(f, "rw");
@@ -404,7 +428,8 @@ public class FiniteStateMachine implements InputReceiver{
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		new PopoutAlert(250, 200, "Source file saved to: " + f.getAbsolutePath());
+		System.out.println(f.getPath());
+		view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Source file saved to: " + f.getPath());
 	}
 	
 	private void generateRandomFSM(int code) {

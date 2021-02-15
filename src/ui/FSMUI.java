@@ -20,9 +20,9 @@ import visual.frame.WindowFrame;
 /**
  * 
  * TODO: Auto-load some FSMs on start up (settings menu?) (as an option to the user)
- * TODO: Trim is kinda broken, leaves out part of the resulting path; CoAccessible is broken
  * TODO: ImagePage is a headache to look at
- * TODO: Generate Image/FSM into file system seems broken
+ * 
+ * TODO: Trim is kinda broken, leaves out part of the resulting path; CoAccessible is broken - CAN'T REPLICATE, FIXED?
  * 
  * @author Ada Clevinger
  *
@@ -36,6 +36,9 @@ public class FSMUI implements InputReceiver{
 	private final static String WINDOW_NAME = "Home";
 	private final static int CODE_BASE_OPTIONS_HEADER = 3500;
 	private final static int CODE_BASE_IMAGE_HEADER = 4000;
+	
+	private final static int DEFAULT_POPUP_WIDTH = 400;
+	private final static int DEFAULT_POPUP_HEIGHT = 250;
 
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -51,8 +54,6 @@ public class FSMUI implements InputReceiver{
 	private HeaderSelect imageHeader;
 	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
 	private HeaderSelect optionHeader;
-	
-	private WindowFrame loading;
 	
 	//-- System Information  ----------------------------------
 	
@@ -95,7 +96,7 @@ public class FSMUI implements InputReceiver{
 		int wid = frame.getWidth();
 		int hei = frame.getHeight();
 		int headerHeight = (int)(hei * (1 - PANEL_RATIO_VERTICAL));
-		imagePage = new ImagePage(wid / 2, headerHeight, wid / 2, hei - headerHeight);
+		imagePage = new ImagePage(wid / 2, headerHeight, wid / 2, hei - headerHeight, this);
 		optionPageManager = new OptionPageManager(this, 0, headerHeight, wid / 2, hei - headerHeight);
 		optionHeader = new HeaderSelect(0, 0, wid / 2, headerHeight, CODE_BASE_OPTIONS_HEADER);
 		imageHeader = new HeaderSelect(wid / 2, 0, wid / 2, headerHeight, CODE_BASE_IMAGE_HEADER); 
@@ -111,8 +112,32 @@ public class FSMUI implements InputReceiver{
 
 //---  Operations   ---------------------------------------------------------------------------
 	
+	//-- Input Handling  --------------------------------------
+	
+	public void receiveCode(int code, int mouseType) {
+		if(code - CODE_BASE_OPTIONS_HEADER >= 0 && code - CODE_BASE_OPTIONS_HEADER < optionPageManager.getOptionPageList().length) {
+			optionPageManager.setCurrentOptionPageIndex(code - CODE_BASE_OPTIONS_HEADER);
+			updateOptionHeader();
+			updateActiveOptionPage();
+		}
+		else if(code - CODE_BASE_IMAGE_HEADER >= 0 && code - CODE_BASE_IMAGE_HEADER < imagePage.getImageNames().size()){
+			imagePage.setCurrentImageIndex(code - CODE_BASE_IMAGE_HEADER);
+			updateImageHeader();
+			updateImagePanel();
+		}
+		else {
+			reference.receiveCode(code, mouseType);
+		}
+	}
+	
+	public void receiveKeyInput(char code, int keyType) {
+		reference.receiveKeyInput(code, keyType);
+	}
+	
+	//-- User Interaction Popups  -----------------------------
+	
 	public void displayAlert(String text) {
-		new PopoutAlert(250, 200, text);
+		new PopoutAlert(DEFAULT_POPUP_WIDTH, DEFAULT_POPUP_HEIGHT, text);
 	}
 	
 	public String requestFolderPath(String defDir, String display) {
@@ -153,26 +178,8 @@ public class FSMUI implements InputReceiver{
 			return null;
 		}
 	}
-	
-	public void receiveCode(int code, int mouseType) {
-		if(code - CODE_BASE_OPTIONS_HEADER >= 0 && code - CODE_BASE_OPTIONS_HEADER < optionPageManager.getOptionPageList().length) {
-			optionPageManager.setCurrentOptionPageIndex(code - CODE_BASE_OPTIONS_HEADER);
-			updateOptionHeader();
-			updateActiveOptionPage();
-		}
-		else if(code - CODE_BASE_IMAGE_HEADER >= 0 && code - CODE_BASE_IMAGE_HEADER < imagePage.getImageNames().size()){
-			imagePage.setCurrentImageIndex(code - CODE_BASE_IMAGE_HEADER);
-			updateImageHeader();
-			updateImagePanel();
-		}
-		else {
-			reference.receiveCode(code, mouseType);
-		}
-	}
-	
-	public void receiveKeyInput(char code, int keyType) {
-		reference.receiveKeyInput(code, keyType);
-	}
+
+	//-- Image Page Manipulation  -----------------------------
 	
 	public void addFSM(String ref, String img) {
 		imagePage.allotFSM(ref, img);
@@ -191,6 +198,8 @@ public class FSMUI implements InputReceiver{
 		updateImageHeader();
 		updateImagePanel();
 	}
+	
+	//-- Option Page Manipulation  ----------------------------
 	
 	public void clearTextContents(int code) {
 		optionPageManager.clearTextContents(code);

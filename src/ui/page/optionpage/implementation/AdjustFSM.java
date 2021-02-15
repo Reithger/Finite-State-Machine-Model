@@ -21,7 +21,7 @@ public class AdjustFSM extends OptionPage {
 	// -- Scripts ---------------------------------------------
 
 	private final static String HEADER = "Adjust FSM";
-	private final static String CATEGORY_GENERATE = "Generate FSM Simple";
+	private final static String CATEGORY_GENERATE = "Generate FSM";
 	private final static String CATEGORY_EDIT_FSM = "Edit FSM Properties";
 	private final static String CATEGORY_EDIT_STATES = "Edit FSM States";
 	private final static String CATEGORY_EDIT_EVENTS = "Edit FSM Events";
@@ -44,10 +44,10 @@ public class AdjustFSM extends OptionPage {
 		addEntryText(CATEGORY_GENERATE, "Number of Transitions", false, CodeReference.CODE_ACCESS_NUM_TRANS, 1, false);
 		addEntryCheckbox(CATEGORY_GENERATE, "Deterministic?", false, CodeReference.CODE_ACCESS_NON_DETERMINISTIC);
 		addEntryText(CATEGORY_GENERATE, "Name", false, CodeReference.CODE_ACCESS_FSM_NAME, 1, true);
+		addEntryEmpty(CATEGORY_GENERATE, "Generate", true, CodeReference.CODE_GENERATE_FSM);
 		addEntryList(CATEGORY_GENERATE, "State Attributes", false, CodeReference.CODE_ACCESS_STATE_ATTRIBUTES, CodeReference.CODE_ADD_STATE_ATTRIBUTE);
 		addEntryList(CATEGORY_GENERATE, "Event Attributes", false, CodeReference.CODE_ACCESS_EVENT_ATTRIBUTES, CodeReference.CODE_ADD_EVENT_ATTRIBUTE);
 		addEntryList(CATEGORY_GENERATE, "Transition Attributes", false, CodeReference.CODE_ACCESS_TRANS_ATTRIBUTES, CodeReference.CODE_ADD_TRANS_ATTRIBUTE);
-		addEntryEmpty(CATEGORY_GENERATE, "Generate", true, CodeReference.CODE_GENERATE_FSM);
 		
 		addEntryText(CATEGORY_EDIT_FSM, "Rename FSM", true, CodeReference.CODE_RENAME_FSM, 1, true);
 		addEntryList(CATEGORY_EDIT_FSM, "Add State Attributes", true, CodeReference.CODE_FSM_ADD_STATE_ATTRIBUTE, CodeReference.CODE_FSM_ACCESS_ADD_STATE_ATTRIBUTE);
