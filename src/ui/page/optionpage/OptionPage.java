@@ -60,7 +60,7 @@ public abstract class OptionPage {
 		addFraming();
 	}
 	
-	public void drawNormalPage() {
+	private void drawNormalPage() {
 		int wid = p.getWidth();
 		int hei = p.getHeight();
 		int startY = hei / 20;
@@ -77,7 +77,7 @@ public abstract class OptionPage {
 		}
 	}
 	
-	public void drawHelpPage() {
+	private void drawHelpPage() {
 		p.handleText("help_text", true, p.getWidth() / 2, p.getHeight() / 2, p.getWidth() * 9 / 10, p.getHeight() * 9 / 10, HELP_FONT, help);
 		p.handleRectangle("help_rect", true, 5, p.getWidth() / 2, p.getHeight() / 2, p.getWidth() * 9 / 10, p.getHeight() * 9 / 10, Color.white, Color.black);
 	}

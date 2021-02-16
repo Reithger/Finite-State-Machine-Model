@@ -1,6 +1,7 @@
 package ui.popups;
 
 import java.awt.Color;
+import java.util.ArrayList;
 
 import visual.composite.popout.PopoutWindow;
 
@@ -15,48 +16,77 @@ public class PopoutInputRequest extends PopoutWindow{
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
+	private int entryNum;
 	private volatile boolean ready;
-	private String out;
+	private ArrayList<String> out;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public PopoutInputRequest(String text) {
+	public PopoutInputRequest(String text, int num) {
 		super(POPUP_WIDTH, POPUP_HEIGHT);
+		out = new ArrayList<String>();
+		entryNum = num;
 		ready = false;
 		int posX = POPUP_WIDTH / 2;
 		int posY = POPUP_HEIGHT / 6;
 		
 		int labelWidth = POPUP_WIDTH * 3 / 4;
 		int labelHeight = POPUP_HEIGHT / 3;
-		this.handleText("tex", false, posX, posY, labelWidth, labelHeight, null, text);
+		handleText("tex", false, posX, posY, labelWidth, labelHeight, null, text);
+		handleRectangle("rect_phrase", false, 3, posX, posY, labelWidth * 6 / 5, labelHeight, Color.white, Color.black);
+		
+		/*
+		 * 
+		posY += POPUP_HEIGHT / 3;
+		int submitWidth = POPUP_WIDTH / (num + 2);
+		int distBet = POPUP_WIDTH / (num + 1);
+		posX = distBet * 3 / 2;
+		int submitHeight = POPUP_HEIGHT / 4;
+		for(int i = 0; i < num; i++) {
+			handleTextButton("subm_" + i, false, posX, posY, submitWidth, submitHeight, null, "Submit", CODE_SUBMIT + i, Color.white, Color.black);
+			posX += distBet;
+		}
+		 */
 		
 		posY += POPUP_HEIGHT / 3;
-		int entryWidth = POPUP_WIDTH / 2;
+		int entryWidth = POPUP_WIDTH / (num + 2);
+		int distBet = POPUP_WIDTH / (num + 1);
+		posX = distBet;
 		int entryHeight = POPUP_HEIGHT / 5;
-		this.handleTextEntry(ELEMENT_NAME_ENTRY, false, posX, posY, entryWidth, entryHeight, -55, null, "");
-		this.handleRectangle("rect", false, 5, posX, posY, entryWidth, entryHeight, Color.white, Color.black);
+		for(int i = 0; i < num; i++) {
+			handleTextEntry(compileEntryName(i), false, posX, posY, entryWidth, entryHeight, -55 - i, null, "");
+			handleRectangle("rect_" + i, false, 5, posX, posY, entryWidth, entryHeight, Color.white, Color.black);
+			posX += distBet;
+		}
 		
+		posX = POPUP_WIDTH / 2;
 		posY += POPUP_HEIGHT / 3;
 		int submitWidth = POPUP_WIDTH / 2;
 		int submitHeight = POPUP_HEIGHT / 4;
-		this.handleTextButton("subm", false, posX, posY, submitWidth, submitHeight, null, "Submit", CODE_SUBMIT, Color.white, Color.black);
+		handleTextButton("subm", false, posX, posY, submitWidth, submitHeight, null, "Submit", CODE_SUBMIT, Color.white, Color.black);
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------
 	
-	public String getSubmitted() {
+	public ArrayList<String> getSubmitted() {
 		while(!ready) {
 			Thread.onSpinWait();
 		};
 		return out;
 	}
+	
+	private String compileEntryName(int in) {
+		return ELEMENT_NAME_ENTRY + "_" + in;
+	}
 
 //---  Input Handling   -----------------------------------------------------------------------
 	
 	@Override
-	public void clickAction(int arg0, int arg1, int arg2) {
-		if(arg0 == CODE_SUBMIT) {
-			out = this.getStoredText(ELEMENT_NAME_ENTRY);
+	public void clickAction(int code, int arg1, int arg2) {
+		if(code == CODE_SUBMIT) {
+			for(int i = 0; i < entryNum; i++) {
+				out.add(getStoredText(compileEntryName(i)));
+			}
 			ready = true;
 		}
 	}

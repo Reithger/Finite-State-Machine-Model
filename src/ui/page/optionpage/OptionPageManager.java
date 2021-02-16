@@ -43,6 +43,8 @@ public class OptionPageManager {
 	public void updateSize(int x, int y, int wid, int hei) {
 		p.setLocation(x, y);
 		p.resize(wid, hei);
+		p.removeAllElements();
+		getCurrentPage().drawPage();
 	}
 	
 	private void generateHandlePanel(int x, int y, int width, int height) {

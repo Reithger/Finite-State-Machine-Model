@@ -25,8 +25,7 @@ public class UStructurePage extends OptionPage{
 		addCategory(CATEGORY_USTRUC);
 		
 		addEntryList(CATEGORY_USTRUC, "Plant", false, -1, CodeReference.CODE_SELECT_PLANT);
-		addEntryText(CATEGORY_USTRUC, "Bad Transitions", true, CodeReference.CODE_ADD_BAD_TRANS, 3, false);
-		addEntryTextDisplay(CATEGORY_USTRUC, "", false, CodeReference.CODE_DISPLAY_BAD_TRANS_START);
+		addEntryList(CATEGORY_USTRUC, "Bad Transitions", false, CodeReference.CODE_ADD_BAD_TRANS, CodeReference.CODE_DISPLAY_BAD_TRANS_START);
 		addEntryTextDisplay(CATEGORY_USTRUC, "Agents", true, CodeReference.CODE_BUILD_AGENTS);
 		addEntryCheckbox(CATEGORY_USTRUC, "Display U-Structure?", false, CodeReference.CODE_TOGGLE_USTRUCT);
 		addEntryEmpty(CATEGORY_USTRUC, "Build U-Structure", true, CodeReference.CODE_BUILD_USTRUCT);

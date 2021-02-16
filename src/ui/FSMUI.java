@@ -12,17 +12,13 @@ import filemeta.FileChooser;
 import ui.headers.HeaderSelect;
 import ui.page.imagepage.ImagePage;
 import ui.page.optionpage.OptionPageManager;
+import ui.popups.PopoutAgentSelection;
 import ui.popups.PopoutInputRequest;
 import visual.composite.popout.PopoutAlert;
 import visual.composite.popout.PopoutSelectList;
 import visual.frame.WindowFrame;
 
 /**
- * 
- * TODO: Auto-load some FSMs on start up (settings menu?) (as an option to the user)
- * TODO: ImagePage is a headache to look at
- * 
- * TODO: Trim is kinda broken, leaves out part of the resulting path; CoAccessible is broken - CAN'T REPLICATE, FIXED?
  * 
  * @author Ada Clevinger
  *
@@ -164,8 +160,15 @@ public class FSMUI implements InputReceiver{
 	}
 	
 	public String requestUserInput(String phrase) {
-		PopoutInputRequest pIR = new PopoutInputRequest(phrase);
-		String result = pIR.getSubmitted();
+		PopoutInputRequest pIR = new PopoutInputRequest(phrase, 1);
+		String result = pIR.getSubmitted().get(0);
+		pIR.dispose();
+		return result;
+	}
+	
+	public ArrayList<String> requestUserInput(String phrase, int size) {
+		PopoutInputRequest pIR = new PopoutInputRequest(phrase, size);
+		ArrayList<String> result = pIR.getSubmitted();
 		pIR.dispose();
 		return result;
 	}
@@ -179,6 +182,13 @@ public class FSMUI implements InputReceiver{
 		}
 	}
 
+	public ArrayList<String> requestAgentInput(ArrayList<String> inAgents, ArrayList<String> events, ArrayList<String> attrib){
+		PopoutAgentSelection pAS = new PopoutAgentSelection(inAgents, events, attrib);
+		ArrayList<String> res = pAS.getResult();
+		pAS.dispose();
+		return res;
+	}
+	
 	//-- Image Page Manipulation  -----------------------------
 	
 	public void addFSM(String ref, String img) {
@@ -250,6 +260,10 @@ public class FSMUI implements InputReceiver{
 	
 	public void setTextContent(int code, int posit, String ref) {
 		optionPageManager.setEntrySetContent(code, posit, ref);
+	}
+	
+	public void assignSymbols(String separator, String tr, String fal) {
+		PopoutAgentSelection.assignSymbols(separator, tr, fal);
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------

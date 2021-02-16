@@ -204,6 +204,10 @@ public class Manager {
 		return ProcessDES.findPrivateStates(fsms.get(ref));
 	}
 	
+	//-- U-Structure  -----------------------------------------
+	
+	
+	
 	//-- Manipulate  ------------------------------------------
 	
 		//-- FSM  ---------------------------------------------
@@ -412,6 +416,20 @@ public class Manager {
 	
 	public String[] getTransitionAttributeList() {
 		return AttributeList.TRANSITION_ATTRIBUTES;
+	}
+	
+	public ArrayList<String> getFSMStateList(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getStateNames();
+	}
+	
+	public ArrayList<String> getFSMEventList(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getEventNames();
 	}
 	
 	public ArrayList<String> getFSMStateAttributes(String ref){

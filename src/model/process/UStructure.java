@@ -175,47 +175,8 @@ public class UStructure {
 			}
 		}
 	}
-	
-//---  Getter Methods   -----------------------------------------------------------------------
-	
-	public TransitionSystem getUStructure() {
-		return uStructure;
-	}
-		
-	public TransitionSystem getPlantFSM() {
-		return plantFSM;
-	}
 
-	public HashSet<String> getIllegalConfigOneStates(){
-		return badGoodStates;
-	}
-	
-	public HashSet<String> getIllegalConfigTwoStates(){
-		return goodBadStates;
-	}
-	
-//---  Support Methods   ----------------------------------------------------------------------
-	
-	private HashSet<String> generateObservablePermutation(HashSet<String> tags, int index,  String total, boolean[] sight){
-		if(index >= sight.length) {
-			tags.add(total);
-			return tags;
-		}
-		if(sight[index]) {
-			tags.addAll(generateObservablePermutation(tags, index + 1,  total + ", " + UNOBSERVED_EVENT, sight));
-			return tags;
-		}
-		else {
-			ArrayList<String> events = agents[index].getEventsAttributeSet(Agent.attributeObservableRef, true);
-			for(int i = 0; i < events.size(); i++) {
-				tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + events.get(i), sight));
-			}
-			tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + UNOBSERVED_EVENT, sight));
-			return tags;
-		}
-	}
-
-	private void findIllegalStates() {
+	public void findIllegalStates() {
 		goodBadStates = new HashSet<String>();
 		badGoodStates = new HashSet<String>();
 		for(String state : uStructure.getStateNames()) {
@@ -256,6 +217,45 @@ public class UStructure {
 					}
 				}
 			}
+		}
+	}
+
+//---  Getter Methods   -----------------------------------------------------------------------
+	
+	public TransitionSystem getUStructure() {
+		return uStructure;
+	}
+		
+	public TransitionSystem getPlantFSM() {
+		return plantFSM;
+	}
+
+	public HashSet<String> getIllegalConfigOneStates(){
+		return badGoodStates;
+	}
+	
+	public HashSet<String> getIllegalConfigTwoStates(){
+		return goodBadStates;
+	}
+	
+//---  Support Methods   ----------------------------------------------------------------------
+	
+	private HashSet<String> generateObservablePermutation(HashSet<String> tags, int index,  String total, boolean[] sight){
+		if(index >= sight.length) {
+			tags.add(total);
+			return tags;
+		}
+		if(sight[index]) {
+			tags.addAll(generateObservablePermutation(tags, index + 1,  total + ", " + UNOBSERVED_EVENT, sight));
+			return tags;
+		}
+		else {
+			ArrayList<String> events = agents[index].getEventsAttributeSet(Agent.attributeObservableRef, true);
+			for(int i = 0; i < events.size(); i++) {
+				tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + events.get(i), sight));
+			}
+			tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + UNOBSERVED_EVENT, sight));
+			return tags;
 		}
 	}
 

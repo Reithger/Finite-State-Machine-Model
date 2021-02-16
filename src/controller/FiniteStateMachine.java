@@ -1,9 +1,7 @@
 package controller;
 
-import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -12,12 +10,21 @@ import java.util.Scanner;
 import controller.convert.FormatConversion;
 import filemeta.FileChooser;
 import filemeta.config.Config;
+import model.AttributeList;
 import model.Manager;
 import ui.FSMUI;
 import visual.composite.popout.PopoutAlert;
 
 /*
+ * TODO: Auto-load some FSMs on start up (settings menu?) (as an option to the user)
+ * TODO: ImagePage is a headache to look at
+ * TODO: U-Structure needs re-integrating
  * 
+ * TODO: Tooltip popup when hovering over Categories/Entry Sets
+ * TODO: Loading Icon should be fancier
+ * TODO: Means of having FSM in scope without generating graphviz image (they get too big!)
+ * 
+ * TODO: Manager needs way to export list of Transitions for a FSM, review output formats for that
  * 
  */
 
@@ -39,6 +46,10 @@ public class FiniteStateMachine implements InputReceiver{
 			"# Format as 'name = address', the \" = \" spacing is necessary\r\n" + 
 			"# It's awkward but it makes the file reading easier and I'm telling you this directly";
 	
+	private final static String SEPARATOR = " - ";
+	private final static String SYMBOL_FALSE = "x";
+	private final static String SYMBOL_TRUE = "o";
+	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private FSMUI view;
@@ -47,11 +58,9 @@ public class FiniteStateMachine implements InputReceiver{
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public FiniteStateMachine() {
-		Dimension scrnSize = Toolkit.getDefaultToolkit().getScreenSize();
-		Rectangle winSize = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-
 		Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
 		view = new FSMUI((int)(r.getWidth()), (int)(r.getHeight()), this);
+		view.assignSymbols(SEPARATOR, SYMBOL_TRUE, SYMBOL_FALSE);
 		model = new Manager();
 		FormatConversion.assignPaths(ADDRESS_IMAGES, ADDRESS_CONFIG);
 		fileConfiguration();
@@ -368,7 +377,7 @@ public class FiniteStateMachine implements InputReceiver{
 					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Requisite FSM to query presence of State does not exist");
 				}
 				else {
-					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "FSM is " + (res2 ? "" : "not") + " blocking");
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "State " + chkSt + " is " + (res2 ? "" : "not") + " in the FSM");
 				}
 				break;
 			default:
@@ -382,15 +391,32 @@ public class FiniteStateMachine implements InputReceiver{
 			case CodeReference.CODE_SELECT_PLANT:
 				requestFSMChoice(code);
 				break;
-			case CodeReference.CODE_ADD_BAD_TRANS:
+			case CodeReference.CODE_DISPLAY_BAD_TRANS_START:
+				ArrayList<String> res = view.requestUserInput("Please provide the bad transition in format (state 1), (event), (state 2)", 3);
+				view.setTextContent(CodeReference.CODE_DISPLAY_BAD_TRANS_START, view.getContent(CodeReference.CODE_DISPLAY_BAD_TRANS_START).size(), res.get(0) + "  ----  " + res.get(1) + "  --->  " + res.get(2));
 				break;
 			case CodeReference.CODE_BUILD_AGENTS:
+				ArrayList<String> attrib = new ArrayList<String>();
+				attrib.add(AttributeList.ATTRIBUTE_OBSERVABLE);
+				attrib.add(AttributeList.ATTRIBUTE_CONTROLLABLE);
+				ArrayList<String> content = view.getContent(CodeReference.CODE_BUILD_AGENTS);
+				ArrayList<String> agents = view.requestAgentInput(content, model.getFSMEventList(view.getCurrentFSM()), attrib);
+				view.clearTextContents(CodeReference.CODE_BUILD_AGENTS);
+				for(int i = 0; i < agents.size(); i++) {
+					view.setTextContent(CodeReference.CODE_BUILD_AGENTS, i, agents.get(i));
+				}
 				break;
 			case CodeReference.CODE_BUILD_USTRUCT:
-				break;
-			case CodeReference.CODE_TOGGLE_USTRUCT:
-				break;
-			case CodeReference.CODE_DISPLAY_BAD_TRANS_START:
+				String plant = view.getTextContent(CodeReference.CODE_SELECT_PLANT);
+				ArrayList<String> badTrans = view.getContent(CodeReference.CODE_ADD_BAD_TRANS);
+				ArrayList<String> agentInfo = view.getContent(CodeReference.CODE_BUILD_AGENTS);
+				
+				
+				
+				
+				
+				
+				boolean display = view.getCheckboxContent(CodeReference.CODE_TOGGLE_USTRUCT);
 				break;
 			default:
 				break;

@@ -41,7 +41,7 @@ public class EntryList extends EntryTextDisplay{
 		try {
 			int val = Integer.parseInt(base.substring(base.lastIndexOf("_") + 1));
 			deleteContentAt(val);
-			p.removeElementPrefixed(formTextButtonName(val));
+			p.removeElementPrefixed(prefix());
 			return false;
 		}
 		catch(Exception e) {
