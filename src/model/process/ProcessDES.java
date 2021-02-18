@@ -1,6 +1,8 @@
 package model.process;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import model.fsm.TransitionSystem;
 
@@ -50,12 +52,35 @@ public class ProcessDES {
 		return ProcessAnalysis.testOpacity(in);
 	}
 	
+	//-- UStructure  ------------------------------------------
+	
+	public static TransitionSystem buildUStructure(TransitionSystem plant, ArrayList<String> attr, HashMap<String, HashSet<String>> badTrans, boolean[][][] agents) {
+		ArrayList<Agent> agen = new ArrayList<Agent>();
+		
+		ArrayList<String> event = plant.getEventNames();
+		
+		for(int i = 0; i < agents.length; i++) {
+			Agent a = new Agent(attr, event);
+			for(int j = 0; j < event.size(); j++) {
+				for(int k = 0; k < attr.size(); k++) {
+					if(agents[i][j][k])
+						a.setAttributeTrue(attr.get(k), event.get(j));
+				}
+			}
+			agen.add(a);
+		}
+		
+		UStructure ustr = new UStructure(plant, attr, badTrans, agen);
+		return ustr.getUStructure();
+	}
+	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
-	public static void assignAttributeReferences(String init, String mark, String priv, String obs) {
+	public static void assignAttributeReferences(String init, String mark, String priv, String obs, String cont) {
 		ProcessAnalysis.assignAttributeReferences(priv, init);
 		ProcessOperation.assignAttributeReferences(init, obs);
 		ProcessClean.assignAttributeReferences(init, mark);
+		UStructure.assignAttributeReferences(init, obs, cont);
 	}
 	
 }

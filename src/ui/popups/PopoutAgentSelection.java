@@ -16,6 +16,7 @@ public class PopoutAgentSelection extends PopoutWindow{
 	private final static int CODE_ADD_AGENT = 10;
 	private final static int CODE_SUBMIT = 15;
 	private final static int CODE_TOGGLE_EVENT = 500;
+	private final static int CODE_REMOVE_RANGE = 1000;
 	private final static double BLOCK_SIZE_RATIO = 1.0 / 6;
 	
 	private Font DEFAULT_FONT = new Font("Serif", Font.BOLD, 32);
@@ -26,7 +27,7 @@ public class PopoutAgentSelection extends PopoutWindow{
 	private ArrayList<AgentRep> agents;
 	private ArrayList<String> refEvents;
 	private ArrayList<String> attributes;
-	private boolean ready;
+	private volatile boolean ready;
 
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -36,7 +37,8 @@ public class PopoutAgentSelection extends PopoutWindow{
 		refEvents = inEven;
 		agents = new ArrayList<AgentRep>();
 		for(String s : inAge) {
-			agents.add(new AgentRep(s));
+			if(!s.equals(""))
+				agents.add(new AgentRep(s));
 		}
 		attributes = inAttrib;
 		
@@ -52,46 +54,75 @@ public class PopoutAgentSelection extends PopoutWindow{
 		}
 		int vertSpacing = (int)(WIDTH * BLOCK_SIZE_RATIO);
 		int height = vertSpacing * 2 / 3;
-		int posY = vertSpacing / 2;
-		int posX = horizSpacing;
-		removeElementPrefixed("");
-		ArrayList<EventRep> events = agents.get(0).getEvents();
-		for(int i = 0; i < events.size(); i++) {
-			String nom = events.get(i).getName();
-			handleText("event_name_" + i, false, posX - horizSpacing / 2, posY, horizSpacing, height, DEFAULT_FONT, nom);
-			
+
+		//Drawing: Key for true/false submission data
+		
+		int posY = vertSpacing / 3;
+		int posX = horizSpacing / 3;
+		
+		int size = horizSpacing / 5;
+		
+		handleRectangle("key_rect_false", false, 5, posX, posY, size, size, Color.red, Color.black);
+		handleText("key_text_false", false, posX + horizSpacing / 4, posY, size, size, SMALLER_FONT, "= False");
+		
+		posY += vertSpacing / 3;
+		
+		handleRectangle("key_rect_true", false, 5, posX, posY, size, size, Color.green, Color.black);
+		handleText("key_text_true", false, posX + horizSpacing / 4, posY, size, size, SMALLER_FONT, "= True");
+		
+		//Drawing: Event name labels with subscript for attributes
+		
+		posY = vertSpacing / 2;
+		posX = horizSpacing;
+		
+		for(int i = 0; i < refEvents.size(); i++) {
+			String nom = refEvents.get(i);
+			handleText("event_name_" + i, false, posX + horizSpacing / 2, posY, horizSpacing, height, DEFAULT_FONT, nom);
+
+			//Drawing: Attributes subscript
 			for(int j = 0; j < attributes.size(); j++) {
 				int texWid = getHandlePanel().getTextWidth(" " + attributes.get(j) + " ", SMALLER_FONT);
-				handleText("attr_name_tag_" + attributes.get(j) + "_" + i, false, posX + texWid / 2, posY + vertSpacing / 3, texWid, height, SMALLER_FONT, attributes.get(j));
+				handleText("attr_name_tag_" + attributes.get(j) + "_" + i, false, posX + texWid / 2, posY + vertSpacing / 4, texWid, height, SMALLER_FONT, attributes.get(j));
 				posX += texWid;
 			}
 			
-			handleRectangle("event_border_" + i, false,  5, posX - horizSpacing / 2, posY, horizSpacing, height, Color.white, Color.black);
+			handleRectangle("event_border_top_" + i, false, 5, posX - horizSpacing / 2, posY, horizSpacing, height, Color.white, Color.black);
 		}
 		posY += height * 3 / 2;
 		int toggleEvents = CODE_TOGGLE_EVENT;
+		
+		//Drawing: Each agent with composite events w/ attribute info
+		
 		for(int i = 0; i < agents.size(); i++) {
-			posX = 0;
+			AgentRep ag = agents.get(i);
+			posX = horizSpacing / 2;
 			//Draw name (plant or i'th agent)
-			handleText("agent_name_" + i, false, posX + horizSpacing / 2, posY, horizSpacing, height, DEFAULT_FONT, i == 0 ? "Plant" : ("Agent " + i));
-			posX += horizSpacing / attributes.size() / 2;
-			for(int j = 0; j < events.size(); j++) {
-				EventRep e = events.get(j);
-				posX += horizSpacing / attributes.size();
+			handleText("agent_name_" + i, false, posX, posY, horizSpacing, height, DEFAULT_FONT, "Agent " + i);
+			handleButton("agent_name_remove_" + i, false, posX, posY, horizSpacing, height, CODE_REMOVE_RANGE + i);
+			posX += horizSpacing / 2;
+			removeElementPrefixed("event_attr_rect_tag_" + i);
+			for(int j = 0; j < refEvents.size(); j++) {
+				EventRep e = ag.getEvent(j);
+				posX += horizSpacing / attributes.size() / 2;
+				size = horizSpacing / attributes.size() / 3;
 				for(int k = 0; k < attributes.size(); k++) {
-					handleRectangle("event_attr_rect_tag_" + attributes.get(k) + "_" + i + "_" + j, false, 5, posX, posY + vertSpacing / 3, horizSpacing / attributes.size(), height, e.getValue(k) ? Color.DARK_GRAY : Color.white, Color.black);
-					handleButton("event_attr_butt_tag_" + attributes.get(k) + "_" + i + "_" + j, false, posX, posY + vertSpacing / 3, horizSpacing / attributes.size(), height, toggleEvents++);
+					handleRectangle("event_attr_rect_tag_" + i + "_" + j + "_" + attributes.get(k), false, 8, posX, posY, size, size, e.getValue(k) ? Color.green : Color.red, Color.black);
+					handleButton("event_attr_butt_tag_" + attributes.get(k) + "_" + i + "_" + j, false, posX, posY, size, size, toggleEvents++);
 					posX += horizSpacing / attributes.size();
 				}
-				posX -= horizSpacing / attributes.size() / 2;
-				handleRectangle("event_border_" + i, false,  5, posX - horizSpacing / 2, posY, horizSpacing, height, Color.white, Color.black);
+				posX -= horizSpacing / 2 - horizSpacing / attributes.size() / 2;
+				handleRectangle("event_border_agent_" + i + "_" + j, false,  5, posX - horizSpacing / 2, posY, horizSpacing, height, Color.white, Color.black);
 			}
 			posY += vertSpacing;
 		}
+		
+		//Drawing: Add agent button and submission of the totality
+		
 		posX = horizSpacing / 2;
 		handleText("agent_name_add", false, posX, posY, horizSpacing, height, DEFAULT_FONT, "+");
 		handleButton("agent_add_button", false, posX, posY, horizSpacing, height, CODE_ADD_AGENT);
-		posX += events.size() * height;
+		posY += height;
+		posX += refEvents.size() * height;
 		handleText("submit", false,  posX, posY, horizSpacing, height, DEFAULT_FONT, "Submit");
 		handleButton("submit_button", false,  posX, posY, horizSpacing, height, CODE_SUBMIT);
 		posY += height;
@@ -100,16 +131,28 @@ public class PopoutAgentSelection extends PopoutWindow{
 	
 	@Override
 	public void clickAction(int code, int x, int y) {
-		if(code >= CODE_TOGGLE_EVENT + agents.size() * refEvents.size() * attributes.size()) {
+		if(code >= CODE_TOGGLE_EVENT && code < CODE_REMOVE_RANGE) {
 			int pos = code - CODE_TOGGLE_EVENT;
 			int age = pos / (refEvents.size() * attributes.size());
 			int eve = (pos - age * (refEvents.size() * attributes.size())) / attributes.size();
 			int attr = (pos - age * (refEvents.size() * attributes.size())) % attributes.size();
 			agents.get(age).getEvents().get(eve).toggle(attr);
 		}
+		if(code >= CODE_REMOVE_RANGE) {
+			int pos = code - CODE_REMOVE_RANGE;
+			if(pos >= 0 && pos < agents.size()) {
+				for(int i = pos; i < agents.size() - 1; i++) {
+					agents.set(i, agents.get(i + 1));
+					agents.get(i).setName((i+1)+"");
+				}
+				agents.remove(agents.size() - 1);
+				removeElementPrefixed("");
+			}
+		}
 		switch(code) {
+		//TODO: Allow removal of an agent
 			case CODE_ADD_AGENT:
-				agents.add(new AgentRep(""+(agents.size() - 1), refEvents, attributes.size()));
+				agents.add(new AgentRep(""+(agents.size() + 1), refEvents, attributes.size()));
 				break;
 			case CODE_SUBMIT:
 				ready = true;
@@ -132,6 +175,7 @@ public class PopoutAgentSelection extends PopoutWindow{
 		while(!ready) {	}
 		ArrayList<String> out = new ArrayList<String>();
 		for(AgentRep a : agents) {
+			System.out.println(a.toString());
 			out.add(a.toString());
 		}
 		return out;

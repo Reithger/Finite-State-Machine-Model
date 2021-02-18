@@ -47,6 +47,10 @@ public class AgentRep {
 		SYMBOL_FALSE = fa;
 	}
 	
+	public void setName(String in) {
+		nom = in;
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String getName() {

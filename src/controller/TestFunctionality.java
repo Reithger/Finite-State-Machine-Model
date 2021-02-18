@@ -6,6 +6,7 @@ import controller.convert.FormatConversion;
 import input.CustomEventReceiver;
 import model.AttributeList;
 import model.Manager;
+import ui.popups.PopoutAgentSelection;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
@@ -13,6 +14,19 @@ import visual.panel.ElementPanel;
 public class TestFunctionality {
 
 	public static void main(String[] args) {
+		
+		ArrayList<String> a = new ArrayList<String>();
+		a.add("a");
+		a.add("b");
+		a.add("c");
+		ArrayList<String> b = new ArrayList<String>();
+		b.add("Observability");
+		b.add("Controlability");
+		
+		PopoutAgentSelection.assignSymbols("---", "o", "x");
+		PopoutAgentSelection pAS = new PopoutAgentSelection(new ArrayList<String>(), a, b);
+		System.out.println(pAS.getResult());
+		/*
 		Manager model = new Manager();
 		FormatConversion.assignPaths(FiniteStateMachine.ADDRESS_SOURCES, FiniteStateMachine.ADDRESS_CONFIG);
 		ArrayList<String> strAtt = new ArrayList<String>();
@@ -41,6 +55,7 @@ public class TestFunctionality {
 		
 		makeImageDisplay(trim, model, "Product");
 		makeImageDisplay(model.makeAccessible(trim), model, "Product");
+		*/
 	}
 	
 	private static String generateRandomFSM(String nom, Manager model, int a, int b, int c, boolean det, ArrayList<String> strAtt, ArrayList<String> eveAtt, ArrayList<String> tranAtt, ArrayList<Integer> numbers) {

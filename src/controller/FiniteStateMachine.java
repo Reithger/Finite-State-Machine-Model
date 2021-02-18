@@ -5,6 +5,8 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Scanner;
 
 import controller.convert.FormatConversion;
@@ -49,6 +51,8 @@ public class FiniteStateMachine implements InputReceiver{
 	private final static String SEPARATOR = " - ";
 	private final static String SYMBOL_FALSE = "x";
 	private final static String SYMBOL_TRUE = "o";
+	
+	private final static String REGEX_NEWLINE_REPLACE = ",;,";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -393,17 +397,20 @@ public class FiniteStateMachine implements InputReceiver{
 				break;
 			case CodeReference.CODE_DISPLAY_BAD_TRANS_START:
 				ArrayList<String> res = view.requestUserInput("Please provide the bad transition in format (state 1), (event), (state 2)", 3);
-				view.setTextContent(CodeReference.CODE_DISPLAY_BAD_TRANS_START, view.getContent(CodeReference.CODE_DISPLAY_BAD_TRANS_START).size(), res.get(0) + "  ----  " + res.get(1) + "  --->  " + res.get(2));
+				view.setTextContent(CodeReference.CODE_DISPLAY_BAD_TRANS_START, view.getContent(CodeReference.CODE_DISPLAY_BAD_TRANS_START).size(), res.get(0) + SEPARATOR + res.get(1) + SEPARATOR + res.get(2));
 				break;
 			case CodeReference.CODE_BUILD_AGENTS:
 				ArrayList<String> attrib = new ArrayList<String>();
 				attrib.add(AttributeList.ATTRIBUTE_OBSERVABLE);
 				attrib.add(AttributeList.ATTRIBUTE_CONTROLLABLE);
 				ArrayList<String> content = view.getContent(CodeReference.CODE_BUILD_AGENTS);
+				for(int i = 0; i < content.size(); i++) {
+					content.set(i, content.get(i).replaceAll(REGEX_NEWLINE_REPLACE, "\n"));
+				}
 				ArrayList<String> agents = view.requestAgentInput(content, model.getFSMEventList(view.getCurrentFSM()), attrib);
 				view.clearTextContents(CodeReference.CODE_BUILD_AGENTS);
 				for(int i = 0; i < agents.size(); i++) {
-					view.setTextContent(CodeReference.CODE_BUILD_AGENTS, i, agents.get(i));
+					view.setTextContent(CodeReference.CODE_BUILD_AGENTS, i, agents.get(i).replaceAll("\n", REGEX_NEWLINE_REPLACE));
 				}
 				break;
 			case CodeReference.CODE_BUILD_USTRUCT:
@@ -411,10 +418,37 @@ public class FiniteStateMachine implements InputReceiver{
 				ArrayList<String> badTrans = view.getContent(CodeReference.CODE_ADD_BAD_TRANS);
 				ArrayList<String> agentInfo = view.getContent(CodeReference.CODE_BUILD_AGENTS);
 				
+				HashMap<String, HashSet<String>> badMap = new HashMap<String, HashSet<String>>();
 				
+				for(String s : badTrans) {
+					String[] line = s.split(SEPARATOR);
+					String root = line[0];
+					String eve = line[1];
+					if(badMap.get(root) == null) {
+						badMap.put(root, new HashSet<String>());
+					}
+					badMap.get(root).add(eve);
+				}
 				
+				boolean[][][] age = new boolean[agentInfo.size()][][];
+				for(int i = 0; i < agentInfo.size(); i++) {
+					String[] lines = agentInfo.get(i).split(REGEX_NEWLINE_REPLACE);
+					age[i] = new boolean[lines.length - 1][lines[1].split(SEPARATOR).length - 1];
+					for(int j = 1; j < lines.length; j++) {
+						String[] line = lines[j].split(SEPARATOR);
+						for(int k = 1; k < line.length; k++) {
+							age[i][j-1][k-1] = line[k].contentEquals(SYMBOL_TRUE);
+						}
+					}
+					
+				}
+
+				//TODO: Make this dynamically defined, not manually here and in Agent popout screen
+				ArrayList<String> attr = new ArrayList<String>();
+				attr.add(AttributeList.ATTRIBUTE_OBSERVABLE);
+				attr.add(AttributeList.ATTRIBUTE_CONTROLLABLE);
 				
-				
+				String nom = model.buildUStructure(plant, attr, badMap, age);
 				
 				boolean display = view.getCheckboxContent(CodeReference.CODE_TOGGLE_USTRUCT);
 				break;

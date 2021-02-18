@@ -20,10 +20,12 @@ public class UStructure {
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private static String attributeInitialRef;
+	private static String attributeObservableRef;
+	private static String attributeControllableRef;
 	
 	private TransitionSystem plantFSM;
 	private Agent[] agents;
-	private HashMap<String, ArrayList<String>> badTransitions;
+	private HashMap<String, HashSet<String>> badTransitions;
 	private HashMap<String, String[]> compositeMapping;
 	
 	private TransitionSystem uStructure;
@@ -32,16 +34,16 @@ public class UStructure {
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public UStructure(TransitionSystem thePlant, HashMap<String, ArrayList<String>> theBadTransitions, ArrayList<Agent> theAgents) {
+	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, HashMap<String, HashSet<String>> theBadTransitions, ArrayList<Agent> theAgents) {
 		plantFSM = thePlant;
 		badTransitions = theBadTransitions;
 		for(String s : thePlant.getStateNames()) {
 			if(badTransitions.get(s) == null)
-				badTransitions.put(s, new ArrayList<String>());
+				badTransitions.put(s, new HashSet<String>());
 		}
 		agents = new Agent[theAgents.size() + 1];
 		
-		agents[0] = new Agent(thePlant.getEventNames());
+		agents[0] = new Agent(attr, thePlant.getEventNames());
 		for(int i = 0; i < theAgents.size(); i++)
 			agents[i+1] = theAgents.get(i);
 		HashSet<String> allEvents = new HashSet<String>();
@@ -64,8 +66,10 @@ public class UStructure {
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public static void assignAttributeReferences(String init) {
+	public static void assignAttributeReferences(String init, String obs, String cont) {
 		attributeInitialRef = init;
+		attributeObservableRef = obs;
+		attributeControllableRef = cont;
 	}
 	
 	public void createUStructure() {
@@ -101,7 +105,7 @@ public class UStructure {
 			for(String s : viableEvents) {
 				boolean[] canAct = new boolean[stateSet.getStates().length];		//find out what each individual agent is able to do for the given event at the given state
 				for(int i = 0; i < stateSet.getStates().length; i++) {
-					if(!agents[i].getEventAttribute(s, Agent.attributeObservableRef)) {					//if the agent cannot see the event, it has to guess whether it happened
+					if(!agents[i].getEventAttribute(s, attributeObservableRef)) {					//if the agent cannot see the event, it has to guess whether it happened
 						String[] newSet = new String[stateSet.getStates().length];
 						String eventName = "<";
 						for(int j = 0; j < stateSet.getStates().length; j++) {
@@ -185,7 +189,7 @@ public class UStructure {
 				String[] states = compositeMapping.get(state);
 				Boolean[] legality = new Boolean[states.length];
 				for(int i = 0; i < states.length; i++) {
-					if(agents[i].getEventAttribute(eventBrk[i], Agent.attributeControllableRef)) {
+					if(agents[i].getEventAttribute(eventBrk[i], attributeControllableRef)) {
 						legality[i] = true;
 						for(String bad : badTransitions.get(states[i])) {
 							if(bad.equals(eventBrk[i])) {
@@ -250,7 +254,7 @@ public class UStructure {
 			return tags;
 		}
 		else {
-			ArrayList<String> events = agents[index].getEventsAttributeSet(Agent.attributeObservableRef, true);
+			ArrayList<String> events = agents[index].getEventsAttributeSet(attributeObservableRef, true);
 			for(int i = 0; i < events.size(); i++) {
 				tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + events.get(i), sight));
 			}

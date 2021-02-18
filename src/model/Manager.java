@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import model.convert.GenerateDot;
 import model.convert.GenerateFSM;
@@ -36,7 +37,7 @@ public class Manager {
 	//-- Assign Attribute Data  -------------------------------
 	
 	private void assignAttributeReferences() {
-		ProcessDES.assignAttributeReferences(AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE);
+		ProcessDES.assignAttributeReferences(AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE);
 	}
 	
 	//-- File Meta  -------------------------------------------
@@ -206,7 +207,18 @@ public class Manager {
 	
 	//-- U-Structure  -----------------------------------------
 	
-	
+	public String buildUStructure(String ref, ArrayList<String> attr, HashMap<String, HashSet<String>> badTrans, boolean[][][] agents) {
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		//TODO: Other failure checks to do ahead of time?
+		TransitionSystem tS = ProcessDES.buildUStructure(fsms.get(ref), attr, badTrans, agents);
+		if(tS == null) {
+			return null;
+		}
+		appendFSM(tS.getId(), tS, false);
+		return tS.getId();
+	}
 	
 	//-- Manipulate  ------------------------------------------
 	
