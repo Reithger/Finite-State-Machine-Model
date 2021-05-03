@@ -281,11 +281,25 @@ public class FSMUI implements InputReceiver{
 	}
 	
 	public Integer getIntegerContent(int code) {
-		return Integer.parseInt(getTextContent(code));
+		try {
+			return Integer.parseInt(getTextContent(code));
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			displayAlert("Illegal numeric entry for code: " + code + ". Check that an input expecting a number was not given a non-numeric value.");
+			return null;
+		}
 	}
 	
 	public Integer getIntegerContent(int code, int posit) {
-		return Integer.parseInt(getTextContent(code, posit));
+		try {
+			return Integer.parseInt(getTextContent(code, posit));
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			displayAlert("Illegal numeric entry for code: " + code + ". Check that an input expecting a number was not given a non-numeric value.");
+			return null;
+		}
 	}
 	
 	public Boolean getCheckboxContent(int code) {

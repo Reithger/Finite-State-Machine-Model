@@ -177,7 +177,8 @@ public class TransitionFunction {
 	
 	public void removeTransition(String stateFrom, String event, String stateTo) {
 		ArrayList<Transition> thisTransitions = transitions.get(stateFrom);
-		for(Transition transition : thisTransitions) {
+		for(int i = 0; i < thisTransitions.size(); i++) {
+			Transition transition = thisTransitions.get(i);
 			if(transition.getEvent().equals(event)) {
 				if(transition.hasState(stateTo)) {
 					transition.removeTransitionState(stateTo);

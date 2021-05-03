@@ -25,6 +25,8 @@ import visual.composite.popout.PopoutAlert;
  * TODO: Tooltip popup when hovering over Categories/Entry Sets
  * TODO: Loading Icon should be fancier
  * TODO: Means of having FSM in scope without generating graphviz image (they get too big!)
+ * TODO: 0 transition input breaks it for random generation
+ * TODO: Transition removal did not work... ugh, need to fix some stuff, make robust, it's iffy
  * 
  * TODO: Manager needs way to export list of Transitions for a FSM, review output formats for that
  * 
@@ -177,9 +179,12 @@ public class FiniteStateMachine implements InputReceiver{
 				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_ADD_STATES:
-				model.addStates(currFSM, view.getIntegerContent(code));
-				view.clearTextContents(code);
-				updateViewFSM(view.getCurrentFSM());
+				Integer numAdd = view.getIntegerContent(code);
+				if(numAdd != null) {
+					model.addStates(currFSM, numAdd);
+					view.clearTextContents(code);
+					updateViewFSM(view.getCurrentFSM());
+				}
 				break;
 			case CodeReference.CODE_REMOVE_STATE:
 				model.removeState(currFSM, view.getTextContent(code));
@@ -212,9 +217,12 @@ public class FiniteStateMachine implements InputReceiver{
 				updateViewFSM(view.getCurrentFSM());
 				break;
 			case CodeReference.CODE_ADD_EVENTS:
-				model.addEvents(currFSM, view.getIntegerContent(code));
-				view.clearTextContents(code);
-				updateViewFSM(view.getCurrentFSM());
+				Integer evenAdd = view.getIntegerContent(code);
+				if(evenAdd != null) {
+					model.addEvents(currFSM, evenAdd);
+					view.clearTextContents(code);
+					updateViewFSM(view.getCurrentFSM());
+				}
 				break;
 			case CodeReference.CODE_REMOVE_EVENT:
 				model.removeEvent(currFSM, view.getTextContent(code));
@@ -493,34 +501,36 @@ public class FiniteStateMachine implements InputReceiver{
 	}
 	
 	private void generateRandomFSM(int code) {
-		int st = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_STATES);
-		int ev = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_EVENTS);
-		int tr = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_TRANS);
-		String nom = view.getTextContent(CodeReference.CODE_ACCESS_FSM_NAME);
-		boolean det = view.getCheckboxContent(CodeReference.CODE_ACCESS_NON_DETERMINISTIC);
-		
-		ArrayList<Integer> numbers = new ArrayList<Integer>();
-		
-		ArrayList<String> stateAttr = new ArrayList<String>();
-		for(String s : view.getContent(CodeReference.CODE_ACCESS_STATE_ATTRIBUTES)) {
-			String[] two = s.split((" - "));
-			stateAttr.add(two[0]);
-			numbers.add(Integer.parseInt(two[1]));
+		Integer st = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_STATES);
+		Integer ev = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_EVENTS);
+		Integer tr = view.getIntegerContent(CodeReference.CODE_ACCESS_NUM_TRANS);
+		if(st != null && ev != null && tr != null) {
+			String nom = view.getTextContent(CodeReference.CODE_ACCESS_FSM_NAME);
+			boolean det = view.getCheckboxContent(CodeReference.CODE_ACCESS_NON_DETERMINISTIC);
+			
+			ArrayList<Integer> numbers = new ArrayList<Integer>();
+			
+			ArrayList<String> stateAttr = new ArrayList<String>();
+			for(String s : view.getContent(CodeReference.CODE_ACCESS_STATE_ATTRIBUTES)) {
+				String[] two = s.split((" - "));
+				stateAttr.add(two[0]);
+				numbers.add(Integer.parseInt(two[1]));
+			}
+			ArrayList<String> eventAttr = new ArrayList<String>();
+			for(String s : view.getContent(CodeReference.CODE_ACCESS_EVENT_ATTRIBUTES)) {
+				String[] two = s.split((" - "));
+				eventAttr.add(two[0]);
+				numbers.add(Integer.parseInt(two[1]));
+			}
+			ArrayList<String> transAttr = new ArrayList<String>();
+			for(String s : view.getContent(CodeReference.CODE_ACCESS_TRANS_ATTRIBUTES)) {
+				String[] two = s.split((" - "));
+				transAttr.add(two[0]);
+				numbers.add(Integer.parseInt(two[1]));
+			}
+			
+			allotFSMToView(	model.readInFSM(model.generateRandomFSM(nom, st, ev, tr, det, stateAttr, eventAttr, transAttr, numbers)));
 		}
-		ArrayList<String> eventAttr = new ArrayList<String>();
-		for(String s : view.getContent(CodeReference.CODE_ACCESS_EVENT_ATTRIBUTES)) {
-			String[] two = s.split((" - "));
-			eventAttr.add(two[0]);
-			numbers.add(Integer.parseInt(two[1]));
-		}
-		ArrayList<String> transAttr = new ArrayList<String>();
-		for(String s : view.getContent(CodeReference.CODE_ACCESS_TRANS_ATTRIBUTES)) {
-			String[] two = s.split((" - "));
-			transAttr.add(two[0]);
-			numbers.add(Integer.parseInt(two[1]));
-		}
-		
-		allotFSMToView(	model.readInFSM(model.generateRandomFSM(nom, st, ev, tr, det, stateAttr, eventAttr, transAttr, numbers)));
 	}
 
 	private void addTransition(String currFSM, int code) {
