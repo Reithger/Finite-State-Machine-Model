@@ -48,16 +48,16 @@ public abstract class EntrySet {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public int drawEntrySet(int y, int lineHei, HandlePanel p) {
-		p.handleText(prefix() + "_entry_set_" + label + "_label", false, p.getWidth() / 8, y, p.getWidth() / 4, lineHei, DEFAULT_FONT, label);
+		p.handleText(prefix() + "_entry_set_" + label + "_label", "move", 10, p.getWidth() / 8, y, p.getWidth() / 4, lineHei, DEFAULT_FONT, label);
 		
 		y = draw(y, lineHei, p);
 		
 		if(button) {
 			int posX = p.getWidth() * 11 / 12;
-			p.handleRectangle(prefix() + "_button_rect", false, 5, posX, y, p.getHeight() / 30, p.getHeight() / 30, Color.black, Color.gray);
-			p.handleButton(prefix() + "_button_butt", false, posX, y, p.getHeight() / 30, p.getHeight() / 30, code);
+			p.handleRectangle(prefix() + "_button_rect", "move", 5, posX, y, p.getHeight() / 30, p.getHeight() / 30, Color.black, Color.gray);
+			p.handleButton(prefix() + "_button_butt", "move", 10, posX, y, p.getHeight() / 30, p.getHeight() / 30, code);
 		}
-		p.handleLine(prefix() + "_underscore_line", false, 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * (button ? 17 : 19) / 20, y + p.getHeight() / 40, 1, Color.black);
+		p.handleLine(prefix() + "_underscore_line", "move", 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * (button ? 17 : 19) / 20, y + p.getHeight() / 40, 1, Color.black);
 		
 		y += lineHei;
 		return y;

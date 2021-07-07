@@ -62,13 +62,13 @@ public class PopoutAgentSelection extends PopoutWindow{
 		
 		int size = horizSpacing / 5;
 		
-		handleRectangle("key_rect_false", false, 5, posX, posY, size, size, Color.red, Color.black);
-		handleText("key_text_false", false, posX + horizSpacing / 4, posY, size, size, SMALLER_FONT, "= False");
+		handleRectangle("key_rect_false", "move", 5, posX, posY, size, size, Color.red, Color.black);
+		handleText("key_text_false", "move", 15, posX + horizSpacing / 4, posY, size, size, SMALLER_FONT, "= False");
 		
 		posY += vertSpacing / 3;
 		
-		handleRectangle("key_rect_true", false, 5, posX, posY, size, size, Color.green, Color.black);
-		handleText("key_text_true", false, posX + horizSpacing / 4, posY, size, size, SMALLER_FONT, "= True");
+		handleRectangle("key_rect_true", "move", 5, posX, posY, size, size, Color.green, Color.black);
+		handleText("key_text_true", "move", 15, posX + horizSpacing / 4, posY, size, size, SMALLER_FONT, "= True");
 		
 		//Drawing: Event name labels with subscript for attributes
 		
@@ -77,16 +77,16 @@ public class PopoutAgentSelection extends PopoutWindow{
 		
 		for(int i = 0; i < refEvents.size(); i++) {
 			String nom = refEvents.get(i);
-			handleText("event_name_" + i, false, posX + horizSpacing / 2, posY, horizSpacing, height, DEFAULT_FONT, nom);
+			handleText("event_name_" + i, "move", 15, posX + horizSpacing / 2, posY, horizSpacing, height, DEFAULT_FONT, nom);
 
 			//Drawing: Attributes subscript
 			for(int j = 0; j < attributes.size(); j++) {
 				int texWid = getHandlePanel().getTextWidth(" " + attributes.get(j) + " ", SMALLER_FONT);
-				handleText("attr_name_tag_" + attributes.get(j) + "_" + i, false, posX + texWid / 2, posY + vertSpacing / 4, texWid, height, SMALLER_FONT, attributes.get(j));
+				handleText("attr_name_tag_" + attributes.get(j) + "_" + i, "move", 15, posX + texWid / 2, posY + vertSpacing / 4, texWid, height, SMALLER_FONT, attributes.get(j));
 				posX += texWid;
 			}
 			
-			handleRectangle("event_border_top_" + i, false, 5, posX - horizSpacing / 2, posY, horizSpacing, height, Color.white, Color.black);
+			handleRectangle("event_border_top_" + i, "move", 5, posX - horizSpacing / 2, posY, horizSpacing, height, Color.white, Color.black);
 		}
 		posY += height * 3 / 2;
 		int toggleEvents = CODE_TOGGLE_EVENT;
@@ -97,8 +97,8 @@ public class PopoutAgentSelection extends PopoutWindow{
 			AgentRep ag = agents.get(i);
 			posX = horizSpacing / 2;
 			//Draw name (plant or i'th agent)
-			handleText("agent_name_" + i, false, posX, posY, horizSpacing, height, DEFAULT_FONT, "Agent " + i);
-			handleButton("agent_name_remove_" + i, false, posX, posY, horizSpacing, height, CODE_REMOVE_RANGE + i);
+			handleText("agent_name_" + i, "move", 15, posX, posY, horizSpacing, height, DEFAULT_FONT, "Agent " + i);
+			handleButton("agent_name_remove_" + i, "move", 15, posX, posY, horizSpacing, height, CODE_REMOVE_RANGE + i);
 			posX += horizSpacing / 2;
 			removeElementPrefixed("event_attr_rect_tag_" + i);
 			for(int j = 0; j < refEvents.size(); j++) {
@@ -106,12 +106,12 @@ public class PopoutAgentSelection extends PopoutWindow{
 				posX += horizSpacing / attributes.size() / 2;
 				size = horizSpacing / attributes.size() / 3;
 				for(int k = 0; k < attributes.size(); k++) {
-					handleRectangle("event_attr_rect_tag_" + i + "_" + j + "_" + attributes.get(k), false, 8, posX, posY, size, size, e.getValue(k) ? Color.green : Color.red, Color.black);
-					handleButton("event_attr_butt_tag_" + attributes.get(k) + "_" + i + "_" + j, false, posX, posY, size, size, toggleEvents++);
+					handleRectangle("event_attr_rect_tag_" + i + "_" + j + "_" + attributes.get(k), "move", 8, posX, posY, size, size, e.getValue(k) ? Color.green : Color.red, Color.black);
+					handleButton("event_attr_butt_tag_" + attributes.get(k) + "_" + i + "_" + j, "move", 15, posX, posY, size, size, toggleEvents++);
 					posX += horizSpacing / attributes.size();
 				}
 				posX -= horizSpacing / 2 - horizSpacing / attributes.size() / 2;
-				handleRectangle("event_border_agent_" + i + "_" + j, false,  5, posX - horizSpacing / 2, posY, horizSpacing, height, Color.white, Color.black);
+				handleRectangle("event_border_agent_" + i + "_" + j, "move",  5, posX - horizSpacing / 2, posY, horizSpacing, height, Color.white, Color.black);
 			}
 			posY += vertSpacing;
 		}
@@ -119,14 +119,14 @@ public class PopoutAgentSelection extends PopoutWindow{
 		//Drawing: Add agent button and submission of the totality
 		
 		posX = horizSpacing / 2;
-		handleText("agent_name_add", false, posX, posY, horizSpacing, height, DEFAULT_FONT, "+");
-		handleButton("agent_add_button", false, posX, posY, horizSpacing, height, CODE_ADD_AGENT);
+		handleText("agent_name_add", "move", 15, posX, posY, horizSpacing, height, DEFAULT_FONT, "+");
+		handleButton("agent_add_button", "move", 15, posX, posY, horizSpacing, height, CODE_ADD_AGENT);
 		posY += height;
 		posX += refEvents.size() * height;
-		handleText("submit", false,  posX, posY, horizSpacing, height, DEFAULT_FONT, "Submit");
-		handleButton("submit_button", false,  posX, posY, horizSpacing, height, CODE_SUBMIT);
+		handleText("submit", "move", 15, posX, posY, horizSpacing, height, DEFAULT_FONT, "Submit");
+		handleButton("submit_button", "move", 15, posX, posY, horizSpacing, height, CODE_SUBMIT);
 		posY += height;
-		handleText("buffer", false,  0, posY, 1, 1, DEFAULT_FONT, "");
+		handleText("buffer", "move", 15, 0, posY, 1, 1, DEFAULT_FONT, "");
 	}
 	
 	@Override

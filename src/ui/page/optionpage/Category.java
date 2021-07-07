@@ -47,9 +47,9 @@ public class Category {
 	public int drawCategoryHeader(int y, int lineHei, HandlePanel p) {
 		int posX = p.getWidth() / 3 / 2;
 		int wid =  p.getWidth() * 9/10;
-		p.handleText("category_header_" + name + "_header_text", false, posX, y, wid, lineHei, CATEGORY_FONT, name);
-		p.handleButton("category_header_" + name + "_header_butt", false, posX, y, wid, lineHei, catCode);
-		p.handleLine("category_header_" + name + "_header_line", false, 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * 11 / 20, y + p.getHeight() / 40, 3, Color.black);
+		p.handleText("category_header_" + name + "_header_text", "move", 15, posX, y, wid, lineHei, CATEGORY_FONT, name);
+		p.handleButton("category_header_" + name + "_header_butt", "move", 15, posX, y, wid, lineHei, catCode);
+		p.handleLine("category_header_" + name + "_header_line", "move", 5, p.getWidth() / 20, y + p.getHeight() / 40, p.getWidth() * 11 / 20, y + p.getHeight() / 40, 3, Color.black);
 		return y + lineHei;
 	}
 

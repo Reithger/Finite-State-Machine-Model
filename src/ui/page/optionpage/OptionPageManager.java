@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import controller.InputReceiver;
 import input.CustomEventReceiver;
+import ui.headers.HeaderSelect;
 import ui.page.optionpage.implementation.AdjustFSM;
 import ui.page.optionpage.implementation.Operations;
 import ui.page.optionpage.implementation.UStructurePage;
@@ -15,58 +16,70 @@ public class OptionPageManager {
 //---  Constants   ----------------------------------------------------------------------------
 	
 	private final static int ROTATION_MULTIPLIER = 15;
+	private final static int CODE_BASE_OPTIONS_HEADER = 3500;
 	
 //---  Instance Variables   -------------------------------------------------------------------
 
 	private OptionPage[] optionPages;
 	private static int currentOptionPageIndex;
-	private HandlePanel p;
+	private HandlePanel bodyPanel;
 	private boolean loading;
 	private int lastX;
 	private int lastY;
+	/** ElementPanel object handling the organization and accessing of all categories of user tools in optionSpace*/
+	private HeaderSelect optionHeader;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public OptionPageManager(InputReceiver reference, int xIn, int yIn, int wid, int hei) {
+	public OptionPageManager(InputReceiver reference, int xIn, int yIn, int wid, int hei, double vertProp) {
 		OptionPage.assignInputReceiver(reference);
-		generateHandlePanel(xIn, yIn, wid, hei);
-		OptionPage.assignHandlePanel(p);
+		generateHandlePanel(xIn, yIn + (int)(hei * (1 - vertProp)), wid, (int)(hei * vertProp));
+		OptionPage.assignHandlePanel(bodyPanel);
 		optionPages = new OptionPage[] {
 				new AdjustFSM(),
 				new Operations(),
 				new UStructurePage(),
-		};
+		};		
+		optionHeader = new HeaderSelect(xIn, yIn, wid, (int)(hei * (1 - vertProp)), CODE_BASE_OPTIONS_HEADER);
+		optionHeader.setInputReceiver(reference);
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public void updateSize(int x, int y, int wid, int hei) {
-		p.setLocation(x, y);
-		p.resize(wid, hei);
-		p.removeAllElements();
+	public void updateSizeLoc(int x, int y, int wid, int hei, double vertProp) {
+		bodyPanel.setLocation(x, y + (int)(hei * (1 - vertProp)));
+		bodyPanel.resize(wid, (int)(hei * vertProp));
+		bodyPanel.removeAllElements();
+		optionHeader.updateSizeLoc(x, y, wid, (int)(hei * (1 - vertProp)));
 		getCurrentPage().drawPage();
 	}
 	
 	private void generateHandlePanel(int x, int y, int width, int height) {
-		p = new HandlePanel(x, y, width, height) {
+		bodyPanel = new HandlePanel(x, y, width, height) {
 		
 			@Override
-			public int getMinimumScreenX() {
-				return 0;
+			public int getMinimumScreenX(String move) {
+				if(move.equals("move")) {
+					return 0;
+				}
+				return super.getMinimumScreenX(move);
 			}
 			
 			@Override
-			public int getMinimumScreenY() {
-				return 0;
+			public int getMinimumScreenY(String move) {
+				if(move.equals("move")) {
+					return 0;
+				}
+				return super.getMinimumScreenY(move);
 			}
 			
 			@Override
-			public int getMaximumScreenY() {
-				int max = super.getMaximumScreenY();
+			public int getMaximumScreenY(String move) {
+				int max = super.getMaximumScreenY(move);
 				return max + (max > getHeight() ? 15 : 0);
 			}
 		};
-		p.setEventReceiver(new CustomEventReceiver() {
+		bodyPanel.setEventReceiver(new CustomEventReceiver() {
 			
 			@Override
 			public void keyEvent(char code) {
@@ -82,15 +95,17 @@ public class OptionPageManager {
 			public void mouseMoveEvent(int code, int x, int y) {
 				lastX = x;
 				lastY = y;
-				p.moveElement("loading_rect", lastX, lastY);
+				bodyPanel.moveElement("loading_rect", lastX, lastY);
 			}
 			
 			@Override
 			public void mouseWheelEvent(int rotation) {
-				if(p.getMaximumScreenY() < p.getHeight()) {
+				if(bodyPanel.getMaximumScreenY("move") < bodyPanel.getHeight()) {
 					return;
 				}
-				p.setOffsetYBounded(p.getOffsetY() - rotation * ROTATION_MULTIPLIER);
+				int offset = bodyPanel.getOffsetY("move") - rotation * ROTATION_MULTIPLIER;
+				offset = offset < 0 ? 0 : offset > bodyPanel.getMaximumScreenY("move") - height ? bodyPanel.getMaximumScreenY("move") - height : offset;
+				bodyPanel.setOffsetY("move", offset);
 			}
 
 			@Override
@@ -105,11 +120,12 @@ public class OptionPageManager {
 		getCurrentPage().drawPage();
 		if(loading) {
 			int size = 32;
-			p.addRectangle("loading_rect", 30, true, lastX - size / 2, lastY - size / 2, size, size, true, Color.yellow, Color.black);
+			bodyPanel.addRectangle("loading_rect", 30, "no_move", lastX - size / 2, lastY - size / 2, size, size, true, Color.yellow, Color.black);
 		}
 		else {
-			p.removeElementPrefixed("loading");
+			bodyPanel.removeElementPrefixed("loading");
 		}
+		optionHeader.update(getOptionPageNames(), getCurrentOptionPageIndex());
 	}
 	
 	public void startLoading() {
@@ -131,9 +147,9 @@ public class OptionPageManager {
 	public void setCurrentOptionPageIndex(int in) {
 		if(currentOptionPageIndex != in) {
 			currentOptionPageIndex = in;
-			p.setOffsetX(0);
-			p.setOffsetY(0);
-			p.removeElementPrefixed("");
+			bodyPanel.setOffsetX("move", 0);
+			bodyPanel.setOffsetY("move", 0);
+			bodyPanel.removeElementPrefixed("");
 		}
 	}
 
@@ -142,6 +158,18 @@ public class OptionPageManager {
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	public int getCodeReferenceBase() {
+		return CODE_BASE_OPTIONS_HEADER;
+	}
+	
+	public int getSizePageList() {
+		return getOptionPageNames().size();
+	}
+	
+	public HandlePanel getHeaderPanel() {
+		return optionHeader;
+	}
 	
 	public String getTextContent(int code, int posit) {
 		return getCurrentPage().getTextFromCode(code, posit);
@@ -157,8 +185,8 @@ public class OptionPageManager {
 	
 	public ArrayList<String> getOptionPageNames(){
 		ArrayList<String> out = new ArrayList<String>();
-		for(OptionPage p : optionPages) {
-			out.add(p.getHeader());
+		for(OptionPage bodyPanel : optionPages) {
+			out.add(bodyPanel.getHeader());
 		}
 		return out;
 	}
@@ -167,8 +195,8 @@ public class OptionPageManager {
 		return optionPages[currentOptionPageIndex];
 	}
 	
-	public HandlePanel getPanel() {
-		return p;
+	public HandlePanel getBodyPanel() {
+		return bodyPanel;
 	}
 	
 	public int getCurrentOptionPageIndex() {

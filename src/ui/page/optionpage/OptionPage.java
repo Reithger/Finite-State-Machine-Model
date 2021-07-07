@@ -68,9 +68,9 @@ public abstract class OptionPage {
 		helpKey = codeStart;
 		settingsKey = ++codeStart;
 		codeStart++;
-		p.handleRectangle("help_butt_rect", false, 5, wid - wid / 15, wid / 20, wid / 20, wid / 20, Color.gray, Color.black);
-		p.handleButton("help_butt_button", false, wid - wid / 15,  wid / 20, wid / 20, wid / 20, helpKey);
-		p.handleImage("help_butt_img", false, wid - wid / 15, wid / 20, "/assets/ui/question_mark.png", 3);
+		p.handleRectangle("help_butt_rect", "move", 5, wid - wid / 15, wid / 20, wid / 20, wid / 20, Color.gray, Color.black);
+		p.handleButton("help_butt_button", "move", 15, wid - wid / 15,  wid / 20, wid / 20, wid / 20, helpKey);
+		p.handleImage("help_butt_img", "move", 15, wid - wid / 15, wid / 20, "/assets/ui/question_mark.png", 3);
 		for(int i = 0; i < categories.size(); i++) {
 			Category cat = categories.get(i);
 			startY = cat.draw(startY, hei / lineHeightFraction, p);
@@ -78,8 +78,8 @@ public abstract class OptionPage {
 	}
 	
 	private void drawHelpPage() {
-		p.handleText("help_text", true, p.getWidth() / 2, p.getHeight() / 2, p.getWidth() * 9 / 10, p.getHeight() * 9 / 10, HELP_FONT, help);
-		p.handleRectangle("help_rect", true, 5, p.getWidth() / 2, p.getHeight() / 2, p.getWidth() * 9 / 10, p.getHeight() * 9 / 10, Color.white, Color.black);
+		p.handleText("help_text", "no_move", 15, p.getWidth() / 2, p.getHeight() / 2, p.getWidth() * 9 / 10, p.getHeight() * 9 / 10, HELP_FONT, help);
+		p.handleRectangle("help_rect", "no_move", 5, p.getWidth() / 2, p.getHeight() / 2, p.getWidth() * 9 / 10, p.getHeight() * 9 / 10, Color.white, Color.black);
 	}
 	
 	public void handleMouseInput(int code, int x, int y, int mouseType) {
@@ -110,10 +110,10 @@ public abstract class OptionPage {
 		int height = p.getHeight();
 		int thick = 3;
 		int buf = thick / 2;
-		p.addLine("frame_line_3", 15, true, buf, buf, buf, height - buf, thick, Color.BLACK);
-		p.addLine("frame_line_4", 15, true,  buf, buf, width - buf, buf, thick, Color.BLACK);
-		p.addLine("frame_line_5", 15, true,  width - buf, height - buf, width - buf, buf, thick, Color.BLACK);
-		p.addLine("frame_line_6", 15, true,  width - buf, height - buf, buf, height - buf, thick, Color.BLACK);
+		p.addLine("frame_line_3", 15, "no_move", buf, buf, buf, height - buf, thick, Color.BLACK);
+		p.addLine("frame_line_4", 15, "no_move",  buf, buf, width - buf, buf, thick, Color.BLACK);
+		p.addLine("frame_line_5", 15, "no_move",  width - buf, height - buf, width - buf, buf, thick, Color.BLACK);
+		p.addLine("frame_line_6", 15, "no_move",  width - buf, height - buf, buf, height - buf, thick, Color.BLACK);
 	}
 
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -124,7 +124,6 @@ public abstract class OptionPage {
 	
 	public static void assignHandlePanel(HandlePanel inP) {
 		p = inP;
-		p.setScrollBarHorizontal(false);
 	}
 
 	public boolean toggleCategory(int code) { 

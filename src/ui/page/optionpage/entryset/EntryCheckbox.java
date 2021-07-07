@@ -18,8 +18,8 @@ public class EntryCheckbox extends EntrySet{
 	public int draw(int y, int lineHei, HandlePanel p) {
 		int posX = p.getWidth() * 3 / 8;
 		int size = lineHei / 2;
-		p.handleRectangle(prefix() + "_entry_checkbox_rect", false, 5, posX, y, size, size, (!getContentAt(0).equals(SIGNIFIER_TRUE) ? Color.white : Color.gray), Color.black);
-		p.handleButton(prefix() + "_entry_checkbox_butt", false, posX, y, size, size, subSystemCode);
+		p.handleRectangle(prefix() + "_entry_checkbox_rect", "move", 5, posX, y, size, size, (!getContentAt(0).equals(SIGNIFIER_TRUE) ? Color.white : Color.gray), Color.black);
+		p.handleButton(prefix() + "_entry_checkbox_butt", "move", 5, posX, y, size, size, subSystemCode);
 		registerCode(subSystemCode--, prefix());
 		return y;
 	}
@@ -31,7 +31,6 @@ public class EntryCheckbox extends EntrySet{
 		}
 		else {
 			setContent(getContentAt(0).equals(SIGNIFIER_TRUE) ? "f" : SIGNIFIER_TRUE, 0);
-			System.out.println(prefix());
 			p.removeElementPrefixed(prefix().replaceAll("\\?", "\\\\?"));
 			return false;
 		}

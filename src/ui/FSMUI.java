@@ -9,8 +9,7 @@ import java.util.ArrayList;
 
 import controller.InputReceiver;
 import filemeta.FileChooser;
-import ui.headers.HeaderSelect;
-import ui.page.imagepage.ImagePage;
+import ui.page.displaypage.DisplayPageManager;
 import ui.page.optionpage.OptionPageManager;
 import ui.popups.PopoutAgentSelection;
 import ui.popups.PopoutInputRequest;
@@ -28,10 +27,9 @@ public class FSMUI implements InputReceiver{
 
 //---  Constants   ----------------------------------------------------------------------------
 	
+	//TODO: Let the ratio change for resizing by user if they wanna change the proportion, piggyback reactToResize prolly
 	private final static double PANEL_RATIO_VERTICAL = 33 / 35.0;
 	private final static String WINDOW_NAME = "Home";
-	private final static int CODE_BASE_OPTIONS_HEADER = 3500;
-	private final static int CODE_BASE_IMAGE_HEADER = 4000;
 	
 	private final static int DEFAULT_POPUP_WIDTH = 400;
 	private final static int DEFAULT_POPUP_HEIGHT = 250;
@@ -43,13 +41,9 @@ public class FSMUI implements InputReceiver{
 	/** WindowFrame object containing several ElementPanels that provide different services to the user, manages repainting*/
 	private WindowFrame frame;
 	/** ElementPanel object handling the presentation of images to the user relating to the work they are doing*/
-	private ImagePage imagePage;
+	private DisplayPageManager displayPageManager;
 	/** */
 	private OptionPageManager optionPageManager;
-	/** ElementPanel object handling the organization and accessing of all currently available images*/
-	private HeaderSelect imageHeader;
-	/** ElementPaenl object handling the organization and accessing of all categories of user tools in optionSpace*/
-	private HeaderSelect optionHeader;
 	
 	//-- System Information  ----------------------------------
 	
@@ -64,14 +58,11 @@ public class FSMUI implements InputReceiver{
 			public void reactToResize() {
 				int newWid = getWidth();
 				int newHei = getHeight();
-				if(imageHeader != null) {
-					int topHei = (int)(newHei * (1 - PANEL_RATIO_VERTICAL));
+				if(displayPageManager != null) {
 					int genWid = newWid / 2;
-					imageHeader.updateSize(genWid, 0, genWid, topHei);
-					optionHeader.updateSize(0, 0, genWid, topHei);
+					displayPageManager.updateSizeLoc(genWid, 0, genWid, newHei, PANEL_RATIO_VERTICAL);	
 
-					imagePage.updateSize(genWid, topHei, genWid, newHei - topHei);
-					optionPageManager.updateSize(0, topHei, genWid, newHei - topHei);
+					optionPageManager.updateSizeLoc(0, 0, genWid, newHei, PANEL_RATIO_VERTICAL);
 					
 					updateDisplay();
 				}
@@ -91,19 +82,17 @@ public class FSMUI implements InputReceiver{
 		frame.showActiveWindow(WINDOW_NAME);
 		int wid = frame.getWidth();
 		int hei = frame.getHeight();
-		int headerHeight = (int)(hei * (1 - PANEL_RATIO_VERTICAL));
-		imagePage = new ImagePage(wid / 2, headerHeight, wid / 2, hei - headerHeight, this);
-		optionPageManager = new OptionPageManager(this, 0, headerHeight, wid / 2, hei - headerHeight);
-		optionHeader = new HeaderSelect(0, 0, wid / 2, headerHeight, CODE_BASE_OPTIONS_HEADER);
-		imageHeader = new HeaderSelect(wid / 2, 0, wid / 2, headerHeight, CODE_BASE_IMAGE_HEADER); 
 		
-		imageHeader.setInputReceiver(this);
-		optionHeader.setInputReceiver(this);
+		displayPageManager = new DisplayPageManager(this, wid / 2, 0, wid / 2, hei, PANEL_RATIO_VERTICAL);
 		
-		frame.addPanelToWindow(WINDOW_NAME, "optionHeader", optionHeader);
-		frame.addPanelToWindow(WINDOW_NAME, "imageHeader", imageHeader);
-		frame.addPanelToWindow(WINDOW_NAME, "optionSpace", optionPageManager.getPanel());
-		frame.addPanelToWindow(WINDOW_NAME, "imageSpace", imagePage.getPanel());
+		
+		optionPageManager = new OptionPageManager(this, 0, 0, wid / 2, hei, PANEL_RATIO_VERTICAL);
+
+		
+		frame.addPanelToWindow(WINDOW_NAME, "optionHeader", optionPageManager.getHeaderPanel());
+		frame.addPanelToWindow(WINDOW_NAME, "imageHeader", displayPageManager.getHeaderPanel());
+		frame.addPanelToWindow(WINDOW_NAME, "optionSpace", optionPageManager.getBodyPanel());
+		frame.addPanelToWindow(WINDOW_NAME, "imageSpace", displayPageManager.getBodyPanel());
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
@@ -111,15 +100,15 @@ public class FSMUI implements InputReceiver{
 	//-- Input Handling  --------------------------------------
 	
 	public void receiveCode(int code, int mouseType) {
-		if(code - CODE_BASE_OPTIONS_HEADER >= 0 && code - CODE_BASE_OPTIONS_HEADER < optionPageManager.getOptionPageList().length) {
-			optionPageManager.setCurrentOptionPageIndex(code - CODE_BASE_OPTIONS_HEADER);
-			updateOptionHeader();
+		int opt = optionPageManager.getCodeReferenceBase();
+		int disp = displayPageManager.getCodeReferenceBase();
+		if(code - opt >= 0 && code - opt < optionPageManager.getSizePageList()) {
+			optionPageManager.setCurrentOptionPageIndex(code - opt);
 			updateActiveOptionPage();
 		}
-		else if(code - CODE_BASE_IMAGE_HEADER >= 0 && code - CODE_BASE_IMAGE_HEADER < imagePage.getImageNames().size()){
-			imagePage.setCurrentImageIndex(code - CODE_BASE_IMAGE_HEADER);
-			updateImageHeader();
-			updateImagePanel();
+		else if(code - disp >= 0 && code - disp < displayPageManager.getSizeDisplayList()){
+			displayPageManager.setCurrentDisplayIndex(code - disp);
+			updateDisplayPanel();
 		}
 		else {
 			reference.receiveCode(code, mouseType);
@@ -192,21 +181,18 @@ public class FSMUI implements InputReceiver{
 	//-- Image Page Manipulation  -----------------------------
 	
 	public void addFSM(String ref, String img) {
-		imagePage.allotFSM(ref, img);
-		updateImageHeader();
-		updateImagePanel();
+		displayPageManager.allotFSM(ref, img);
+		updateDisplayPanel();
 	}
 	
 	public void removeFSM(String ref) {
-		imagePage.removeFSM(ref);
-		updateImageHeader();
-		updateImagePanel();
+		displayPageManager.removeFSM(ref);
+		updateDisplayPanel();
 	}
 
 	public void updateFSMImage(String ref, String img) {
-		imagePage.updateFSM(ref, img);
-		updateImageHeader();
-		updateImagePanel();
+		displayPageManager.updateFSM(ref, img);
+		updateDisplayPanel();
 	}
 	
 	//-- Option Page Manipulation  ----------------------------
@@ -226,22 +212,10 @@ public class FSMUI implements InputReceiver{
 	//-- Update ElementPanels  --------------------------------
 	
 	public void updateDisplay() {
-		updateOptionHeader();
-		updateImageHeader();
 		updateActiveOptionPage();
-		updateImagePanel();
-	}
-	
-	public void updateOptionHeader() {
-		if(optionHeader != null)
-			optionHeader.update(optionPageManager.getOptionPageNames(), optionPageManager.getCurrentOptionPageIndex());
+		updateDisplayPanel();
 	}
 
-	public void updateImageHeader() {
-		if(imageHeader != null) 
-			imageHeader.update(imagePage.getImageNames(), imagePage.getCurrentImageIndex());
-	}
-	
 	public void updateActiveOptionPage() {
 		if(optionPageManager == null) {
 			return;
@@ -249,11 +223,11 @@ public class FSMUI implements InputReceiver{
 		optionPageManager.drawPage();
 	}
 
-	public void updateImagePanel() {
-		if(imagePage == null) {
+	public void updateDisplayPanel() {
+		if(displayPageManager == null) {
 			return;
 		}
-		imagePage.drawPage();
+		displayPageManager.drawPage();
 	}
 
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -269,7 +243,7 @@ public class FSMUI implements InputReceiver{
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String getCurrentFSM() {
-		return imagePage.getCurrentFSM();
+		return displayPageManager.getCurrentFSM();
 	}
 	
 	public String getTextContent(int code) {

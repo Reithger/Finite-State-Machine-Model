@@ -17,7 +17,7 @@ public class EntryTextDisplay extends EntrySet{
 			if(starr == null || starr.contentEquals("")) {
 				break;
 			}
-			p.handleTextButton(formTextButtonName(i), false, posX, y, p.getWidth() / 2, lineHei * 5 / 8, DEFAULT_FONT, starr, subSystemCode, Color.white, Color.gray);
+			p.handleTextButton(formTextButtonName(i), "move", posX, 15, y, p.getWidth() / 2, lineHei * 5 / 8, DEFAULT_FONT, starr, subSystemCode, Color.white, Color.gray);
 			registerCode(subSystemCode--, formTextButtonName(i));
 			y += lineHei;
 		}

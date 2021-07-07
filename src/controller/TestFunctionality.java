@@ -69,8 +69,6 @@ public class TestFunctionality {
 		fram.setName("Test Functionality: " + nom);
 		fram.showActiveWindow("Main");
 		ElementPanel p = new ElementPanel(0, 0, 800, 800);
-		p.setScrollBarHorizontal(false);
-		p.setScrollBarVertical(false);
 		ImageDisplay iD = new ImageDisplay(path, p);
 		p.setEventReceiver(new CustomEventReceiver() {
 			@Override

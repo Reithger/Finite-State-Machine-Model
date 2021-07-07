@@ -30,8 +30,8 @@ public class EntryText extends EntrySet{
 		for(int k = 0; k < size; k++) {
 			//Draws text entries and iterates to next position
 			String star = getContentAt(k);
-			p.handleRectangle(prefix() + "_entry_text_" + k, false, 5, posX, y - lineHei / 10, width, height, Color.white, Color.gray);
-			p.handleTextEntry(formTextEntryName(k), false, posX, y - lineHei / 10, width, height, subSystemCode, DEFAULT_FONT, star);
+			p.handleRectangle(prefix() + "_entry_text_" + k, "move", 5, posX, y - lineHei / 10, width, height, Color.white, Color.gray);
+			p.handleTextEntry(formTextEntryName(k), "move", 15, posX, y - lineHei / 10, width, height, subSystemCode, DEFAULT_FONT, star);
 			posX += wid;
 			registerCode(subSystemCode--, formTextEntryName(k));
 		}

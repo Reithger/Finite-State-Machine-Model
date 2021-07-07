@@ -32,8 +32,8 @@ public class PopoutInputRequest extends PopoutWindow{
 		
 		int labelWidth = POPUP_WIDTH * 3 / 4;
 		int labelHeight = POPUP_HEIGHT / 3;
-		handleText("tex", false, posX, posY, labelWidth, labelHeight, null, text);
-		handleRectangle("rect_phrase", false, 3, posX, posY, labelWidth * 6 / 5, labelHeight, Color.white, Color.black);
+		handleText("tex", "move", 10, posX, posY, labelWidth, labelHeight, null, text);
+		handleRectangle("rect_phrase", "move", 3, posX, posY, labelWidth * 6 / 5, labelHeight, Color.white, Color.black);
 		
 		/*
 		 * 
@@ -54,8 +54,8 @@ public class PopoutInputRequest extends PopoutWindow{
 		posX = distBet;
 		int entryHeight = POPUP_HEIGHT / 5;
 		for(int i = 0; i < num; i++) {
-			handleTextEntry(compileEntryName(i), false, posX, posY, entryWidth, entryHeight, -55 - i, null, "");
-			handleRectangle("rect_" + i, false, 5, posX, posY, entryWidth, entryHeight, Color.white, Color.black);
+			handleTextEntry(compileEntryName(i), "move", 10, posX, posY, entryWidth, entryHeight, -55 - i, null, "");
+			handleRectangle("rect_" + i, "move", 5, posX, posY, entryWidth, entryHeight, Color.white, Color.black);
 			posX += distBet;
 		}
 		
@@ -63,7 +63,7 @@ public class PopoutInputRequest extends PopoutWindow{
 		posY += POPUP_HEIGHT / 3;
 		int submitWidth = POPUP_WIDTH / 2;
 		int submitHeight = POPUP_HEIGHT / 4;
-		handleTextButton("subm", false, posX, posY, submitWidth, submitHeight, null, "Submit", CODE_SUBMIT, Color.white, Color.black);
+		handleTextButton("subm", "move", 15, posX, posY, submitWidth, submitHeight, null, "Submit", CODE_SUBMIT, Color.white, Color.black);
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------

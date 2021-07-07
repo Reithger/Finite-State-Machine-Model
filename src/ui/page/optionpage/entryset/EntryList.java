@@ -20,7 +20,7 @@ public class EntryList extends EntryTextDisplay{
 	public int draw(int y, int lineHei, HandlePanel p) {
 		y = super.draw(y, lineHei, p);
 
-		p.handleTextButton(prefix() + "_entry_list", false, p.getWidth() * 5 /8, y, p.getWidth() / 2, lineHei * 5 / 8, ADD_FONT, "+", addCode, Color.white, Color.black);
+		p.handleTextButton(prefix() + "_entry_list", "move", 10, p.getWidth() * 5 /8, y, p.getWidth() / 2, lineHei * 5 / 8, ADD_FONT, "+", addCode, Color.white, Color.black);
 		
 		registerCode(addCode, prefix() + "_entry_list");
 		
