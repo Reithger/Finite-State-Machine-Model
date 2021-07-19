@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 
-import controller.InputReceiver;
+import ui.InputHandler;
 import ui.page.optionpage.entryset.EntrySetFactory;
 import visual.composite.HandlePanel;
 
@@ -35,7 +35,7 @@ public abstract class OptionPage {
 	private boolean showSettings; //TODO: Settings menu
 	private int settingsKey;
 	
-	private static InputReceiver inputRef;
+	private static InputHandler inputRef;
 	
 	private static int lineHeightFraction;
 	
@@ -118,7 +118,7 @@ public abstract class OptionPage {
 
 //---  Setter Methods   -----------------------------------------------------------------------
 
-	public static void assignInputReceiver(InputReceiver iR) {
+	public static void assignInputHandler(InputHandler iR) {
 		inputRef = iR;
 	}
 	

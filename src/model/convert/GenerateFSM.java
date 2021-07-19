@@ -92,7 +92,7 @@ public class GenerateFSM {
 			out.append(line + "\n");
 		}
 		out.append(REGION_SEPARATOR + "\n");
-		for(int i = 0; i < sizeStates; i++) {
+		for(int i = 0; i < sizeEvents; i++) {
 			String line = generateName(i, true);
 			line += writeAttributes(getRandomValue(rand), sizeEvents, i, eventAttri, stateAttri.size(), numbers, track);
 			out.append(line + "\n");

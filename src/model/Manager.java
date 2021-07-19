@@ -282,7 +282,7 @@ public class Manager {
 			String nom = "";
 			int cop = curr;
 			do {
-				nom += alph.charAt(cop % alph.length());
+				nom = alph.charAt(cop % alph.length()) + nom;
 				cop /= alph.length();
 			}while(cop != 0);
 			if(!stateExists(ref, nom)) {
@@ -444,6 +444,13 @@ public class Manager {
 		return fsms.get(ref).getEventNames();
 	}
 	
+	public ArrayList<String> getFSMTransitionList(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getTransitionLabels();
+	}
+	
 	public ArrayList<String> getFSMStateAttributes(String ref){
 		if(ref == null || fsms.get(ref) == null) {
 			return null;
@@ -464,6 +471,29 @@ public class Manager {
 		}
 		return fsms.get(ref).getTransitionAttributes();
 	}
+	
+	public HashMap<String, ArrayList<Boolean>> getFSMStateAttributeMap(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getStateAttributeMap();
+	}
+	
+	public HashMap<String, ArrayList<Boolean>> getFSMEventAttributeMap(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getEventAttributeMap();
+	}
+	
+	public HashMap<String, ArrayList<Boolean>> getFSMTransitionAttributeMap(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getTransitionLabelAttributeMap();
+	}
+	
+	//Need the 'get hashmap<String, ArrayList<boolean>>'
 	
 	public ArrayList<String> getReferences(){
 		ArrayList<String> out = new ArrayList<String>();

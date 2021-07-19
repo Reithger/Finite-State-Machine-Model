@@ -3,8 +3,8 @@ package ui.page.optionpage;
 import java.awt.Color;
 import java.util.ArrayList;
 
-import controller.InputReceiver;
 import input.CustomEventReceiver;
+import ui.InputHandler;
 import ui.headers.HeaderSelect;
 import ui.page.optionpage.implementation.AdjustFSM;
 import ui.page.optionpage.implementation.Operations;
@@ -31,8 +31,8 @@ public class OptionPageManager {
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public OptionPageManager(InputReceiver reference, int xIn, int yIn, int wid, int hei, double vertProp) {
-		OptionPage.assignInputReceiver(reference);
+	public OptionPageManager(InputHandler reference, int xIn, int yIn, int wid, int hei, double vertProp) {
+		OptionPage.assignInputHandler(reference);
 		generateHandlePanel(xIn, yIn + (int)(hei * (1 - vertProp)), wid, (int)(hei * vertProp));
 		OptionPage.assignHandlePanel(bodyPanel);
 		optionPages = new OptionPage[] {
@@ -41,7 +41,7 @@ public class OptionPageManager {
 				new UStructurePage(),
 		};		
 		optionHeader = new HeaderSelect(xIn, yIn, wid, (int)(hei * (1 - vertProp)), CODE_BASE_OPTIONS_HEADER);
-		optionHeader.setInputReceiver(reference);
+		optionHeader.setInputHandler(reference);
 	}
 
 //---  Operations   ---------------------------------------------------------------------------

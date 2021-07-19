@@ -29,6 +29,7 @@ import visual.composite.popout.PopoutAlert;
  * TODO: Transition removal did not work... ugh, need to fix some stuff, make robust, it's iffy
  * 
  * TODO: Manager needs way to export list of Transitions for a FSM, review output formats for that
+ * TODO: Manual request by code value for updating the graphviz image, regular update is just info view
  * 
  */
 
@@ -84,6 +85,7 @@ public class FiniteStateMachine implements InputReceiver{
 		codeHandlingAdjustFSM(code, mouseType);
 		codeHandlingOperations(code, mouseType);
 		codeHandlingUStructure(code, mouseType);
+		codeHandlingDisplay(code, mouseType);
 		view.endLoading();
 	}
 
@@ -95,7 +97,8 @@ public class FiniteStateMachine implements InputReceiver{
 		if(ref == null || !model.hasFSM(ref)) {
 			return;
 		}
-		view.updateFSMImage(ref, generateDotImage(ref));
+		view.updateFSMInfo(ref, model.getFSMStateAttributes(ref), model.getFSMEventAttributes(ref), model.getFSMTransitionAttributes(ref),
+				model.getFSMStateAttributeMap(ref), model.getFSMEventAttributeMap(ref), model.getFSMTransitionAttributeMap(ref));
 	}
 	
 	//-- Input Handling Separation  ---------------------------
@@ -465,6 +468,19 @@ public class FiniteStateMachine implements InputReceiver{
 		}
 	}
 	
+	private void codeHandlingDisplay(int code, int mouseType) {
+		switch(code) {
+			case CodeReference.CODE_GENERATE_IMAGE:
+				String path = generateDotImage(view.getCurrentFSM());
+				if(path != null) {
+					view.updateFSMImage(view.getCurrentFSM(), path);
+				}
+				break;
+		    default:
+			    break;
+		}
+	}
+	
 	private void loadSource() {
 		view.endLoading();
 		String path = view.requestFilePath(ADDRESS_SOURCES, "");
@@ -653,6 +669,9 @@ public class FiniteStateMachine implements InputReceiver{
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private String generateDotImage(String ref) {
+		if(ref == null) {
+			return null;
+		}
 		return FormatConversion.createImgFromFSM(model.generateFSMDot(ref), ref);
 	}
 	
@@ -660,7 +679,7 @@ public class FiniteStateMachine implements InputReceiver{
 		if(fsm == null) {
 			return;
 		}
-		view.addFSM(fsm, generateDotImage(fsm));
+		updateViewFSM(fsm);
 	}
 	
 }

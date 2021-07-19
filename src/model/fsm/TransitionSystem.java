@@ -1,6 +1,7 @@
 package model.fsm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import model.AttributeList;
 import model.fsm.component.EventMap;
@@ -415,6 +416,21 @@ public class TransitionSystem {
 		return states.getAttributes().contains(ref);
 	}
 	
+	public HashMap<String, ArrayList<Boolean>> getStateAttributeMap(){
+		HashMap<String, ArrayList<Boolean>> out = new HashMap<String, ArrayList<Boolean>>();
+		ArrayList<String> attrib = getStateAttributes();
+		
+		for(String s : getStateNames()) {
+			ArrayList<Boolean> details = new ArrayList<Boolean>();
+			for(String t : attrib) {
+				details.add(getStateAttribute(s, t));
+			}
+			out.put(s, details);
+		}
+		
+		return out;
+	}
+	
 	public ArrayList<String> getStatesWithAttribute(String attrib){
 		return states.getStatesWithAttribute(attrib);
 	}
@@ -462,6 +478,21 @@ public class TransitionSystem {
 		return events.getAttributes().contains(ref);
 	}
 	
+	public HashMap<String, ArrayList<Boolean>> getEventAttributeMap(){
+		HashMap<String, ArrayList<Boolean>> out = new HashMap<String, ArrayList<Boolean>>();
+		ArrayList<String> attrib = getEventAttributes();
+		
+		for(String e : getEventNames()) {
+			ArrayList<Boolean> details = new ArrayList<Boolean>();
+			for(String t : attrib) {
+				details.add(getEventAttribute(e, t));
+			}
+			out.put(e, details);
+		}
+		
+		return out;
+	}
+	
 	public ArrayList<String> getEventsWithAttribute(String attrib){
 		return events.getEventsWithAttribute(attrib);
 	}
@@ -504,8 +535,45 @@ public class TransitionSystem {
 		return transitions.getTransitionStates(state, event);
 	}
 	
+	public ArrayList<String> getTransitionLabels(){
+		ArrayList<String> out = new ArrayList<String>();
+		
+		for(String s : getStateNames()) {
+			for(String e : getStateTransitionEvents(s)) {
+				for(String t : getStateEventTransitionStates(s, e)) {
+					out.add(formTransitionLabel(s, t, e));
+				}
+			}
+		}
+		
+		return out;
+	}
+	
+	public HashMap<String, ArrayList<Boolean>> getTransitionLabelAttributeMap(){
+		HashMap<String, ArrayList<Boolean>> out = new HashMap<String, ArrayList<Boolean>>();
+		ArrayList<String> attrib = getTransitionAttributes();
+		
+		for(String s : getStateNames()) {
+			for(String e : getStateTransitionEvents(s)) {
+				ArrayList<Boolean> details = new ArrayList<Boolean>();
+				for(String a : attrib) {
+					details.add(getTransitionAttribute(s, e, a));
+				}
+				for(String t : getStateEventTransitionStates(s, e)) {
+					out.put(formTransitionLabel(s, t, e), details);
+				}
+			}
+		}
+		
+		return out;
+	}
+	
 	public Boolean getTransitionAttribute(String nom, String event, String ref) {
 		return transitions.getTransitionAttribute(nom, event, ref);
+	}
+	
+	private String formTransitionLabel(String start, String end, String event) {
+		return start + " -> " + end + " by " + event;
 	}
 
 //---  Mechanics   ----------------------------------------------------------------------------

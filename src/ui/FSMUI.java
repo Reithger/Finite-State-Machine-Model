@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import controller.InputReceiver;
 import filemeta.FileChooser;
@@ -23,7 +24,7 @@ import visual.frame.WindowFrame;
  *
  */
 
-public class FSMUI implements InputReceiver{
+public class FSMUI implements InputHandler{
 
 //---  Constants   ----------------------------------------------------------------------------
 	
@@ -180,19 +181,19 @@ public class FSMUI implements InputReceiver{
 	
 	//-- Image Page Manipulation  -----------------------------
 	
-	public void addFSM(String ref, String img) {
-		displayPageManager.allotFSM(ref, img);
-		updateDisplayPanel();
-	}
-	
 	public void removeFSM(String ref) {
 		displayPageManager.removeFSM(ref);
 		updateDisplayPanel();
 	}
 
-	public void updateFSMImage(String ref, String img) {
-		displayPageManager.updateFSM(ref, img);
+	public void updateFSMInfo(String ref, ArrayList<String> stateAttrib, ArrayList<String> eventAttrib, ArrayList<String> tranAttrib,
+				HashMap<String, ArrayList<Boolean>> stateMap, HashMap<String, ArrayList<Boolean>> eventMap, HashMap<String, ArrayList<Boolean>> transMap) {
+		displayPageManager.updateFSMInfo(ref, stateAttrib, eventAttrib, tranAttrib, stateMap, eventMap, transMap);
 		updateDisplayPanel();
+	}
+	
+	public void updateFSMImage(String ref, String img) {
+		displayPageManager.updateFSMImage(ref, img);
 	}
 	
 	//-- Option Page Manipulation  ----------------------------

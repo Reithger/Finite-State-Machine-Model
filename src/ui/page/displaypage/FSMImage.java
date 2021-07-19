@@ -1,20 +1,21 @@
 package ui.page.displaypage;
 
-import java.awt.Image;
-
-import input.NestedEventReceiver;
 import visual.composite.HandlePanel;
 import visual.composite.ImageDisplay;
 
 public class FSMImage {
 	
+//---  Constants   ----------------------------------------------------------------------------
+	
 	private static final String DEFAULT_IMAGE_PATH = "src/assets/default.png";
+	
+	private static final String EVENT_RECEIVER_NAME = "Image Display Event Receiver";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private String reference;
 	
-	private Image path;
+	private String path;
 	
 	private double zoom;
 	
@@ -26,9 +27,9 @@ public class FSMImage {
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public FSMImage (String inRef, Image inPath) {
+	public FSMImage (String inRef, String inPath) {
 		reference = inRef;
-		path = inPath;
+		setImage(inPath);
 		zoom = 1;
 		x = 0;
 		y = 0;
@@ -37,35 +38,25 @@ public class FSMImage {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public static void attachPanel(HandlePanel p) {
+		if(iD == null) {
+			iD = new ImageDisplay(DEFAULT_IMAGE_PATH, p);
+			iD.toggleUI();
+			iD.toggleDisableToggleUI();
+		}
+		p.addEventReceiver(EVENT_RECEIVER_NAME, iD.generateEventReceiver());
+		iD.autofitImage();
+	}
+	
+	public static void dettachPanel(HandlePanel p) {
 		if(iD == null)
 			iD = new ImageDisplay(DEFAULT_IMAGE_PATH, p);
-		NestedEventReceiver neR = new NestedEventReceiver(p.getEventReceiver());
-		neR.addNested(iD.generateEventReceiver());
-		p.setEventReceiver(neR);
-		iD.autofitImage();
-		iD.toggleUI();
-		iD.toggleDisableToggleUI();
-		iD.refresh();
+		p.removeEventReceiver(EVENT_RECEIVER_NAME);
 	}
-	
-	public void activate() {
-		iD.setOffsetX(getX());
-		iD.setOffsetY(getY());
-		iD.setZoom(getZoom());
-		iD.setImage(getImage());
-		iD.refreshImage();
-	}
-	
-	public void deactivate() {
-		setX(iD.getOffsetX());
-		setY(iD.getOffsetY());
-		setZoom(iD.getZoom());
-	}
-	
+
 	public void drawPage() {
 		iD.drawPage();
 	}
-	
+
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public void setZoom(double in) {
@@ -84,8 +75,12 @@ public class FSMImage {
 		reference = in;
 	}
 	
-	public void setImage(Image in) {
+	public void setImage(String in) {
 		path = in;
+		if(in != null) {
+			iD.setImage(in);
+			iD.autofitImage();
+		}
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -106,7 +101,7 @@ public class FSMImage {
 		return reference;
 	}
 	
-	public Image getImage() {
+	public String getImage() {
 		return path;
 	}
 	

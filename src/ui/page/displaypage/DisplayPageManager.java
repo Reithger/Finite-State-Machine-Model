@@ -1,14 +1,16 @@
 package ui.page.displaypage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-import controller.InputReceiver;
+import controller.CodeReference;
 import input.CustomEventReceiver;
 import input.NestedEventReceiver;
+import ui.InputHandler;
 import ui.headers.HeaderSelect;
 import visual.composite.HandlePanel;
 
-public class DisplayPageManager implements InputReceiver{
+public class DisplayPageManager implements InputHandler{
 
 //---  Constants   ----------------------------------------------------------------------------
 
@@ -26,19 +28,28 @@ public class DisplayPageManager implements InputReceiver{
 	
 	private int index;
 	
+	private InputHandler reference;
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public DisplayPageManager(InputReceiver reference, int xIn, int yIn, int wid, int hei, double vertProp) {
+	public DisplayPageManager(InputHandler ref, int xIn, int yIn, int wid, int hei, double vertProp) {
 		generateElementPanel(wid, (int)(hei * (1 - vertProp)), wid, (int)(hei * vertProp));
+		reference = ref;
 
 		imageHeader = new HeaderSelect(wid, 0, wid, (int)(hei * (1 - vertProp)), CODE_BASE_DISPLAY_HEADER); 
 		
-		imageHeader.setInputReceiver(reference);
+		imageHeader.setInputHandler(reference);
 
-		display = new DisplayPage(this);
-		NestedEventReceiver ner = new NestedEventReceiver(display.getEventHandling(p));
+		display = new DisplayPage(this, p);
+		p.addEventReceiver(new CustomEventReceiver() {
+			
+			@Override
+			public void clickEvent(int code, int x, int y, int mouseType) {
+				receiveCode(code, mouseType);
+			}
+			
+		});
 		fsms = new ArrayList<FSMInfo>();
-		p.setEventReceiver(ner);
 		index = 0;
 	}
 
@@ -46,14 +57,17 @@ public class DisplayPageManager implements InputReceiver{
 
 	@Override
 	public void receiveCode(int code, int mouseType) {
-		// TODO Auto-generated method stub
-		
+		if(code == CodeReference.CODE_DISPLAY_CYCLE_VIEW) {
+			toggleDisplayImageMode();
+		}
+		else {
+			reference.receiveCode(code, mouseType);
+		}
 	}
 
 	@Override
 	public void receiveKeyInput(char code, int keyType) {
-		// TODO Auto-generated method stub
-		
+		reference.receiveKeyInput(code, keyType);
 	}
 	
 	public void generateElementPanel(int x, int y, int width, int height) {
@@ -69,32 +83,55 @@ public class DisplayPageManager implements InputReceiver{
 	}
 	
 	public void drawPage() {
-		display.draw(p);
+		display.draw();
 		imageHeader.update(getDisplayNames(), index);
 	}
 	
 	public void toggleDisplayImageMode() {
-		p.removeAllElements();
+		p.removeElementPrefixed("");
 		display.toggleDisplayMode();
 		drawPage();
 	}
-	
-	public void allotFSM(String ref, String img) {
-		
-	}
-	
+
 	public void removeFSM(String ref) {
 		
 	}
 	
-	public void updateFSM(String ref, String img) {
-		
+	public void updateFSMInfo(String ref, ArrayList<String> stateAttrib, ArrayList<String> eventAttrib, ArrayList<String> tranAttrib,
+			HashMap<String, ArrayList<Boolean>> stateMap, HashMap<String, ArrayList<Boolean>> eventMap, HashMap<String, ArrayList<Boolean>> transMap) {
+		FSMInfo use = getFSMInfo(ref);
+		if(use == null) {
+			use = new FSMInfo(ref);
+			fsms.add(use);
+		}
+		use.updateStateAttributes(stateAttrib);
+		use.updateEventAttributes(eventAttrib);
+		use.updateTransitionAttributes(tranAttrib);
+		use.updateStateDetails(stateMap);
+		use.updateEventDetails(eventMap);
+		use.updateTransitionDetails(transMap);
+		if(!display.hasDisplay()) {
+			setCurrentDisplayIndex(index);
+		}
 	}
 
+	public void updateFSMImage(String ref, String img) {
+		FSMInfo use = getFSMInfo(ref);
+		if(use != null) {
+			use.updateImage(img);
+			display.updateImage();
+		}
+	}
+	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public void setCurrentDisplayIndex(int ind) {
-		index = ind;
+		if(ind != index || !display.hasDisplay()) {
+			index = ind;
+			display.updateFSMInfo(getCurrentFSMInfo());
+			display.updateImage();
+			display.adjustOffsets();
+		}
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -108,6 +145,15 @@ public class DisplayPageManager implements InputReceiver{
 			return null;
 		}
 		return fsms.get(index);
+	}
+	
+	private FSMInfo getFSMInfo(String ref) {
+		for(FSMInfo fsm : fsms) {
+			if(fsm.getName().equals(ref)) {
+				return fsm;
+			}
+		}
+		return null;
 	}
 	
 	private ArrayList<String> getDisplayNames(){

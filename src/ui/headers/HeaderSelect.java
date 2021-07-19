@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 
-import controller.InputReceiver;
 import input.CustomEventReceiver;
+import ui.InputHandler;
 import visual.composite.HandlePanel;
 
 public class HeaderSelect extends HandlePanel{
@@ -17,7 +17,7 @@ public class HeaderSelect extends HandlePanel{
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
-	private InputReceiver reference;
+	private InputHandler reference;
 	private int codeBase;
 
 //---  Constructors   -------------------------------------------------------------------------
@@ -86,7 +86,7 @@ public class HeaderSelect extends HandlePanel{
 	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
-	public void setInputReceiver(InputReceiver in) {
+	public void setInputHandler(InputHandler in) {
 		reference = in;
 	}
 	

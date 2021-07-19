@@ -7,6 +7,7 @@ public class CodeReference {
 	//-- Display Page  ----------------------------------------
 	
 	public final static int CODE_GENERATE_IMAGE = 154;
+	public final static int CODE_DISPLAY_CYCLE_VIEW = 155;
 	
 	//-- Generate FSM  ----------------------------------------
 	public final static int CODE_ACCESS_NUM_STATES = 100;

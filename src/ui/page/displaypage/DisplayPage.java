@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Random;
 
 import controller.CodeReference;
-import controller.InputReceiver;
 import input.CustomEventReceiver;
+import ui.InputHandler;
 import visual.composite.HandlePanel;
 
 /**
@@ -45,63 +45,52 @@ public class DisplayPage {
 	
 	private boolean displayImageMode;
 	
-	private InputReceiver reference;
+	private InputHandler reference;
+	
+	private HandlePanel p;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public DisplayPage(InputReceiver give) {
+	public DisplayPage(InputHandler give, HandlePanel panel) {
 		reference = give;
-	}
-	
-	public CustomEventReceiver getEventHandling(HandlePanel p) {
-		CustomEventReceiver out = new CustomEventReceiver() {
-			
-			@Override
-			public void clickEvent(int event, int x, int y, int mouseType) {
-
-			}
-			
-			@Override
-			public void mouseWheelEvent(int rot) {
-				
-			}
-			
-		};
-		return out;
+		p = panel;
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
 
-	public void draw(HandlePanel p) {
+	public void draw() {
 		if(info == null) {
-			drawDefault(p);
+			drawDefault();
 		}
 		else if(displayImageMode) {
-			drawImage(p);
+			drawImage();
 		}
 		else {
-			drawInfo(p);
+			drawInfo();
 		}
-		addFraming(p);
+		addFraming();
 	}
 	
 	public void updateFSMInfo(FSMInfo in) {
 		info = in;
+		p.removeAllElements();
 	}
 	
-	public void drawInfo(HandlePanel p) {
+	public void drawInfo() {
 		int vertP = (int)(p.getHeight() * VERT_PROP);
 		
-		drawDisplayThing(0, 0, p.getWidth() / 2, vertP, p, TITLE_STATES, info.getStates(), info.getStateAttributes(), info.getStateDetails());
+		drawDisplayThing(0, 0, p.getWidth() / 2, vertP, TITLE_STATES, info.getStateAttributes(), info.getStates(), info.getStateDetails());
 		
-		drawDisplayThing(p.getWidth() / 2, 0, p.getWidth() / 2, vertP, p, TITLE_EVENTS, info.getEvents(), info.getEventAttributes(), info.getEventDetails());
+		drawDisplayThing(p.getWidth() / 2, 0, p.getWidth() / 2, vertP, TITLE_EVENTS, info.getEventAttributes(), info.getEvents(), info.getEventDetails());
 		
-		drawDisplayThing(0, vertP, p.getWidth(), p.getHeight() - vertP, p, TITLE_TRANS, info.getTransitions(), info.getTransitionAttributes(), info.getTransitionDetails());
+		drawDisplayThing(0, vertP, p.getWidth(), p.getHeight() - vertP, TITLE_TRANS, info.getTransitionAttributes(), info.getTransitions(), info.getTransitionDetails());
+		
+		drawCycleImageButton();
 		
 		//TODO: Set up buttons for adding/removing/renaming events/states/transitions and toggling qualities thereof
 	}
 	
-	private void drawDisplayThing(int x, int y, int wid, int hei, HandlePanel p, String title, ArrayList<String> attributes, ArrayList<String> entries, HashMap<String, ArrayList<Boolean>> factors) {
+	private void drawDisplayThing(int x, int y, int wid, int hei, String title, ArrayList<String> attributes, ArrayList<String> entries, HashMap<String, ArrayList<Boolean>> factors) {
 		int sideBuffer = getSideBuffer(p);
 		int vertBuffer = getVertBuffer(p);
 		
@@ -128,8 +117,8 @@ public class DisplayPage {
 			if(desX + blockWid < runX || desX > x + wid - sideBuffer) {
 				continue;
 			}
-			p.handleLine(title + "_list_attr_line_ver_" + "_" + i, "move", 5, desX + blockWid / 2, currY, desX + blockWid / 2, currY + boxHei, 1, Color.black);
-			p.handleText(title + "_list_attr_text_" + "_" + i, "move", 15, desX, currY + attrBlockHeight / 2, blockWid, attrBlockHeight, ATTRIBUTE_FONT, attributes.get(i));
+			p.handleLine(title + "_list_attr_line_ver_" + "_" + i, "move_horiz", 30, desX + blockWid / 2, currY, desX + blockWid / 2, currY + boxHei, 1, Color.black);
+			p.handleText(title + "_list_attr_text_" + "_" + i, "move_horiz", 30, desX, currY + attrBlockHeight / 2, blockWid, attrBlockHeight, ATTRIBUTE_FONT, attributes.get(i));
 		}
 		
 		Color back = p.getPanel().getBackground();
@@ -167,14 +156,21 @@ public class DisplayPage {
 		p.setGroupDrawOutsideWindow(title, false);
 	}
 	
-	public void drawImage(HandlePanel p) {
-		if(imageDisplay == null) {
+	public void drawImage() {
+		if(imageDisplay == null || imageDisplay.getImage() == null) {
 			reference.receiveCode(CodeReference.CODE_GENERATE_IMAGE, 0);
 		}
 		imageDisplay.drawPage();
+		drawCycleImageButton();
+	}
+	
+	private void drawCycleImageButton() {
+		int size = getVertBuffer(p);
+		p.handleRectangle("cycle_display_rect", "no_move", 45, p.getWidth() - size, size, size, size, Color.white, Color.black);
+		p.handleImageButton("cycle_display", "no_move", 50, p.getWidth() - size, size, size, size, "src/assets/ui/cycle.png", CodeReference.CODE_DISPLAY_CYCLE_VIEW);
 	}
 
-	public void drawDefault(HandlePanel p) {
+	public void drawDefault() {
 		int vertP = (int)(p.getHeight() * VERT_PROP);
 		p.handleLine("vertline", "move", 35, p.getWidth() / 2, 0, p.getWidth() / 2, vertP, 3, Color.black);
 		
@@ -198,17 +194,17 @@ public class DisplayPage {
 			fact.put(nom, bol);
 		}
 
-		drawDisplayThing(0, 0, p.getWidth() / 2, vertP, p, TITLE_STATES, attr, stat, fact);
+		drawDisplayThing(0, 0, p.getWidth() / 2, vertP, TITLE_STATES, attr, stat, fact);
 		
-		drawDisplayThing(p.getWidth() / 2, 0, p.getWidth() / 2, vertP, p, TITLE_EVENTS, attr, stat, fact);
+		drawDisplayThing(p.getWidth() / 2, 0, p.getWidth() / 2, vertP, TITLE_EVENTS, attr, stat, fact);
 		
-		drawDisplayThing(0, vertP, p.getWidth(), p.getHeight() - vertP, p, TITLE_TRANS, attr, stat, fact);
+		drawDisplayThing(0, vertP, p.getWidth(), p.getHeight() - vertP, TITLE_TRANS, attr, stat, fact);
 		
 		
-		addFraming(p);
+		addFraming();
 	}
 	
-	private void addFraming(HandlePanel p) {
+	private void addFraming() {
 		int width = p.getWidth();
 		int height = p.getHeight();
 		int thick = 3;
@@ -221,12 +217,27 @@ public class DisplayPage {
 	
 	public void toggleDisplayMode() {
 		displayImageMode = !displayImageMode;
+		if(displayImageMode) {
+			FSMImage.attachPanel(p);
+		}
+		else {
+			FSMImage.dettachPanel(p);
+		}
 	}
 	
-	public void updateImage(Image in) {
+	public void updateImage() {
 		if(imageDisplay == null) {
-			imageDisplay = new FSMImage(info.getName(), in);
+			imageDisplay = new FSMImage(info.getName(), info.getImage());
 		}
+		else {
+			imageDisplay.setImage(info.getImage());
+		}
+	}
+	
+	public void adjustOffsets() {
+		p.adjustGroupOffset(TITLE_STATES, 0, 0);
+		p.adjustGroupOffset(TITLE_EVENTS, 0, 0);
+		p.adjustGroupOffset(TITLE_TRANS, 0, 0);
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -240,7 +251,7 @@ public class DisplayPage {
 	}
 	
 	public boolean hasDisplay() {
-		return imageDisplay == null;
+		return imageDisplay != null;
 	}
 	
 }
