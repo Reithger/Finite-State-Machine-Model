@@ -639,7 +639,7 @@ public class FiniteStateMachine implements InputReceiver{
 	
 	//-- File Configuration  ----------------------------------
 	
-	private void fileConfiguration() {
+	public static void fileConfiguration() {
 		Config c = new Config("", new UMLConfigValidation());
 		c.addFilePath("Finite State Machine Model");
 		c.addFilePath("Finite State Machine Model/settings");
