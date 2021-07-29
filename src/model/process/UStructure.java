@@ -22,6 +22,7 @@ public class UStructure {
 	private static String attributeInitialRef;
 	private static String attributeObservableRef;
 	private static String attributeControllableRef;
+	private static String attributeBadRef;
 	
 	private TransitionSystem plantFSM;
 	private Agent[] agents;
@@ -34,16 +35,27 @@ public class UStructure {
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, HashMap<String, HashSet<String>> theBadTransitions, ArrayList<Agent> theAgents) {
+	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
 		plantFSM = thePlant;
-		badTransitions = theBadTransitions;
+		badTransitions = new HashMap<String, HashSet<String>>();
 		for(String s : thePlant.getStateNames()) {
-			if(badTransitions.get(s) == null)
+			if(badTransitions.get(s) == null) {
 				badTransitions.put(s, new HashSet<String>());
+			}
+			for(String e : thePlant.getStateTransitionEvents(s)) {
+				if(thePlant.getTransitionAttribute(s, e, attributeBadRef)) {
+					badTransitions.get(s).add(e);
+				}
+			}
 		}
 		agents = new Agent[theAgents.size() + 1];
 		
 		agents[0] = new Agent(attr, thePlant.getEventNames());
+		
+		for(String s : attr) {
+			agents[0].setAttributeTrue(s, thePlant.getEventNames());
+		}
+		
 		for(int i = 0; i < theAgents.size(); i++)
 			agents[i+1] = theAgents.get(i);
 		HashSet<String> allEvents = new HashSet<String>();
@@ -66,10 +78,11 @@ public class UStructure {
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public static void assignAttributeReferences(String init, String obs, String cont) {
+	public static void assignAttributeReferences(String init, String obs, String cont, String bad) {
 		attributeInitialRef = init;
 		attributeObservableRef = obs;
 		attributeControllableRef = cont;
+		attributeBadRef = bad;
 	}
 	
 	public void createUStructure() {
@@ -105,7 +118,11 @@ public class UStructure {
 			for(String s : viableEvents) {
 				boolean[] canAct = new boolean[stateSet.getStates().length];		//find out what each individual agent is able to do for the given event at the given state
 				for(int i = 0; i < stateSet.getStates().length; i++) {
+					String currState = stateSet.getStates()[i];
 					if(!agents[i].getEventAttribute(s, attributeObservableRef)) {					//if the agent cannot see the event, it has to guess whether it happened
+						if(plantFSM.getStateEventTransitionStates(currState, s) == null) {
+							continue;
+						}
 						String[] newSet = new String[stateSet.getStates().length];
 						String eventName = "<";
 						for(int j = 0; j < stateSet.getStates().length; j++) {
@@ -178,8 +195,16 @@ public class UStructure {
 				}
 			}
 		}
+		uStructure.setEventAttributes(new ArrayList<String>());
 	}
 
+	
+	/*
+	 * 
+	 * 						
+	 * 
+	 */
+	
 	public void findIllegalStates() {
 		goodBadStates = new HashSet<String>();
 		badGoodStates = new HashSet<String>();

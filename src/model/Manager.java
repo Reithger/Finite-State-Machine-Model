@@ -37,7 +37,7 @@ public class Manager {
 	//-- Assign Attribute Data  -------------------------------
 	
 	private void assignAttributeReferences() {
-		ProcessDES.assignAttributeReferences(AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE);
+		ProcessDES.assignAttributeReferences(AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE, AttributeList.ATTRIBUTE_BAD);
 	}
 	
 	//-- File Meta  -------------------------------------------
@@ -77,6 +77,12 @@ public class Manager {
 	}
 	
 	//-- FSM Generation  --------------------------------------
+	
+	public String generateEmptyFSM(String nom) {
+		TransitionSystem use = new TransitionSystem(nom);
+		appendFSM(use.getId(), use, false);
+		return nom;
+	}
 	
 	public String generateRandomFSM(String nom, int numStates, int numEvents, int numTrans, boolean det, ArrayList<String> stateAttr, ArrayList<String> eventAttr, ArrayList<String> transAttr, ArrayList<Integer> numbers) {
 		return GenerateFSM.createNewFSM(nom, numStates, numEvents, numTrans, det, stateAttr, eventAttr, transAttr, numbers);
@@ -207,12 +213,12 @@ public class Manager {
 	
 	//-- U-Structure  -----------------------------------------
 	
-	public String buildUStructure(String ref, ArrayList<String> attr, HashMap<String, HashSet<String>> badTrans, boolean[][][] agents) {
+	public String buildUStructure(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		if(ref == null || fsms.get(ref) == null) {
 			return null;
 		}
 		//TODO: Other failure checks to do ahead of time?
-		TransitionSystem tS = ProcessDES.buildUStructure(fsms.get(ref), attr, badTrans, agents);
+		TransitionSystem tS = ProcessDES.buildUStructure(fsms.get(ref), attr, agents);
 		if(tS == null) {
 			return null;
 		}

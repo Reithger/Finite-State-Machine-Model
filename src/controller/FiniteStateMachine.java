@@ -458,8 +458,8 @@ public class FiniteStateMachine implements InputReceiver{
 				ArrayList<String> attr = new ArrayList<String>();
 				attr.add(AttributeList.ATTRIBUTE_OBSERVABLE);
 				attr.add(AttributeList.ATTRIBUTE_CONTROLLABLE);
-				
-				String nom = model.buildUStructure(plant, attr, badMap, age);
+				//TODO: Reintegrate this after getting UI stuff figured out
+				//String nom = model.buildUStructure(plant, attr, badMap, age);
 				
 				boolean display = view.getCheckboxContent(CodeReference.CODE_TOGGLE_USTRUCT);
 				break;

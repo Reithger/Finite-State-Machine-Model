@@ -14,8 +14,10 @@ public class Agent {
 	
 	public Agent(ArrayList<String> attr, ArrayList<String> inEvents) {
 		events = new EventMap(attr);
-		for(String e : inEvents)
-			events.addEvent(e);
+		if(inEvents != null) {
+			for(String e : inEvents)
+				events.addEvent(e);
+		}
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -32,8 +34,8 @@ public class Agent {
 		}
 	}
 	
-	public void setAttributeTrue(String attrib, String name) {
-		events.setEventAttribute(name, attrib, true);
+	public void setAttribute(String attrib, String name, boolean set) {
+		events.setEventAttribute(name, attrib, set);
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------

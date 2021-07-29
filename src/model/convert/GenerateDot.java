@@ -37,7 +37,7 @@ public class GenerateDot {
 			for(String e : in.getStateTransitionEvents(s)) {
 				for(String t : in.getStateEventTransitionStates(s, e)) {
 					String trans = "{\"" + nameMap.get(s) + "\"}->{\"" + nameMap.get(t) + "\"}";
-					trans += generateTransitionDot(in, e);
+					trans += generateTransitionDot(in, s, e);
 					transitions.add(trans);
 				}
 			}
@@ -71,15 +71,18 @@ public class GenerateDot {
 		return line;
 	}
 	
-	private static String generateTransitionDot(TransitionSystem in, String ref) {
-		String trans = "[label = \"" + ref + "\" color=\"";
-		Boolean obs = in.getEventAttribute(ref, AttributeList.ATTRIBUTE_OBSERVABLE);
-		Boolean atkObs = in.getEventAttribute(ref, AttributeList.ATTRIBUTE_ATTACKER_OBSERVABLE);
-		Boolean cont = in.getEventAttribute(ref, AttributeList.ATTRIBUTE_CONTROLLABLE);
+	private static String generateTransitionDot(TransitionSystem in, String state, String event) {
+		String trans = "[label = \"" + event + "\" color=\"";
+		Boolean obs = in.getEventAttribute(event, AttributeList.ATTRIBUTE_OBSERVABLE);
+		Boolean atkObs = in.getEventAttribute(event, AttributeList.ATTRIBUTE_ATTACKER_OBSERVABLE);
+		Boolean cont = in.getEventAttribute(event, AttributeList.ATTRIBUTE_CONTROLLABLE);
+		Boolean bad = in.getTransitionAttribute(state, event, AttributeList.ATTRIBUTE_BAD);
 		trans += obs == null || obs ? "black" : "red";
 		trans += "\" arrowhead=\"normal";
 		trans += atkObs != null && atkObs ? "odot" : "";
 		trans += cont != null && cont ? "diamond" : "";
+		trans += "\" style=\"";
+		trans += bad != null && bad ? "dashed" : "";
 		trans += "\"];";
 		return trans;
 	}

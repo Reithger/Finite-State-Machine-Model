@@ -54,33 +54,37 @@ public class ProcessDES {
 	
 	//-- UStructure  ------------------------------------------
 	
-	public static TransitionSystem buildUStructure(TransitionSystem plant, ArrayList<String> attr, HashMap<String, HashSet<String>> badTrans, boolean[][][] agents) {
+	public static TransitionSystem buildUStructure(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		ArrayList<Agent> agen = new ArrayList<Agent>();
 		
 		ArrayList<String> event = plant.getEventNames();
+		System.out.println(attr);
 		
-		for(int i = 0; i < agents.length; i++) {
+		for(HashMap<String, ArrayList<Boolean>> h : agents) {
+			System.out.println(h);
 			Agent a = new Agent(attr, event);
-			for(int j = 0; j < event.size(); j++) {
-				for(int k = 0; k < attr.size(); k++) {
-					if(agents[i][j][k])
-						a.setAttributeTrue(attr.get(k), event.get(j));
+			for(String s : event) {
+				System.out.println(s);
+				for(int i = 0; i < attr.size(); i++) {
+					Boolean b = h.get(s).get(i);
+					if(b)
+						a.setAttribute(attr.get(i), s, true);
 				}
 			}
 			agen.add(a);
 		}
 		
-		UStructure ustr = new UStructure(plant, attr, badTrans, agen);
+		UStructure ustr = new UStructure(plant, attr, agen);
 		return ustr.getUStructure();
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
-	public static void assignAttributeReferences(String init, String mark, String priv, String obs, String cont) {
+	public static void assignAttributeReferences(String init, String mark, String priv, String obs, String cont, String bad) {
 		ProcessAnalysis.assignAttributeReferences(priv, init);
 		ProcessOperation.assignAttributeReferences(init, obs);
 		ProcessClean.assignAttributeReferences(init, mark);
-		UStructure.assignAttributeReferences(init, obs, cont);
+		UStructure.assignAttributeReferences(init, obs, cont, bad);
 	}
 	
 }
