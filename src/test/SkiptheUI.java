@@ -18,7 +18,7 @@ import visual.panel.ElementPanel;
  *  something added, feel free to let me know! For the folks this is intended for, they oughta be able to get in contact with me so
  *  I'm not gonna put my contact info here.
  *  
- *  - This is thrown together for a specic expected use case and is not representative of best practices for programming.
+ *  - This is thrown together for a specific expected use case and is not representative of best practices for programming.
  *  
  *  - Creating the U-Structure involves a few things; you need to make the Plant UML and define your agents' observability/controllability.
  *  This kind of involves a lot, but for the most part you do the set-up once and most of the changes you need to make aren't a part of that.

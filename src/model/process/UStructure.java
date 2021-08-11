@@ -15,7 +15,7 @@ public class UStructure {
 	
 //---  Constants   ----------------------------------------------------------------------------
 	
-	private static final String UNOBSERVED_EVENT = "w";
+	private static final String UNOBSERVED_EVENT = "~";
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -23,6 +23,7 @@ public class UStructure {
 	private static String attributeObservableRef;
 	private static String attributeControllableRef;
 	private static String attributeBadRef;
+	private static String attributeGoodRef;
 	
 	private TransitionSystem plantFSM;
 	private Agent[] agents;
@@ -72,21 +73,27 @@ public class UStructure {
 				}
 			}
 		}
+		goodBadStates = new HashSet<String>();
+		badGoodStates = new HashSet<String>();
 		createUStructure();
-		findIllegalStates();
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public static void assignAttributeReferences(String init, String obs, String cont, String bad) {
+	public static void assignAttributeReferences(String init, String obs, String cont, String bad, String good) {
 		attributeInitialRef = init;
 		attributeObservableRef = obs;
 		attributeControllableRef = cont;
 		attributeBadRef = bad;
+		attributeGoodRef = good;
 	}
 	
 	public void createUStructure() {
 		uStructure = new TransitionSystem("U-struc", plantFSM.getStateAttributes(), plantFSM.getEventAttributes(), plantFSM.getTransitionAttributes());
+		ArrayList<String> attr = uStructure.getStateAttributes();
+		attr.add(attributeBadRef);
+		attr.add(attributeGoodRef);
+		uStructure.setStateAttributes(attr);
 		compositeMapping = new HashMap<String, String[]>();
 		LinkedList<BatchAgentStates> queue = new LinkedList<BatchAgentStates>();		//initialize
 		HashSet<String> visited = new HashSet<String>();
@@ -104,7 +111,7 @@ public class UStructure {
 		
 		while(!queue.isEmpty()) {
 			BatchAgentStates stateSet = queue.poll();
-			if(visited.contains(stateSet.getIdentityState()))					//access next state from queue, ensure it hasn't been processed yet
+			if(visited.contains(stateSet.getIdentityState()))	//access next state from queue, ensure it hasn't been processed yet
 				continue;
 			visited.add(stateSet.getIdentityState());
 			
@@ -116,7 +123,7 @@ public class UStructure {
 			}
 			
 			for(String s : viableEvents) {
-				boolean[] canAct = new boolean[stateSet.getStates().length];		//find out what each individual agent is able to do for the given event at the given state
+				boolean[] canAct = new boolean[stateSet.getStates().length];     //find out what each individual agent is able to do for the given event at the given state
 				for(int i = 0; i < stateSet.getStates().length; i++) {
 					String currState = stateSet.getStates()[i];
 					if(!agents[i].getEventAttribute(s, attributeObservableRef)) {					//if the agent cannot see the event, it has to guess whether it happened
@@ -136,7 +143,7 @@ public class UStructure {
 							}
 							else {
 								newSet[j] = stateSet.getStates()[j];
-								eventName += "w" + (j + 1 < stateSet.getStates().length ? ", " : ">");
+								eventName += UNOBSERVED_EVENT + (j + 1 < stateSet.getStates().length ? ", " : ">");
 							}
 						}
 						
@@ -154,7 +161,7 @@ public class UStructure {
 							uStructure.addEvent(eventName);
 							uStructure.addState(newName);
 							uStructure.addTransition(stateSet.getIdentityState(), eventName, newName);
-							compositeMapping.put(newName, newSet);
+							compositeMapping.put(newName, newSet);							
 						}
 					}
 					else {
@@ -173,7 +180,7 @@ public class UStructure {
 						}
 					}
 					else {
-						eventName += "w" + (i + 1 < canAct.length ? ", " : ">");
+						eventName += UNOBSERVED_EVENT + (i + 1 < canAct.length ? ", " : ">");
 						newSet[i] = stateSet.getStates()[i];
 					}
 				}
@@ -192,61 +199,33 @@ public class UStructure {
 					uStructure.addState(newName);
 					uStructure.addTransition(stateSet.getIdentityState(), eventName, newName);
 					compositeMapping.put(newName, newSet);
+					
+					
+					if(plantFSM.getEventAttribute(s, attributeControllableRef)) {
+						Boolean result = badTransitions.get(stateSet.getStates()[0]).contains(s);
+						String[] states = stateSet.getStates();
+						for(int i = 1; i < states.length; i++) {
+							if(agents[i-1].getEventAttribute(s, attributeControllableRef)) {
+								if(badTransitions.get(states[i]).contains(s) == result) {
+									result = null;
+									break;
+								}
+							}
+						}
+						if(result != null) {
+						  uStructure.setStateAttribute(newName, !result ? attributeGoodRef : attributeBadRef, true);
+						  if(result) {
+							  goodBadStates.add(newName);
+						  }
+						  else {
+							  badGoodStates.add(newName);
+						  }
+						}
+					}
 				}
 			}
 		}
 		uStructure.setEventAttributes(new ArrayList<String>());
-	}
-
-	
-	/*
-	 * 
-	 * 						
-	 * 
-	 */
-	
-	public void findIllegalStates() {
-		goodBadStates = new HashSet<String>();
-		badGoodStates = new HashSet<String>();
-		for(String state : uStructure.getStateNames()) {
-			for(String event : uStructure.getStateTransitionEvents(state)) {
-				String[] eventBrk = event.substring(1, event.length()-1).split(", ");
-				String[] states = compositeMapping.get(state);
-				Boolean[] legality = new Boolean[states.length];
-				for(int i = 0; i < states.length; i++) {
-					if(agents[i].getEventAttribute(eventBrk[i], attributeControllableRef)) {
-						legality[i] = true;
-						for(String bad : badTransitions.get(states[i])) {
-							if(bad.equals(eventBrk[i])) {
-								legality[i] = false;
-							}
-						}
-					}
-					else{
-						legality[i] = null;
-					}
-				}
-				Boolean outcome;
-				if(legality[0] == null) {
-					outcome = null;
-				}
-				else {
-					boolean first = legality[0];
-					outcome = first;
-					for(int i = 1; i < legality.length; i++)
-						if(legality[i] != null && legality[i] == first)
-							outcome = null;
-				}
-				if(outcome != null) {
-					if(outcome) {
-						goodBadStates.add(state);
-					}
-					else {
-						badGoodStates.add(state);
-					}
-				}
-			}
-		}
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------

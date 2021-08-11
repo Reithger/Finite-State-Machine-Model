@@ -49,6 +49,8 @@ public class TestFunctionality {
 			model.setEventAttribute(ex, s, AttributeList.ATTRIBUTE_OBSERVABLE, true);
 		}
 		
+		model.setEventAttribute(ex, "c", AttributeList.ATTRIBUTE_CONTROLLABLE, true);
+		
 		model.addTransition(ex, "1", "a1", "2");
 		model.addTransition(ex, "1", "a2", "3");
 		model.addTransition(ex, "2", "b1", "4");

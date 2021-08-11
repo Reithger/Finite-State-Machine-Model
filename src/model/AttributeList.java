@@ -10,7 +10,7 @@ public class AttributeList {
 	
 	//-- State  -----------------------------------------------
 	
-	public final static String[] STATE_ATTRIBUTES = new String[] {AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_BAD};
+	public final static String[] STATE_ATTRIBUTES = new String[] {AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_BAD, AttributeList.ATTRIBUTE_GOOD};
 	public final static String ATTRIBUTE_INITIAL = "Initial";
 	public final static boolean ATTRIBUTE_AON_INITIAL = true;
 	public final static String ATTRIBUTE_MARKED = "Marked";
@@ -19,6 +19,8 @@ public class AttributeList {
 	public final static boolean ATTRIBUTE_AON_PRIVATE = true;
 	public final static String ATTRIBUTE_BAD = "Bad";
 	public final static boolean ATTRIBUTE_AON_BAD = false;
+	public final static String ATTRIBUTE_GOOD = "Good";
+	public final static boolean ATTRIBUTE_AON_GOOD = false;
 	
 	//-- Event  -----------------------------------------------
 	
@@ -58,6 +60,7 @@ public class AttributeList {
 		map.put(ATTRIBUTE_CONTROLLABLE, ATTRIBUTE_AON_CONTROLLABLE);
 		map.put(ATTRIBUTE_BAD, ATTRIBUTE_AON_BAD);
 		map.put(ATTRIBUTE_ATTACKER_OBSERVABLE, ATTRIBUTE_AON_ATTACKER_OBSERVABLE);
+		map.put(ATTRIBUTE_GOOD, ATTRIBUTE_AON_GOOD);
 	}
 	
 }

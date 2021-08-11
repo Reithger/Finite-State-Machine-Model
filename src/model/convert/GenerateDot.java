@@ -57,15 +57,20 @@ public class GenerateDot {
 	
 	private static String generateStateDot(TransitionSystem in, String ref) {
 		Boolean bad = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_BAD);
+		Boolean good = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_GOOD);
 		Boolean mark = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_MARKED);
-		String line = mark != null && mark ? "doublecircle" : "circle";
-		line += " color=\"";
 		Boolean priv = in.getStateAttribute(ref, AttributeList.ATTRIBUTE_PRIVATE);
-		if(priv != null && priv) {
-			line += bad != null && bad ? "red" : "orange";
+		bad = bad == null ? false : bad;
+		good = good == null ? false : good;
+		mark = mark == null ? false : mark;
+		priv = priv == null ? false : priv;
+		String line = mark || bad || good ? "doublecircle" : "circle";
+		line += " color=\"";
+		if(priv) {
+			line += bad ? "purple" : "orange";
 		}
 		else {
-			line += bad != null && bad ? "purple" : "black";
+			line += bad ? "red" : good ? "green" : "black";
 		}
 		line += "\"];";
 		return line;

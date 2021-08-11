@@ -58,13 +58,10 @@ public class ProcessDES {
 		ArrayList<Agent> agen = new ArrayList<Agent>();
 		
 		ArrayList<String> event = plant.getEventNames();
-		System.out.println(attr);
 		
 		for(HashMap<String, ArrayList<Boolean>> h : agents) {
-			System.out.println(h);
 			Agent a = new Agent(attr, event);
 			for(String s : event) {
-				System.out.println(s);
 				for(int i = 0; i < attr.size(); i++) {
 					Boolean b = h.get(s).get(i);
 					if(b)
@@ -80,11 +77,11 @@ public class ProcessDES {
 	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
-	public static void assignAttributeReferences(String init, String mark, String priv, String obs, String cont, String bad) {
+	public static void assignAttributeReferences(String init, String mark, String priv, String obs, String cont, String bad, String good) {
 		ProcessAnalysis.assignAttributeReferences(priv, init);
 		ProcessOperation.assignAttributeReferences(init, obs);
 		ProcessClean.assignAttributeReferences(init, mark);
-		UStructure.assignAttributeReferences(init, obs, cont, bad);
+		UStructure.assignAttributeReferences(init, obs, cont, bad, good);
 	}
 	
 }

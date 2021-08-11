@@ -7,6 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
-	<classpathentry kind="lib" path="C:/Users/Borinor/git/SoftwareVisualInterface/svi.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Borinor/git/Finite-State-Machine-Model/bin/assets/svi.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

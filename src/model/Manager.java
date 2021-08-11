@@ -37,7 +37,7 @@ public class Manager {
 	//-- Assign Attribute Data  -------------------------------
 	
 	private void assignAttributeReferences() {
-		ProcessDES.assignAttributeReferences(AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE, AttributeList.ATTRIBUTE_BAD);
+		ProcessDES.assignAttributeReferences(AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE, AttributeList.ATTRIBUTE_BAD, AttributeList.ATTRIBUTE_GOOD);
 	}
 	
 	//-- File Meta  -------------------------------------------
