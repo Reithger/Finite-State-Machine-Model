@@ -1,4 +1,4 @@
-package model.process;
+package model.process.coobservability;
 
 import java.util.HashSet;
 import java.util.LinkedList;

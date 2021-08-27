@@ -1,4 +1,4 @@
-package model.process;
+package model.process.coobservability;
 
 public class BatchAgentStates implements Comparable<BatchAgentStates>{
 	

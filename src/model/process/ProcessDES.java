@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import model.fsm.TransitionSystem;
+import model.process.coobservability.Agent;
+import model.process.coobservability.UStructure;
 
 public class ProcessDES {
 

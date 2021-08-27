@@ -9,7 +9,7 @@ import controller.convert.FormatConversion;
 import input.CustomEventReceiver;
 import model.AttributeList;
 import model.Manager;
-import model.process.Agent;
+import model.process.coobservability.Agent;
 import ui.popups.PopoutAgentSelection;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
@@ -20,6 +20,7 @@ public class TestFunctionality {
 	public static void main(String[] args) {
 		
 		FormatConversion.assignPaths(FiniteStateMachine.ADDRESS_IMAGES, FiniteStateMachine.ADDRESS_CONFIG);
+		FiniteStateMachine.fileConfiguration();
 		
 		String ex = "Example 1";
 		Manager model = new Manager();
