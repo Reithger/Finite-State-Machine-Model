@@ -27,6 +27,8 @@ public class StateSet{
 		}
 	}
 	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
 	public static void assignSizes(int sizePl, int sizeSp) {
 		sizePlants = sizePl;
 		sizeSpecs = sizeSp;
@@ -38,8 +40,21 @@ public class StateSet{
 		return plant;
 	}
 	
+	public String getPlantState(int index) {
+		return plant[index];
+	}
+	
 	public String[] getSpecStates() {
 		return spec;
+	}
+	
+	public String getSpecState(int index) {
+		return spec[index];
+	}
+	
+	public String getState(int index) {
+		boolean isPlant = index < sizePlants;
+		return isPlant ? plant[index] : spec[index - sizePlants];
 	}
 	
 	public String getPairName() {

@@ -9,6 +9,7 @@ import model.convert.GenerateFSM;
 import model.convert.ReadWrite;
 import model.fsm.TransitionSystem;
 import model.process.ProcessDES;
+import model.process.coobservability.ProcessCoobservability;
 
 public class Manager {
 
@@ -90,16 +91,15 @@ public class Manager {
 	
 	//-- Processes  -------------------------------------------
 	
-	public String performProduct(ArrayList<String> roots) {
-		if(roots.size() == 0 || roots.get(0) == null || fsms.get(roots.get(0)) == null || roots.size() < 2) {
+	public String performProduct(ArrayList<String> ref) {
+		if(bailMulti(ref)) {
 			return null;
 		}
-		TransitionSystem in = fsms.get(roots.get(0));
 		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
-		for(int i = 1; i < roots.size(); i++) {
-			use.add(fsms.get(roots.get(i)));
+		for(int i = 0; i < ref.size(); i++) {
+			use.add(fsms.get(ref.get(i)));
 		}
-		TransitionSystem out = ProcessDES.product(in, use);
+		TransitionSystem out = ProcessDES.product(use);
 		if(out == null) {
 			return null;
 		}
@@ -107,16 +107,15 @@ public class Manager {
 		return out.getId();
 	}
 	
-	public String performParallelComposition(ArrayList<String> roots) {
-		if(roots.get(0) == null || fsms.get(roots.get(0)) == null || roots.size() < 2) {
+	public String performParallelComposition(ArrayList<String> ref) {
+		if(bailMulti(ref)) {
 			return null;
 		}
-		TransitionSystem in = fsms.get(roots.get(0));
 		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
-		for(int i = 1; i < roots.size(); i++) {
-			use.add(fsms.get(roots.get(i)));
+		for(int i = 0; i < ref.size(); i++) {
+			use.add(fsms.get(ref.get(i)));
 		}
-		TransitionSystem out = ProcessDES.parallelComposition(in, use);
+		TransitionSystem out = ProcessDES.parallelComposition(use);
 		if(out == null) {
 			return null;
 		}
@@ -125,7 +124,7 @@ public class Manager {
 	}
 	
 	public String buildObserver(String ref) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		TransitionSystem out = ProcessDES.buildObserver(fsms.get(ref));
@@ -139,7 +138,7 @@ public class Manager {
 	//-- Clean  -----------------------------------------------
 	
 	public String trim(String ref) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		TransitionSystem out = ProcessDES.trim(fsms.get(ref));
@@ -151,7 +150,7 @@ public class Manager {
 	}
 	
 	public String makeAccessible(String ref) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		TransitionSystem out = ProcessDES.makeAccessible(fsms.get(ref));
@@ -163,7 +162,7 @@ public class Manager {
 	}
 	
 	public String makeCoAccessible(String ref) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		TransitionSystem out = ProcessDES.makeCoAccessible(fsms.get(ref));
@@ -177,44 +176,44 @@ public class Manager {
 	//-- Analysis  --------------------------------------------
 	
 	public Boolean stateExists(String ref, String nom) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		return fsms.get(ref).stateExists(nom);
 	}
 	
 	public Boolean eventExists(String ref, String nom) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		return fsms.get(ref).eventExists(nom);
 	}
 	
 	public Boolean isBlocking(String ref) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		return ProcessDES.isBlocking(fsms.get(ref));
 	}
 	
 	public Boolean testOpacity(String ref) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		return ProcessDES.testOpacity(fsms.get(ref));
 	}
 	
 	public ArrayList<String> findPrivateStates(String ref){
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		return ProcessDES.findPrivateStates(fsms.get(ref));
 	}
 	
-	//-- U-Structure  -----------------------------------------
+	//-- CoObservability  -------------------------------------
 	
 	public String buildUStructure(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		if(ref == null || fsms.get(ref) == null) {
+		if(bail(ref)) {
 			return null;
 		}
 		//TODO: Other failure checks to do ahead of time?
@@ -224,6 +223,43 @@ public class Manager {
 		}
 		appendFSM(tS.getId(), tS, false);
 		return tS.getId();
+	}
+	
+	public Boolean isCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+		if(bail(ref)) {
+			return null;
+		}
+		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents, enableByDefault);
+	}
+	
+	public Boolean isCoobservableUStruct(ArrayList<String> ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+		if(bail(ref)) {
+			return null;
+		}
+		if(ref.size() == 1) {
+			return isCoobservableUStruct(ref.get(0), attr, agents, enableByDefault);
+		}
+		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
+		for(String s : ref) {
+			use.add(fsms.get(s));
+		}
+		TransitionSystem plant = ProcessDES.parallelComposition(use);
+		return ProcessDES.isCoobservableUStruct(plant, attr, agents, enableByDefault);
+	}
+
+	public Boolean isSBCoobservableUrvashi(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		if(bail(refPlants) || bail(refSpecs)) {
+			return null;
+		}
+		ArrayList<TransitionSystem> plants = new ArrayList<TransitionSystem>();
+		ArrayList<TransitionSystem> specs = new ArrayList<TransitionSystem>();
+		for(String s : refPlants) {
+			plants.add(fsms.get(s));
+		}
+		for(String s : refSpecs) {
+			specs.add(fsms.get(s));
+		}
+		return ProcessDES.isSBCoobservableUrvashi(plants, specs, attr, agents);
 	}
 	
 	//-- Manipulate  ------------------------------------------
@@ -520,6 +556,36 @@ public class Manager {
 		fsms.put(nom, fsm);
 		fsm.setId(nom);
 		return nom;
+	}
+	
+	/**
+	 * 
+	 * Return True on bail means to *not* do the thing
+	 * 
+	 * @param ref
+	 * @return
+	 */
+	
+	private boolean bail(String ref) {
+		return ref == null || fsms.get(ref) == null;
+	}
+	
+	private boolean bail(ArrayList<String> ref) {
+		if(ref != null) {
+			for(String s : ref) {
+				if(bail(s)) {
+					return true;
+				}
+			}
+		}
+		else {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean bailMulti(ArrayList<String> ref) {
+		return bail(ref) || ref.size() < 2;
 	}
 	
 }

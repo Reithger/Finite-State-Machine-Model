@@ -106,12 +106,9 @@ public class ProcessOperation {
 	 * @return - Returns a TransitionSystem extending object representing the TransitionSystem object resulting from all Product operations.
 	 */
 
- 	public static TransitionSystem product(TransitionSystem in, ArrayList<TransitionSystem> other) {
+ 	public static TransitionSystem product(ArrayList<TransitionSystem> fsms) {
  		boolean work = true;
- 		if(!in.hasStateAttribute(attributeInitialRef)) {
- 			work = false;
- 		}
- 		for(TransitionSystem t : other) {
+ 		for(TransitionSystem t : fsms) {
  			if(!t.hasStateAttribute(attributeInitialRef)) {
  				work = false;
  			}
@@ -119,11 +116,11 @@ public class ProcessOperation {
  		if(!work) {
  			return null;
  		}
-		TransitionSystem out = productHelper(in, other.get(0));
-		for(int i = 1; i < other.size(); i++) {
-			out = productHelper(out, other.get(i));
+		TransitionSystem out = fsms.get(0);
+		for(int i = 1; i < fsms.size(); i++) {
+			out = productHelper(out, fsms.get(i));
 		}
-		out.setId(in.getId() + "_product");
+		out.setId(out.getId() + "_product");
 		return out;
 	}
 
@@ -135,12 +132,9 @@ public class ProcessOperation {
 	 * @return - Returns a TransitionSystem extending object representing the result of all Parallel Composition operations.
 	 */
 	
-	public static TransitionSystem parallelComposition(TransitionSystem in, ArrayList<TransitionSystem> other){
+	public static TransitionSystem parallelComposition(ArrayList<TransitionSystem> fsms){
  		boolean work = true;
- 		if(!in.hasStateAttribute(attributeInitialRef)) {
- 			work = false;
- 		}
- 		for(TransitionSystem t : other) {
+ 		for(TransitionSystem t : fsms) {
  			if(!t.hasStateAttribute(attributeInitialRef)) {
  				work = false;
  			}
@@ -148,11 +142,11 @@ public class ProcessOperation {
  		if(!work) {
  			return null;
  		}
-		TransitionSystem out = parallelCompositionHelper(in, other.get(0));
-		for(int i = 1; i < other.size(); i++) {
-			out = parallelCompositionHelper(out, other.get(1));
+		TransitionSystem out = fsms.get(0);
+		for(int i = 1; i < fsms.size(); i++) {
+			out = parallelCompositionHelper(out, fsms.get(i));
 		}
-		out.setId(in.getId() + "_parallel");
+		out.setId(out.getId() + "_parallel");
 		return out;
 	}
 

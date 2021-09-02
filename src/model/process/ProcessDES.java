@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import model.fsm.TransitionSystem;
 import model.process.coobservability.Agent;
+import model.process.coobservability.ProcessCoobservability;
 import model.process.coobservability.UStructure;
 
 public class ProcessDES {
@@ -18,12 +19,12 @@ public class ProcessDES {
 		return ProcessOperation.buildObserver(in);
 	}
 	
-	public static TransitionSystem product(TransitionSystem in, ArrayList<TransitionSystem> other) {
-		return ProcessOperation.product(in, other);
+	public static TransitionSystem product(ArrayList<TransitionSystem> fsms) {
+		return ProcessOperation.product(fsms);
 	}
 	
-	public static TransitionSystem parallelComposition(TransitionSystem in, ArrayList<TransitionSystem> other) {
-		return ProcessOperation.parallelComposition(in, other);
+	public static TransitionSystem parallelComposition(ArrayList<TransitionSystem> fsms) {
+		return ProcessOperation.parallelComposition(fsms);
 	}
 	
 	//-- Clean  -----------------------------------------------
@@ -54,27 +55,18 @@ public class ProcessDES {
 		return ProcessAnalysis.testOpacity(in);
 	}
 	
+	public static Boolean isCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+		return ProcessCoobservability.isCoobservableUStruct(plant, attr, agents, enableByDefault);
+	}
+	
+	public static Boolean isSBCoobservableUrvashi(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		return ProcessCoobservability.isSBCoobservableUrvashi(plants, specs, attr, agents);
+	}
+	
 	//-- UStructure  ------------------------------------------
 	
 	public static TransitionSystem buildUStructure(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		ArrayList<Agent> agen = new ArrayList<Agent>();
-		
-		ArrayList<String> event = plant.getEventNames();
-		
-		for(HashMap<String, ArrayList<Boolean>> h : agents) {
-			Agent a = new Agent(attr, event);
-			for(String s : event) {
-				for(int i = 0; i < attr.size(); i++) {
-					Boolean b = h.get(s).get(i);
-					if(b)
-						a.setAttribute(attr.get(i), s, true);
-				}
-			}
-			agen.add(a);
-		}
-		
-		UStructure ustr = new UStructure(plant, attr, agen);
-		return ustr.getUStructure();
+		return ProcessCoobservability.constructUStruct(plant, attr, agents).getUStructure();
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -83,6 +75,7 @@ public class ProcessDES {
 		ProcessAnalysis.assignAttributeReferences(priv, init);
 		ProcessOperation.assignAttributeReferences(init, obs);
 		ProcessClean.assignAttributeReferences(init, mark);
+		ProcessCoobservability.assignReferences(cont, obs, init);
 		UStructure.assignAttributeReferences(init, obs, cont, bad, good);
 	}
 	
