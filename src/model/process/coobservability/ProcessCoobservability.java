@@ -37,11 +37,82 @@ public class ProcessCoobservability {
 		return badGood.isEmpty();
 	}
 	
+	public boolean isSBCoobservableUrvashi(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		HashSet<String> eventNamesHold = new HashSet<String>();
+		HashSet<String> controllableHold = new HashSet<String>();
+		
+		for(TransitionSystem t : plants) {
+			eventNamesHold.addAll(t.getEventNames());
+			controllableHold.addAll(t.getEventsWithAttribute(controllableRef));
+		}
+		
+		ArrayList<String> eventNames = new ArrayList<String>();
+		eventNames.addAll(eventNamesHold);
+		
+		ArrayList<Agent> agen = constructAgents(eventNames, attr, agents);
+		
+		HashMap<String, HashSet<StateSet>> disable = new HashMap<String, HashSet<StateSet>>();
+		HashMap<String, HashSet<StateSet>> enable = new HashMap<String, HashSet<StateSet>>();
+		
+		initializeEnableDisable(disable, enable, plants, specs);
+		
+		boolean pass = true;
+		
+		ArrayList<String> controllable = new ArrayList<String>();
+		controllable.addAll(controllable);
+		
+		for(String e : controllable) {
+			if(!disable.get(e).isEmpty()) {
+				pass = false;
+			}
+		}
+		
+		if(pass) {
+			return true;
+		}
+		
+		for(Agent a : agen) {
+			boolean skip = true;
+			
+			for(String e : controllable) {
+				Boolean res = a.getEventAttribute(e, controllableRef);
+				if(res && !disable.get(e).isEmpty()) {
+					skip = false;
+				}
+			}
+			
+			if(skip) {
+				continue;
+			}
+			
+			ArrayList<String> observable = a.getEventsAttributeSet(observableRef, true);
+			controllable = a.getEventsAttributeSet(controllableRef, true);
+			
+			TransitionSystem product = constructProductHiding(plants, specifications, observable);
+			HashMap<String, HashSet<StateSet>> tempDisable = subsetConstruction(product, enable, disable, observable, controllable);
+			
+			pass = true;
+			
+			for(String c : controllable) {
+				if(!tempDisable.get(c).isEmpty()) {
+					pass = false;
+				}
+			}
+			disable = tempDisable;
+			if(pass) {
+				return true;
+			}
+			
+		}
+		
+		return false;
+	}
+	
 	public boolean isSBCoobservableUrvashi(TransitionSystem plant, TransitionSystem specification, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		ArrayList<Agent> agen = constructAgents(plant.getEventNames(), attr, agents);
 		
-		HashMap<String, HashSet<StatePair>> disable = new HashMap<String, HashSet<StatePair>>();
-		HashMap<String, HashSet<StatePair>> enable = new HashMap<String, HashSet<StatePair>>();
+		HashMap<String, HashSet<StateSet>> disable = new HashMap<String, HashSet<StateSet>>();
+		HashMap<String, HashSet<StateSet>> enable = new HashMap<String, HashSet<StateSet>>();
 		
 		initializeEnableDisable(disable, enable, plant, specification);
 		
@@ -77,7 +148,7 @@ public class ProcessCoobservability {
 			controllable = a.getEventsAttributeSet(controllableRef, true);
 			
 			TransitionSystem product = constructProductHiding(plant, specification, observable);
-			HashMap<String, HashSet<StatePair>> tempDisable = subsetConstruction(product, enable, disable, observable, controllable);
+			HashMap<String, HashSet<StateSet>> tempDisable = subsetConstruction(product, enable, disable, observable, controllable);
 			
 			pass = true;
 			
@@ -108,13 +179,71 @@ public class ProcessCoobservability {
 	
 //---  Support Methods   ----------------------------------------------------------------------
 	
-	private HashMap<String, HashSet<StatePair>> subsetConstruction(TransitionSystem prod, HashMap<String, HashSet<StatePair>> enable, HashMap<String, HashSet<StatePair>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont){
-		HashMap<String, HashSet<StatePair>> out = new HashMap<String, HashSet<StatePair>>();
+	//-- Urvashi  ---------------------------------------------
+	
+	private void initializeEnableDisable(HashMap<String, HashSet<StateSet>> disable, HashMap<String, HashSet<StateSet>> enable, ArrayList<TransitionSystem> plant, ArrayList<TransitionSystem> specification) {
+		
+	}
+	
+	private HashMap<String, HashSet<StateSet>> subsetConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont){
+		HashMap<String, HashSet<StateSet>> out = new HashMap<String, HashSet<StateSet>>();
+		
+		
+		return out;
+	}
+	
+	private void initializeEnableDisable(HashMap<String, HashSet<StateSet>> disable, HashMap<String, HashSet<StateSet>> enable, TransitionSystem plant, TransitionSystem specification) {
+		ArrayList<String> controllable = plant.getEventsWithAttribute(controllableRef);
+		
+		for(String o : controllable) {
+			disable.put(o, new HashSet<StateSet>());
+			enable.put(o, new HashSet<StateSet>());
+		}
+		
+		LinkedList<StateSet> queue = new LinkedList<StateSet>();
+		HashSet<StateSet> visited = new HashSet<StateSet>();
+		
+		queue.add(new StateSet(plant.getStatesWithAttribute(initialRef).get(0), specification.getStatesWithAttribute(initialRef).get(0)));
+		
+		while(!queue.isEmpty()) {
+			StateSet curr = queue.poll();
+			if(visited.contains(curr)) {
+				continue;
+			}
+			visited.add(curr);
+			
+			String plantState = curr.getPlantState();
+			String specState = curr.getSpecState();
+			
+			for(String e : plant.getStateTransitionEvents(plantState)) {
+				boolean isCont = plant.getEventAttribute(e, controllableRef);
+				if(!specification.getStateTransitionEvents(specState).contains(e)) {
+					if(isCont) {
+						disable.get(e).add(curr);
+					}
+				}
+				else {
+					if(isCont) {
+						enable.get(e).add(curr);
+					}
+					String nextPlantState = plant.getStateEventTransitionStates(plantState, e).get(0);
+					String nextSpecState = specification.getStateEventTransitionStates(specState, e).get(0);
+					queue.add(new StateSet(nextPlantState, nextSpecState));
+				}
+			}
+			
+		}
+		
+		
+	}
+
+	private HashMap<String, HashSet<StateSet>> subsetConstruction(TransitionSystem prod, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont){
+		HashMap<String, HashSet<StateSet>> out = new HashMap<String, HashSet<StateSet>>();
 		
 		ArrayList<String> controllable = prod.getEventsWithAttribute(controllableRef);
 		for(String c : controllable) {
 			if(agentCont.contains(c)) {
-				out.put(c, new HashSet<StatePair>());
+				out.put(c, new HashSet<StateSet>());
 			}
 			else {
 				out.put(c, disable.get(c));
@@ -180,41 +309,22 @@ public class ProcessCoobservability {
 		
 		return out;
 	}
-	
-	private HashSet<StatePair> intersection(HashSet<String> conglom, HashSet<StatePair> check){
-		HashSet<StatePair> out = new HashSet<StatePair>();
-		for(StatePair s : check) {
-			if(conglom.contains(s.getPairName())) {
-				out.add(s);
-			}
-		}
-		return out;
-	}
-	
-	private boolean intersectionCheck(HashSet<String> conglom, HashSet<StatePair> check) {
-		for(StatePair s : check) {
-			if(conglom.contains(s.getPairName())) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
+
 	private TransitionSystem constructProductHiding(TransitionSystem plant, TransitionSystem spec, ArrayList<String> agentObs) {
 		TransitionSystem out = new TransitionSystem("Product " + plant.getId() + " - " + spec.getId(), plant.getStateAttributes(), plant.getEventAttributes(), plant.getTransitionAttributes());
 		
 		out.setFSMEventMap(plant.getEventMap());
 		
-		StatePair init = new StatePair(plant.getStatesWithAttribute(initialRef).get(0), spec.getStatesWithAttribute(initialRef).get(0));
+		StateSet init = new StateSet(plant.getStatesWithAttribute(initialRef).get(0), spec.getStatesWithAttribute(initialRef).get(0));
 		out.addState(init.getPairName());
 		out.addStateComposition(init.getPairName(), init.getListForm());
 		
-		LinkedList<StatePair> queue = new LinkedList<StatePair>();
+		LinkedList<StateSet> queue = new LinkedList<StateSet>();
 		queue.add(init);
-		HashSet<StatePair> visited = new HashSet<StatePair>();
+		HashSet<StateSet> visited = new HashSet<StateSet>();
 		
 		while(!queue.isEmpty()) {
-			StatePair curr = queue.poll();
+			StateSet curr = queue.poll();
 			if(visited.contains(curr)) {
 				continue;
 			}
@@ -234,7 +344,7 @@ public class ProcessCoobservability {
 				}
 				String newPlantState = plant.getStateEventTransitionStates(plantState, e).get(0);
 				String newSpecState = spec.getStateEventTransitionStates(specState, e).get(0);
-				StatePair newState = new StatePair(newPlantState, newSpecState);
+				StateSet newState = new StateSet(newPlantState, newSpecState);
 				out.addState(newState.getPairName());
 				out.addStateComposition(newState.getPairName(), newState.getListForm());
 				if(agentObs.contains(e)) {
@@ -254,89 +364,26 @@ public class ProcessCoobservability {
 		
 		return out;
 	}
+
+	//-- Other  -----------------------------------------------
 	
-	private void initializeEnableDisable(HashMap<String, HashSet<StatePair>> disable, HashMap<String, HashSet<StatePair>> enable, TransitionSystem plant, TransitionSystem specification) {
-		ArrayList<String> controllable = plant.getEventsWithAttribute(controllableRef);
-		
-		for(String o : controllable) {
-			disable.put(o, new HashSet<StatePair>());
-			enable.put(o, new HashSet<StatePair>());
-		}
-		
-		LinkedList<StatePair> queue = new LinkedList<StatePair>();
-		HashSet<StatePair> visited = new HashSet<StatePair>();
-		
-		queue.add(new StatePair(plant.getStatesWithAttribute(initialRef).get(0), specification.getStatesWithAttribute(initialRef).get(0)));
-		
-		while(!queue.isEmpty()) {
-			StatePair curr = queue.poll();
-			if(visited.contains(curr)) {
-				continue;
+	private HashSet<StateSet> intersection(HashSet<String> conglom, HashSet<StateSet> check){
+		HashSet<StateSet> out = new HashSet<StateSet>();
+		for(StateSet s : check) {
+			if(conglom.contains(s.getPairName())) {
+				out.add(s);
 			}
-			visited.add(curr);
-			
-			String plantState = curr.getPlantState();
-			String specState = curr.getSpecState();
-			
-			for(String e : plant.getStateTransitionEvents(plantState)) {
-				boolean isCont = plant.getEventAttribute(e, controllableRef);
-				if(!specification.getStateTransitionEvents(specState).contains(e)) {
-					if(isCont) {
-						disable.get(e).add(curr);
-					}
-				}
-				else {
-					if(isCont) {
-						enable.get(e).add(curr);
-					}
-					String nextPlantState = plant.getStateEventTransitionStates(plantState, e).get(0);
-					String nextSpecState = specification.getStateEventTransitionStates(specState, e).get(0);
-					queue.add(new StatePair(nextPlantState, nextSpecState));
-				}
-			}
-			
 		}
-		
-		
+		return out;
 	}
 	
-	class StatePair{
-		
-		String plant;
-		
-		String spec;
-		
-		public StatePair(String p, String s) {
-			plant = p;
-			spec = s;
+	private boolean intersectionCheck(HashSet<String> conglom, HashSet<StateSet> check) {
+		for(StateSet s : check) {
+			if(conglom.contains(s.getPairName())) {
+				return true;
+			}
 		}
-		
-		public StatePair(String nom) {
-			nom.substring(1, nom.length()-1);
-			String[] use = nom.split(", ");
-			plant = use[0];
-			spec = use[1];
-		}
-		
-		public String getPlantState() {
-			return plant;
-		}
-		
-		public String getSpecState() {
-			return spec;
-		}
-		
-		public String getPairName() {
-			return "(" + plant + ", " + spec + ")";
-		}
-		
-		public ArrayList<String> getListForm(){
-			ArrayList<String> out = new ArrayList<String>();
-			out.add(plant);
-			out.add(spec);
-			return out;
-		}
-		
+		return false;
 	}
 	
 	private ArrayList<Agent> constructAgents(ArrayList<String> event, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents){
