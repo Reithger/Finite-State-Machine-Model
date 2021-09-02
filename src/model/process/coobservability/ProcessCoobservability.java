@@ -1,6 +1,7 @@
 package model.process.coobservability;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -49,6 +50,9 @@ public class ProcessCoobservability {
 		HashMap<String, HashSet<StateSet>> enable = new HashMap<String, HashSet<StateSet>>();
 		
 		initializeEnableDisable(disable, enable, plants, specs);
+		
+		System.out.println(disable);
+		System.out.println(enable);
 		
 		boolean pass = true;
 		
@@ -254,9 +258,8 @@ public class ProcessCoobservability {
 		
 		for(int i = 0; i < specs.size(); i++) {
 			TransitionSystem t = specs.get(i);
-			out[i] = knowsEvent(t, event) ? t.getStateEventTransitionStates(curr.getSpecState(i), event).get(0) : curr.getSpecState(i);
+			out[i + plants.size()] = knowsEvent(t, event) ? t.getStateEventTransitionStates(curr.getSpecState(i), event).get(0) : curr.getSpecState(i);
 		}
-		
 		return new StateSet(out);
 	}
 	

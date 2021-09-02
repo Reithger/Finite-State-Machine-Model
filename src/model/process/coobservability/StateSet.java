@@ -69,4 +69,23 @@ public class StateSet{
 		return out + ")";
 	}
 	
+//---  Mechanics   ----------------------------------------------------------------------------
+	
+	@Override
+	public int hashCode() {
+		return getPairName().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		try {
+			StateSet ot = (StateSet)o;
+			return getPairName().equals(ot.getPairName());
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 }

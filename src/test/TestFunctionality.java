@@ -6,66 +6,131 @@ import java.util.HashSet;
 
 import controller.FiniteStateMachine;
 import controller.convert.FormatConversion;
-import input.CustomEventReceiver;
 import model.AttributeList;
 import model.Manager;
 import model.process.coobservability.Agent;
-import ui.popups.PopoutAgentSelection;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
 public class TestFunctionality {
 
+//---  Constants   ----------------------------------------------------------------------------
+	
+	private final static String[] EVENT_LIST_A = new String[] {"a1", "a2", "b1", "b2", "c"};
+	private final static String[] EVENT_ATTR_LIST = new String[] {AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE};
+	
+//---  Instance Variables   -------------------------------------------------------------------
+	
+	private static Manager model;
+	
+	private static ArrayList<String> eventAtt;
+	
+//---  Operations   ---------------------------------------------------------------------------
+	
 	public static void main(String[] args) {
-		
 		FormatConversion.assignPaths(FiniteStateMachine.ADDRESS_IMAGES, FiniteStateMachine.ADDRESS_CONFIG);
 		FiniteStateMachine.fileConfiguration();
+		model = new Manager();
 		
-		String ex = "Example 1";
-		Manager model = new Manager();
-		model.generateEmptyFSM(ex);
+		eventAtt = new ArrayList<String>();
+		for(String s : EVENT_ATTR_LIST) {
+			eventAtt.add(s);
+		}
+		
+		checkSystemASBCoobservable();
+	}
+	
+//---  Automated Testing   --------------------------------------------------------------------
+	
+	private static void basicUStructCheck() {
+		String SystemA = "Example 1";
+		generateSystemA(SystemA);
+		makeImageDisplay(SystemA, model, "Example 1");
+
+		String ustruct = model.buildUStructure(SystemA, eventAtt, generateAgentsA(eventAtt));
+		
+		makeImageDisplay(ustruct, model, "Example 1 UStruct");
+	}
+	
+	private static void checkSystemACoobservable() {
+		String SystemA = "Example 1";
+		generateSystemA(SystemA);
+		System.out.println(model.isCoobservableUStruct(SystemA, eventAtt, generateAgentsA(eventAtt), false));
+	}
+	
+	/**
+	 * 
+	 * Weird element here; the means by which enable/disable decisions are made on controllable events differ between
+	 * schools of thought re: control theory; UStruct/Ricker label them as disable explicitly, whereas Leduc/Urvashi
+	 * imply it via contradictions between plants and specifications.
+	 * 
+	 * Can't just plug-and-play, so how do we adapt it appropriately between these? Hmm. Just ask them.
+	 * 
+	 * I need my implementation to be dynamic so I can plug the same systems into different approaches, may need
+	 * pre-processing? Don't want to change the system too much though and make it no longer the same thing...
+	 * 
+	 */
+	
+	private static void checkSystemASBCoobservable() {
+		String a = "Ex1";
+		String b = "Ex2";
+		generateSystemA(a);
+		generateSystemA(b);
+		ArrayList<String> plants = new ArrayList<String>();
+		ArrayList<String> specs = new ArrayList<String>();
+		plants.add(a);
+		specs.add(b);
+		System.out.println(model.isSBCoobservableUrvashi(plants, specs, eventAtt, generateAgentsA(eventAtt)));
+		
+	}
+	
+//---  Prefabs   ------------------------------------------------------------------------------
+	
+	private static void generateSystemA(String name) {
+		model.generateEmptyFSM(name);
 		
 		ArrayList<String> stateAtt = new ArrayList<String>();
 		ArrayList<String> eventAtt = new ArrayList<String>();
 		ArrayList<String> transAtt = new ArrayList<String>();
 		
 		stateAtt.add(AttributeList.ATTRIBUTE_INITIAL);
-		eventAtt.add(AttributeList.ATTRIBUTE_OBSERVABLE);
-		eventAtt.add(AttributeList.ATTRIBUTE_CONTROLLABLE);
+		for(String s : EVENT_ATTR_LIST) {
+			eventAtt.add(s);
+		}
 		transAtt.add(AttributeList.ATTRIBUTE_BAD);
 		
-		model.assignStateAttributes(ex, stateAtt);
-		model.assignEventAttributes(ex, eventAtt);
-		model.assignTransitionAttributes(ex, transAtt);
+		model.assignStateAttributes(name, stateAtt);
+		model.assignEventAttributes(name, eventAtt);
+		model.assignTransitionAttributes(name, transAtt);
 		
-		model.addStates(ex, 8);
-		model.removeState(ex, "0");
+		model.addStates(name, 8);
+		model.removeState(name, "0");
 		
-		model.setStateAttribute(ex, "1", AttributeList.ATTRIBUTE_INITIAL, true);
+		model.setStateAttribute(name, "1", AttributeList.ATTRIBUTE_INITIAL, true);
 		
-		String[] events = new String[] {"a1", "a2", "b1", "b2", "c"};
+		String[] events = EVENT_LIST_A;
 		for(String s : events) {
-			model.addEvent(ex, s);
-			model.setEventAttribute(ex, s, AttributeList.ATTRIBUTE_OBSERVABLE, true);
+			model.addEvent(name, s);
+			model.setEventAttribute(name, s, AttributeList.ATTRIBUTE_OBSERVABLE, true);
 		}
 		
-		model.setEventAttribute(ex, "c", AttributeList.ATTRIBUTE_CONTROLLABLE, true);
+		model.setEventAttribute(name, "c", AttributeList.ATTRIBUTE_CONTROLLABLE, true);
 		
-		model.addTransition(ex, "1", "a1", "2");
-		model.addTransition(ex, "1", "a2", "3");
-		model.addTransition(ex, "2", "b1", "4");
-		model.addTransition(ex, "2", "b2", "5");
-		model.addTransition(ex, "3", "b1", "6");
-		model.addTransition(ex, "3", "b2", "7");
+		model.addTransition(name, "1", "a1", "2");
+		model.addTransition(name, "1", "a2", "3");
+		model.addTransition(name, "2", "b1", "4");
+		model.addTransition(name, "2", "b2", "5");
+		model.addTransition(name, "3", "b1", "6");
+		model.addTransition(name, "3", "b2", "7");
 		
-		model.addTransition(ex, "4", "c", "4");
-		model.addTransition(ex, "5", "c", "5");
-		model.addTransition(ex, "6", "c", "6");
-		model.addTransition(ex, "7", "c", "7");
+		model.addTransition(name, "4", "c", "4");
+		model.addTransition(name, "5", "c", "5");
+		model.addTransition(name, "6", "c", "6");
+		model.addTransition(name, "7", "c", "7");
 		
-		model.setTransitionAttribute(ex, "5", "c", AttributeList.ATTRIBUTE_BAD, true);
-		model.setTransitionAttribute(ex, "6", "c", AttributeList.ATTRIBUTE_BAD, true);
+		model.setTransitionAttribute(name, "5", "c", AttributeList.ATTRIBUTE_BAD, true);
+		model.setTransitionAttribute(name, "6", "c", AttributeList.ATTRIBUTE_BAD, true);
 		
 		
 		HashMap<String, HashSet<String>> badTrans = new HashMap<String, HashSet<String>>();
@@ -73,48 +138,31 @@ public class TestFunctionality {
 		ebe.add("c");
 		badTrans.put("5", ebe);
 		badTrans.put("6", ebe);
-		
-		makeImageDisplay(ex, model, "Example 1");
-		
-		ArrayList<Agent> agents = new ArrayList<Agent>();
-		agents.add(new Agent(eventAtt, null));
-		agents.add(new Agent(eventAtt, null));
-		
-		for(String s : events) {
-			for(Agent a : agents) {
-				a.addUnknownEvent(s);
-			}
-		}
-		
-		agents.get(0).setAttribute(AttributeList.ATTRIBUTE_OBSERVABLE, "b1", false);
-		agents.get(0).setAttribute(AttributeList.ATTRIBUTE_OBSERVABLE, "b2", false);
-		agents.get(1).setAttribute(AttributeList.ATTRIBUTE_OBSERVABLE, "a1", false);
-		agents.get(1).setAttribute(AttributeList.ATTRIBUTE_OBSERVABLE, "a2", false);
-		agents.get(0).setAttribute(AttributeList.ATTRIBUTE_CONTROLLABLE, "c", true);
-		agents.get(1).setAttribute(AttributeList.ATTRIBUTE_CONTROLLABLE, "c", true);
-		
-		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
-														  {true, false},	//a1
-														  {true, false},	//a2
-														  {false, false},	//b1
-														  {false, false},	//b2
-														  {true, true}		//c
-														},
-													 	{	//Agent 2
-														  {false, false},
-														  {false, false},
-														  {true, false},
-														  {true, false},
-														  {true, true}
-														}
-													};
+	}
 	
+	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsA(ArrayList<String> eventAtt) {
+		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
+			  {true, false},	//a1
+			  {true, false},	//a2
+			  {false, false},	//b1
+			  {false, false},	//b2
+			  {true, true}		//c
+			},
+		 	{	//Agent 2
+			  {false, false},
+			  {false, false},
+			  {true, false},
+			  {true, false},
+			  {true, true}
+			}
+		};
+
 		ArrayList<HashMap<String, ArrayList<Boolean>>> use = new ArrayList<HashMap<String, ArrayList<Boolean>>>();
-													
+				
 		for(int i = 0; i < 2; i++) {
 			HashMap<String, ArrayList<Boolean>> agen = new HashMap<String, ArrayList<Boolean>>();
-			for(int j = 0; j < events.length; j++) {
-				String e = events[j];
+			for(int j = 0; j < EVENT_LIST_A.length; j++) {
+				String e = EVENT_LIST_A[j];
 				ArrayList<Boolean> att = new ArrayList<Boolean>();
 				for(int k = 0; k < eventAtt.size(); k++) {
 					att.add(agentInfo[i][j][k]);
@@ -123,54 +171,10 @@ public class TestFunctionality {
 			}
 			use.add(agen);
 		}
-		
-		
-		String ustruct = model.buildUStructure(ex, eventAtt, use);
-		
-		makeImageDisplay(ustruct, model, "Example 1 UStruct");
-		
-		/*
-		ArrayList<String> a = new ArrayList<String>();
-		a.add("a");
-		a.add("b");
-		a.add("c");
-		ArrayList<String> b = new ArrayList<String>();
-		b.add("Observability");
-		b.add("Controlability");
-		
-		PopoutAgentSelection.assignSymbols("---", "o", "x");
-		PopoutAgentSelection pAS = new PopoutAgentSelection(new ArrayList<String>(), a, b);
-		System.out.println(pAS.getResult());
-		/*
-		FormatConversion.assignPaths(FiniteStateMachine.ADDRESS_SOURCES, FiniteStateMachine.ADDRESS_CONFIG);
-		ArrayList<String> strAtt = new ArrayList<String>();
-		strAtt.add(AttributeList.ATTRIBUTE_INITIAL);
-		strAtt.add(AttributeList.ATTRIBUTE_MARKED);
-		ArrayList<String> eveAtt = new ArrayList<String>();
-		eveAtt.add(AttributeList.ATTRIBUTE_OBSERVABLE);
-		ArrayList<String> tranAtt = new ArrayList<String>();
-		ArrayList<Integer> numbers = new ArrayList<Integer>();
-		numbers.add(1);
-		numbers.add(1);
-		numbers.add(2);
-		String nom = generateRandomFSM("test", model, 5, 3, 2, true, strAtt, eveAtt, tranAtt, numbers);
-		String nom2 = generateRandomFSM("test2", model, 5, 3, 2, true, strAtt, eveAtt, tranAtt, numbers);
-		String nom3 = generateRandomFSM("test3", model, 5, 3, 2, true, strAtt, eveAtt, tranAtt, numbers);
-
-		makeImageDisplay(nom, model, "Root 1");
-		makeImageDisplay(nom2, model, "Root 2");
-		makeImageDisplay(nom3, model, "Root 3");
-		
-		ArrayList<String> names = new ArrayList<String>();
-		names.add(nom);
-		names.add(nom2);
-		
-		String trim = model.performParallelComposition(names);
-		
-		makeImageDisplay(trim, model, "Product");
-		makeImageDisplay(model.makeAccessible(trim), model, "Product");
-		*/
+		return use;
 	}
+	
+//---  Support Methods   ----------------------------------------------------------------------
 	
 	private static String generateRandomFSM(String nom, Manager model, int numStates, int numEvents, int numTransition, boolean det, ArrayList<String> strAtt, ArrayList<String> eveAtt, ArrayList<String> tranAtt, ArrayList<Integer> numbers) {
 		return model.readInFSM(model.generateRandomFSM(nom, numStates, numEvents, numTransition, det, strAtt, eveAtt, tranAtt, numbers));
