@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import model.fsm.TransitionSystem;
+import model.process.ProcessOperation;
 
 public class ProcessCoobservability {
 	
@@ -105,14 +106,58 @@ public class ProcessCoobservability {
 		return false;
 	}
 
-	public static boolean isCoobservableLiu() {
-
+	public static boolean isCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+		ArrayList<TransitionSystem> copyPlants = new ArrayList<TransitionSystem>();
+		ArrayList<TransitionSystem> copySpecs = new ArrayList<TransitionSystem>();
+		copyPlants.addAll(plants);
+		copySpecs.addAll(specs);
+		
+		TransitionSystem progress = new TransitionSystem("progression");
+		progress.copyAttributes(plants.get(0));
+		String init = "0";
+		progress.addState(init);
+		progress.setStateAttribute(init, initialRef, true);
+		for(String e : getAllEvents(plants)) {
+			for(TransitionSystem t : plants) {
+				if(t.eventExists(e)) {
+					progress.addEvent(e, t);
+					progress.addTransition(init, e, init);
+					break;
+				}
+			}
+		}
+		while(!copySpecs.isEmpty()) {
+			TransitionSystem pick = pickSpec(copySpecs);
+			copySpecs.remove(pick);
+			progress = parallelComp(progress, pick);
+			while(!isCoobservableUStruct(progress, attr, agents, enableByDefault)) {
+				//Get counterexample - here this should mean one of our problem states (badGood/goodBad states)
+				//Find plant or spec that rejects the counterexample - that can make the correct control decision/removes it as a problem
+				//if none exists, return false
+				//otherwise add it to progress and continue on
+			}
+		}
+		
+		
 		return false;
 	}
 	
-	public static boolean isSBCoobservableLiu() {
+	public static boolean isSBCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 
+		
 		return false;
+	}
+	
+	private static TransitionSystem parallelComp(TransitionSystem ... in) {
+		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
+		for(TransitionSystem t : in) {
+			use.add(t);
+		}
+		return ProcessOperation.parallelComposition(use);
+	}
+	
+	private static TransitionSystem pickSpec(ArrayList<TransitionSystem> specs) {
+		return specs.get(0);
 	}
 	
 	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {

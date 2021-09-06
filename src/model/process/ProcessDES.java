@@ -2,10 +2,8 @@ package model.process;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import model.fsm.TransitionSystem;
-import model.process.coobservability.Agent;
 import model.process.coobservability.ProcessCoobservability;
 import model.process.coobservability.UStructure;
 
