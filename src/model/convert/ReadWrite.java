@@ -117,6 +117,23 @@ public class ReadWrite {
 		return out;
 	}
 	
+	public static TransitionSystem readDESpotFile(String in) {
+		String[] use = in.split("\n");
+		int curr = 0;
+		
+		while(!use[curr].contains("Header name")) {
+			curr++;
+		}
+		String line = use[curr].substring(use[curr].indexOf("\""));
+		line = line.substring(0, line.indexOf("\""));
+		TransitionSystem out = new TransitionSystem(line);
+		
+		//TODO: Finish this converter
+		
+		
+		return out;
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private static StringBuilder attribute(ArrayList<String> use, StringBuilder out) {

@@ -44,7 +44,15 @@ public class TransitionFunction {
 	
 	public void mergeTransitions(TransitionFunction in) {
 		for(String s : in.getStateNames()) {
-			addTransitions(s, in.getTransitions(s));
+			for(Transition t : in.getTransitions(s)) {
+				String e = t.getEvent();
+				for(String u : t.getStates()) {
+					this.addTransition(s, e, u);
+				}
+				for(String a : getAttributes()) {
+					this.setTransitionAttribute(s, e, a, in.getTransitionAttribute(s, e, a));
+				}
+			}
 		}
 	}
 	

@@ -25,6 +25,10 @@ public class ProcessDES {
 		return ProcessOperation.parallelComposition(fsms);
 	}
 	
+	public static TransitionSystem convertSoloPlantSpec(TransitionSystem in) {
+		return ProcessCoobservability.convertSoloPlantSpec(in);
+	}
+	
 	//-- Clean  -----------------------------------------------
 	
 	public static TransitionSystem trim(TransitionSystem in) {
@@ -57,6 +61,10 @@ public class ProcessDES {
 		return ProcessCoobservability.isCoobservableUStruct(plant, attr, agents, enableByDefault);
 	}
 	
+	public static Boolean isCoobservableUStruct(ArrayList<TransitionSystem> plant, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+		return isCoobservableUStruct(plant, specs, attr, agents, enableByDefault);
+	}
+	
 	public static Boolean isSBCoobservableUrvashi(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		return ProcessCoobservability.isSBCoobservableUrvashi(plants, specs, attr, agents);
 	}
@@ -73,7 +81,7 @@ public class ProcessDES {
 		ProcessAnalysis.assignAttributeReferences(priv, init);
 		ProcessOperation.assignAttributeReferences(init, obs);
 		ProcessClean.assignAttributeReferences(init, mark);
-		ProcessCoobservability.assignReferences(cont, obs, init);
+		ProcessCoobservability.assignReferences(cont, obs, init, bad);
 		UStructure.assignAttributeReferences(init, obs, cont, bad, good);
 	}
 	

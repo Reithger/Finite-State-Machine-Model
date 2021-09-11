@@ -37,7 +37,8 @@ public class TestFunctionality {
 		for(String s : EVENT_ATTR_LIST) {
 			eventAtt.add(s);
 		}
-		
+		basicUStructCheck();
+		checkSystemACoobservable();
 		checkSystemASBCoobservable();
 	}
 	
@@ -76,7 +77,7 @@ public class TestFunctionality {
 		String a = "Ex1";
 		String b = "Ex2";
 		generateSystemA(a);
-		generateSystemA(b);
+		generateSoloSpecPlant(a, b);
 		ArrayList<String> plants = new ArrayList<String>();
 		ArrayList<String> specs = new ArrayList<String>();
 		plants.add(a);
@@ -86,7 +87,7 @@ public class TestFunctionality {
 	}
 	
 //---  Prefabs   ------------------------------------------------------------------------------
-	
+
 	private static void generateSystemA(String name) {
 		model.generateEmptyFSM(name);
 		
@@ -139,7 +140,7 @@ public class TestFunctionality {
 		badTrans.put("5", ebe);
 		badTrans.put("6", ebe);
 	}
-	
+
 	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsA(ArrayList<String> eventAtt) {
 		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
 			  {true, false},	//a1
@@ -175,6 +176,10 @@ public class TestFunctionality {
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
+	
+	private static void generateSoloSpecPlant(String plant, String spec) {
+		model.convertSoloPlantSpec(plant, spec);
+	}
 	
 	private static String generateRandomFSM(String nom, Manager model, int numStates, int numEvents, int numTransition, boolean det, ArrayList<String> strAtt, ArrayList<String> eveAtt, ArrayList<String> tranAtt, ArrayList<Integer> numbers) {
 		return model.readInFSM(model.generateRandomFSM(nom, numStates, numEvents, numTransition, det, strAtt, eveAtt, tranAtt, numbers));

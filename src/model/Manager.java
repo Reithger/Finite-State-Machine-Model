@@ -232,19 +232,19 @@ public class Manager {
 		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents, enableByDefault);
 	}
 	
-	public Boolean isCoobservableUStruct(ArrayList<String> ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
-		if(bail(ref)) {
+	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+		if(bail(plants) || bail(specs)) {
 			return null;
 		}
-		if(ref.size() == 1) {
-			return isCoobservableUStruct(ref.get(0), attr, agents, enableByDefault);
+		ArrayList<TransitionSystem> usePl = new ArrayList<TransitionSystem>();
+		for(String s : plants) {
+			usePl.add(fsms.get(s));
 		}
-		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
-		for(String s : ref) {
-			use.add(fsms.get(s));
+		ArrayList<TransitionSystem> useSp = new ArrayList<TransitionSystem>();
+		for(String s : specs) {
+			useSp.add(fsms.get(s));
 		}
-		TransitionSystem plant = ProcessDES.parallelComposition(use);
-		return ProcessDES.isCoobservableUStruct(plant, attr, agents, enableByDefault);
+		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr, agents, enableByDefault);
 	}
 
 	public Boolean isSBCoobservableUrvashi(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
@@ -260,6 +260,16 @@ public class Manager {
 			specs.add(fsms.get(s));
 		}
 		return ProcessDES.isSBCoobservableUrvashi(plants, specs, attr, agents);
+	}
+	
+	public String convertSoloPlantSpec(String ref, String newName) {
+		if(bail(ref)) {
+			return null;
+		}
+		TransitionSystem t = ProcessDES.convertSoloPlantSpec(fsms.get(ref));
+		t.setId(newName);
+		appendFSM(t.getId(), t, false);
+		return t.getId();
 	}
 	
 	//-- Manipulate  ------------------------------------------
@@ -460,37 +470,13 @@ public class Manager {
 	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
-	public String[] getStateAttributeList() {
-		return AttributeList.STATE_ATTRIBUTES;
-	}
-	
-	public String[] getEventAttributeList() {
-		return AttributeList.EVENT_ATTRIBUTES;
-	}
-	
-	public String[] getTransitionAttributeList() {
-		return AttributeList.TRANSITION_ATTRIBUTES;
-	}
-	
+	//-- States  ----------------------------------------------
+
 	public ArrayList<String> getFSMStateList(String ref){
 		if(ref == null || fsms.get(ref) == null) {
 			return null;
 		}
 		return fsms.get(ref).getStateNames();
-	}
-	
-	public ArrayList<String> getFSMEventList(String ref){
-		if(ref == null || fsms.get(ref) == null) {
-			return null;
-		}
-		return fsms.get(ref).getEventNames();
-	}
-	
-	public ArrayList<String> getFSMTransitionList(String ref){
-		if(ref == null || fsms.get(ref) == null) {
-			return null;
-		}
-		return fsms.get(ref).getTransitionLabels();
 	}
 	
 	public ArrayList<String> getFSMStateAttributes(String ref){
@@ -499,21 +485,7 @@ public class Manager {
 		}
 		return fsms.get(ref).getStateAttributes();
 	}
-	
-	public ArrayList<String> getFSMEventAttributes(String ref){
-		if(ref == null || fsms.get(ref) == null) {
-			return null;
-		}
-		return fsms.get(ref).getEventAttributes();
-	}
-	
-	public ArrayList<String> getFSMTransitionAttributes(String ref){
-		if(ref == null || fsms.get(ref) == null) {
-			return null;
-		}
-		return fsms.get(ref).getTransitionAttributes();
-	}
-	
+
 	public HashMap<String, ArrayList<Boolean>> getFSMStateAttributeMap(String ref){
 		if(ref == null || fsms.get(ref) == null) {
 			return null;
@@ -521,6 +493,22 @@ public class Manager {
 		return fsms.get(ref).getStateAttributeMap();
 	}
 	
+	//-- Events  ----------------------------------------------
+
+	public ArrayList<String> getFSMEventList(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getEventNames();
+	}
+
+	public ArrayList<String> getFSMEventAttributes(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getEventAttributes();
+	}
+
 	public HashMap<String, ArrayList<Boolean>> getFSMEventAttributeMap(String ref){
 		if(ref == null || fsms.get(ref) == null) {
 			return null;
@@ -528,6 +516,22 @@ public class Manager {
 		return fsms.get(ref).getEventAttributeMap();
 	}
 	
+	//-- Transitions  -----------------------------------------
+
+	public ArrayList<String> getFSMTransitionList(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getTransitionLabels();
+	}
+
+	public ArrayList<String> getFSMTransitionAttributes(String ref){
+		if(ref == null || fsms.get(ref) == null) {
+			return null;
+		}
+		return fsms.get(ref).getTransitionAttributes();
+	}
+
 	public HashMap<String, ArrayList<Boolean>> getFSMTransitionAttributeMap(String ref){
 		if(ref == null || fsms.get(ref) == null) {
 			return null;
@@ -537,6 +541,20 @@ public class Manager {
 	
 	//Need the 'get hashmap<String, ArrayList<boolean>>'
 	
+	//-- Meta  ------------------------------------------------
+	
+	public String[] getStateAttributeList() {
+		return AttributeList.STATE_ATTRIBUTES;
+	}
+
+	public String[] getEventAttributeList() {
+		return AttributeList.EVENT_ATTRIBUTES;
+	}
+
+	public String[] getTransitionAttributeList() {
+		return AttributeList.TRANSITION_ATTRIBUTES;
+	}
+
 	public ArrayList<String> getReferences(){
 		ArrayList<String> out = new ArrayList<String>();
 		out.addAll(fsms.keySet());

@@ -1,13 +1,12 @@
 package model.process.coobservability;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 import model.fsm.TransitionSystem;
-import model.process.ProcessOperation;
+import model.process.ProcessDES;
 
 public class ProcessCoobservability {
 	
@@ -16,13 +15,15 @@ public class ProcessCoobservability {
 	private static String controllableRef;
 	private static String observableRef;
 	private static String initialRef;
+	private static String badTransRef;
 	
 //---  Meta   ---------------------------------------------------------------------------------
 	
-	public static void assignReferences(String cont, String obs, String init) {
+	public static void assignReferences(String cont, String obs, String init, String badTrans) {
 		controllableRef = cont;
 		observableRef = obs;
 		initialRef = init;
+		badTransRef = badTrans;
 	}
 
 //---  Operations   ---------------------------------------------------------------------------
@@ -31,6 +32,49 @@ public class ProcessCoobservability {
 		UStructure ustr = constructUStruct(plant, attr, agents);
 		HashSet<String> badGood = enableByDefault ? ustr.getIllegalConfigOneStates() : ustr.getIllegalConfigTwoStates();
 		return badGood.isEmpty();
+	}
+	
+	public static boolean isCoobservableUStruct(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+		TransitionSystem ultPlant = parallelComp(plants);
+		TransitionSystem ultSpec = parallelComp(specs);
+		
+		//TODO: Confirm this is the right approach, can we really ignore the specs once they've denoted bad controllable transitions?
+		
+		LinkedList<StateSet> queue = new LinkedList<StateSet>();
+		HashSet<StateSet> visited = new HashSet<StateSet>();
+		ArrayList<String> stAttr = ultPlant.getStateAttributes();
+		attr.add(badTransRef);
+		ultPlant.setStateAttributes(stAttr);
+			
+		StateSet.assignSizes(1, 1);
+		String[] use = new String[] {ultPlant.getStatesWithAttribute(initialRef).get(0), ultSpec.getStatesWithAttribute(initialRef).get(0)};
+		
+		queue.add(new StateSet(use));
+		
+		while(!queue.isEmpty()) {
+			StateSet curr = queue.poll();
+			if(visited.contains(curr)) {
+				continue;
+			}
+			visited.add(curr);
+			
+			String plantState = curr.getPlantState(0);
+			String specState = curr.getSpecState(0);
+			
+			for(String e : ultPlant.getStateTransitionEvents(plantState)) {
+				if(ultSpec.getStateEventTransitionStates(specState, e).isEmpty() ) {	//Do we need to check for bad transitions behind this?
+					if(ultPlant.getEventAttribute(e, controllableRef)) {
+						ultPlant.setTransitionAttribute(plantState, e, badTransRef, true);
+					}
+				}
+				else {
+					use = new String[] {ultPlant.getStateEventTransitionStates(plantState, e).get(0), ultSpec.getStateEventTransitionStates(specState, e).get(0)};
+					queue.add(new StateSet(use));
+				}
+			}
+		}
+		
+		return isCoobservableUStruct(ultPlant, attr, agents, enableByDefault);
 	}
 	
 	public static boolean isSBCoobservableUrvashi(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
@@ -52,13 +96,10 @@ public class ProcessCoobservability {
 		
 		initializeEnableDisable(disable, enable, plants, specs);
 		
-		System.out.println(disable);
-		System.out.println(enable);
-		
 		boolean pass = true;
 		
 		ArrayList<String> controllable = new ArrayList<String>();
-		controllable.addAll(controllable);
+		controllable.addAll(controllableHold);
 		
 		for(String e : controllable) {
 			if(!disable.get(e).isEmpty()) {
@@ -112,34 +153,74 @@ public class ProcessCoobservability {
 		copyPlants.addAll(plants);
 		copySpecs.addAll(specs);
 		
-		TransitionSystem progress = new TransitionSystem("progression");
-		progress.copyAttributes(plants.get(0));
+		TransitionSystem sigmaStar = new TransitionSystem("sigmaStarion");
+		sigmaStar.copyAttributes(plants.get(0));
 		String init = "0";
-		progress.addState(init);
-		progress.setStateAttribute(init, initialRef, true);
+		sigmaStar.addState(init);
+		sigmaStar.setStateAttribute(init, initialRef, true);
 		for(String e : getAllEvents(plants)) {
 			for(TransitionSystem t : plants) {
 				if(t.eventExists(e)) {
-					progress.addEvent(e, t);
-					progress.addTransition(init, e, init);
+					sigmaStar.addEvent(e, t);
+					sigmaStar.addTransition(init, e, init);
 					break;
 				}
 			}
 		}
 		while(!copySpecs.isEmpty()) {
-			TransitionSystem pick = pickSpec(copySpecs);
+			ArrayList<TransitionSystem> hold = new ArrayList<TransitionSystem>();
+			TransitionSystem pick = pickSpec(copySpecs);	//Gonna use pick as the ongoing construction that resets each loop
 			copySpecs.remove(pick);
-			progress = parallelComp(progress, pick);
-			while(!isCoobservableUStruct(progress, attr, agents, enableByDefault)) {
-				//Get counterexample - here this should mean one of our problem states (badGood/goodBad states)
-				//Find plant or spec that rejects the counterexample - that can make the correct control decision/removes it as a problem
-				//if none exists, return false
-				//otherwise add it to progress and continue on
+			hold.add(pick);
+			if(!isCoobservableUStruct(parallelComp(sigmaStar, pick), attr, agents, enableByDefault)) {
+				do {
+					if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
+						return false;
+					}
+					String counterexample = "Something?";	//Get a single bad state, probably, maybe write something so UStruct can trace it
+					TransitionSystem use = pickComponent(copyPlants, copySpecs, "I dunno");	//Heuristics go here
+					pick = parallelComp(pick, use);
+					if(copySpecs.contains(pick)) {
+						hold.add(pick);
+						copySpecs.remove(pick);
+					}
+					else {
+						hold.add(pick);
+						copyPlants.remove(pick);
+					}
+					//Get counterexample - here this should mean one of our problem states (badGood/goodBad states)
+					//Find plant or spec that rejects the counterexample - that can make the correct control decision/removes it as a problem
+					// NOTE: Have to just do full coobservability again via parallel comp.
+					// Should also email Dr. Mallik (?) about some stuff and get some context/help
+					//if none exists, return false
+					//otherwise add it to progress and continue on
+				} while(!isCoobservableUStruct(pick, attr, agents, enableByDefault));
+			}
+			copyPlants.addAll(hold);
+		}
+		return true;
+	}
+	
+	public static TransitionSystem convertSoloPlantSpec(TransitionSystem plant) {
+		TransitionSystem out = plant.copy();
+		
+		for(String s : plant.getStateNames()) {
+			for(String e : plant.getStateTransitionEvents(s)) {
+				if(plant.getTransitionAttribute(s, e, badTransRef)) {
+					for(String t : plant.getStateEventTransitionStates(s, e)) {
+						out.removeTransition(s, e, t);
+					}
+				}
 			}
 		}
-		
-		
-		return false;
+		return out;
+	}
+	
+	private static TransitionSystem pickComponent(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, String counterexample) {
+		if(plants.size() != 0) {
+			return plants.get(0);
+		}
+		return specs.get(0);
 	}
 	
 	public static boolean isSBCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
@@ -153,7 +234,11 @@ public class ProcessCoobservability {
 		for(TransitionSystem t : in) {
 			use.add(t);
 		}
-		return ProcessOperation.parallelComposition(use);
+		return ProcessDES.parallelComposition(use);
+	}
+	
+	private static TransitionSystem parallelComp(ArrayList<TransitionSystem> in) {
+		return ProcessDES.parallelComposition(in);
 	}
 	
 	private static TransitionSystem pickSpec(ArrayList<TransitionSystem> specs) {
