@@ -205,20 +205,20 @@ public class UStructure {
 						Boolean result = badTransitions.get(stateSet.getStates()[0]).contains(s);
 						String[] states = stateSet.getStates();
 						for(int i = 1; i < states.length; i++) {
-							if(agents[i-1].getEventAttribute(s, attributeControllableRef)) {
-								if(badTransitions.get(states[i]).contains(s) == result) {
+							if(agents[i].getEventAttribute(s, attributeControllableRef)) {
+								if(badTransitions.get(states[i]).contains(s) == result || plantFSM.getStateEventTransitionStates(states[i], s) == null) {
 									result = null;
 									break;
 								}
 							}
 						}
 						if(result != null) {
-						  uStructure.setStateAttribute(newName, !result ? attributeGoodRef : attributeBadRef, true);
+						  uStructure.setStateAttribute(stateSet.getIdentityState(), !result ? attributeGoodRef : attributeBadRef, true);
 						  if(result) {
-							  goodBadStates.add(newName);
+							  goodBadStates.add(stateSet.getIdentityState());
 						  }
 						  else {
-							  badGoodStates.add(newName);
+							  badGoodStates.add(stateSet.getIdentityState());
 						  }
 						}
 					}
