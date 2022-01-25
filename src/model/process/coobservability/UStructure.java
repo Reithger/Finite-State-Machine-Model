@@ -25,20 +25,23 @@ public class UStructure {
 	private static String attributeBadRef;
 	private static String attributeGoodRef;
 	
-	private TransitionSystem plantFSM;
-	private Agent[] agents;
-	private HashMap<String, HashSet<String>> badTransitions;
-	private HashMap<String, String[]> compositeMapping;
-	
 	private TransitionSystem uStructure;
-	private HashSet<String> goodBadStates;
-	private HashSet<String> badGoodStates;
+	private HashSet<IllegalConfig> goodBadStates;
+	private HashSet<IllegalConfig> badGoodStates;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
-		plantFSM = thePlant;
-		badTransitions = new HashMap<String, HashSet<String>>();
+		HashMap<String, HashSet<String>> badTransitions = initializeBadTransitions(thePlant);
+		Agent[] agents = initializeAgents(thePlant, attr, theAgents);
+
+		goodBadStates = new HashSet<IllegalConfig>();
+		badGoodStates = new HashSet<IllegalConfig>();
+		createUStructure(thePlant, badTransitions, agents);
+	}
+	
+	private HashMap<String, HashSet<String>> initializeBadTransitions(TransitionSystem thePlant){
+		HashMap<String, HashSet<String>> badTransitions = new HashMap<String, HashSet<String>>();
 		for(String s : thePlant.getStateNames()) {
 			if(badTransitions.get(s) == null) {
 				badTransitions.put(s, new HashSet<String>());
@@ -49,7 +52,11 @@ public class UStructure {
 				}
 			}
 		}
-		agents = new Agent[theAgents.size() + 1];
+		return badTransitions;
+	}
+	
+	private Agent[] initializeAgents(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
+		Agent[] agents = new Agent[theAgents.size() + 1];
 		
 		agents[0] = new Agent(attr, thePlant.getEventNames());
 		
@@ -57,25 +64,21 @@ public class UStructure {
 			agents[0].setAttributeTrue(s, thePlant.getEventNames());
 		}
 		
-		for(int i = 0; i < theAgents.size(); i++)
+		for(int i = 0; i < theAgents.size(); i++) {
 			agents[i+1] = theAgents.get(i);
+		}
+		
 		HashSet<String> allEvents = new HashSet<String>();
 		allEvents.add(UNOBSERVED_EVENT);
+		
 		for(Agent a : agents) {
-			for(String e : a.getEvents()) {
-				allEvents.add(e);
-			}
+			allEvents.addAll(a.getEvents());
 		}
+		
 		for(Agent a : agents) {
-			for(String e : allEvents) {
-				if(!a.contains(e)) {
-					a.addUnknownEvent(e);
-				}
-			}
+			a.addUnknownEvents(allEvents);
 		}
-		goodBadStates = new HashSet<String>();
-		badGoodStates = new HashSet<String>();
-		createUStructure();
+		return agents;
 	}
 	
 //---  Operations   ---------------------------------------------------------------------------
@@ -88,144 +91,140 @@ public class UStructure {
 		attributeGoodRef = good;
 	}
 	
-	public void createUStructure() {
-		uStructure = new TransitionSystem("U-struc", plantFSM.getStateAttributes(), plantFSM.getEventAttributes(), plantFSM.getTransitionAttributes());
+	private TransitionSystem initializeUStructure(TransitionSystem plant) {
+		TransitionSystem out = new TransitionSystem("U-struc", plant.getStateAttributes(), plant.getEventAttributes(), plant.getTransitionAttributes());
 		ArrayList<String> attr = uStructure.getStateAttributes();
 		attr.add(attributeBadRef);
 		attr.add(attributeGoodRef);
 		uStructure.setStateAttributes(attr);
-		compositeMapping = new HashMap<String, String[]>();
-		LinkedList<BatchAgentStates> queue = new LinkedList<BatchAgentStates>();		//initialize
+		return out;
+	}
+	
+	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) {
+		uStructure = initializeUStructure(plant);
+		
+		LinkedList<AgentStates> queue = new LinkedList<AgentStates>();		//initialize queue
 		HashSet<String> visited = new HashSet<String>();
+
 		String[] starting = new String[agents.length];
-		String initName = "<";
 		for(int i = 0; i < starting.length; i++) {
-			starting[i] = plantFSM.getStatesWithAttribute(attributeInitialRef).get(0);
-			initName += starting[i] + (i + 1 < starting.length ? "," : "");
+			starting[i] = plant.getStatesWithAttribute(attributeInitialRef).get(0);
 		}
-		initName += ">";
-		uStructure.addState(initName);									//create first state, start queue
-		uStructure.setStateAttribute(initName, attributeInitialRef, true);
-		compositeMapping.put(initName, starting);
-		queue.add(new BatchAgentStates(starting, initName));
+		AgentStates bas = new AgentStates(starting, "");
+		uStructure.addState(bas.getCompositeName());									//create first state, start queue
+		uStructure.setStateAttribute(bas.getCompositeName(), attributeInitialRef, true);
+		queue.add(bas);
 		
 		while(!queue.isEmpty()) {
-			BatchAgentStates stateSet = queue.poll();
-			if(visited.contains(stateSet.getIdentityState()))	//access next state from queue, ensure it hasn't been processed yet
+			AgentStates stateSet = queue.poll();
+			String currState = stateSet.getCompositeName();
+			
+			if(visited.contains(currState))	//access next state from queue, ensure it hasn't been processed yet
 				continue;
-			visited.add(stateSet.getIdentityState());
+			
+			String[] stateSetStates = stateSet.getStates();
+			int stateSetSize = stateSetStates.length;
+			visited.add(currState);
+			
 			
 			HashSet<String> viableEvents = new HashSet<String>();
-			for(String s : stateSet.getStates()) {
-				for(String e : plantFSM.getStateTransitionEvents(s)) {
+			for(String s : stateSetStates) {
+				for(String e : plant.getStateTransitionEvents(s)) {
 					viableEvents.add(e);
 				}
 			}
 			
 			for(String s : viableEvents) {
-				boolean[] canAct = new boolean[stateSet.getStates().length];     //find out what each individual agent is able to do for the given event at the given state
-				for(int i = 0; i < stateSet.getStates().length; i++) {
-					String currState = stateSet.getStates()[i];
-					if(!agents[i].getEventAttribute(s, attributeObservableRef)) {					//if the agent cannot see the event, it has to guess whether it happened
-						if(plantFSM.getStateEventTransitionStates(currState, s) == null) {
-							continue;
-						}
-						String[] newSet = new String[stateSet.getStates().length];
-						String eventName = "<";
-						for(int j = 0; j < stateSet.getStates().length; j++) {
-							if(i == j) {
-								newSet[j] = stateSet.getStates()[j];
-								for(String t : plantFSM.getStateTransitionEvents(stateSet.getStates()[j])) {
-									if(t.equals(s))
-										newSet[j] = plantFSM.getStateEventTransitionStates(stateSet.getStates()[j], t).get(0);
-								}
-								eventName += s + (j + 1 < stateSet.getStates().length ? ", " : ">");
-							}
-							else {
-								newSet[j] = stateSet.getStates()[j];
-								eventName += UNOBSERVED_EVENT + (j + 1 < stateSet.getStates().length ? ", " : ">");
-							}
-						}
-						
-						boolean fail = false;
-						for(String state : newSet)
-							if(state == null)
-								fail = true;
-						if(!fail) {
-							ArrayList<String> sta = new ArrayList<String>();
-							for(String q : newSet) {
-								sta.add(q);
-							}
-							String newName = uStructure.compileStateName(sta);
-							queue.add(new BatchAgentStates(newSet, newName));
-							uStructure.addEvent(eventName);
-							uStructure.addState(newName);
-							uStructure.addTransition(stateSet.getIdentityState(), eventName, newName);
-							compositeMapping.put(newName, newSet);							
-						}
-					}
-					else {
-						canAct[i] = true;
+				
+				//TODO: Pretty sure, but double check: Can we proceed with this event? If an agent is in a position that can't perform it, does it matter if they can see it?
+				boolean bail = false;								//If not every agent can act on this event, skip
+				for(String t : stateSetStates) {
+					if(getNextState(plant, t, s) == null) {
+						bail = true;
 					}
 				}
-				String[] newSet = new String[stateSet.getStates().length];
-				String eventName = "<";
-				for(int i = 0; i < canAct.length; i++) {
-					if(canAct[i]) {
-						eventName += s + (i + 1 < canAct.length ? ", " : ">");
-						for(String t : plantFSM.getStateTransitionEvents(stateSet.getStates()[i])) {
-							if(t.equals(s)){
-								newSet[i] = plantFSM.getStateEventTransitionStates(stateSet.getStates()[i], t).get(0);
+				if(bail) {
+					continue;
+				}
+				
+				boolean[] canAct = new boolean[stateSetSize];     //Find out what each individual agent is able to do for the given event at their given state
+				for(int i = 0; i < stateSetSize; i++) {
+					if(agents[i].getEventAttribute(s, attributeObservableRef)) {
+						canAct[i] = true;					
+					}
+					else {														//if the agent cannot see the event, it guesses that it happened
+						String[] newSet = new String[stateSetSize];				//can do these individually because the next state could perform other guesses, captures all permutations
+						String eventName = "<";
+						for(int j = 0; j < stateSetSize; j++) {
+							if(i != j) {
+								newSet[j] = stateSetStates[j];
+								eventName += UNOBSERVED_EVENT + (j + 1 < stateSetSize ? ", " : ">");
+							}
+							else {
+								newSet[j] = getNextState(plant, stateSetStates[j], s);
+								eventName += s + (j + 1 < stateSetSize ? ", " : ">");
 							}
 						}
+
+						queue.add(handleNewTransition(newSet, eventName, currState, stateSet.getEventPath()));	//adds the guess transition to our queue
+					}
+				}
+				
+				String[] newSet = new String[stateSetSize];				//Knowing visibility, we make the actual event occurrence
+				String eventName = "<";
+				for(int i = 0; i < stateSetSize; i++) {
+					if(canAct[i]) {
+						eventName += s + (i + 1 < canAct.length ? ", " : ">");
+						newSet[i] = getNextState(plant, stateSetStates[i], s);
 					}
 					else {
 						eventName += UNOBSERVED_EVENT + (i + 1 < canAct.length ? ", " : ">");
-						newSet[i] = stateSet.getStates()[i];
+						newSet[i] = stateSetStates[i];
 					}
 				}
-				boolean fail = false;
-				for(String state : newSet)
-					if(state == null)
-						fail = true;
-				if(!fail) {
-					ArrayList<String> sta = new ArrayList<String>();
-					for(String q : newSet) {
-						sta.add(q);
-					}
-					String newName = uStructure.compileStateName(sta);
-					queue.add(new BatchAgentStates(newSet, newName));
-					uStructure.addEvent(eventName);
-					uStructure.addState(newName);
-					uStructure.addTransition(stateSet.getIdentityState(), eventName, newName);
-					compositeMapping.put(newName, newSet);
-					
-					
-					if(plantFSM.getEventAttribute(s, attributeControllableRef)) {
-						Boolean result = badTransitions.get(stateSet.getStates()[0]).contains(s);
-						String[] states = stateSet.getStates();
-						for(int i = 1; i < states.length; i++) {
-							if(agents[i].getEventAttribute(s, attributeControllableRef)) {
-								if(badTransitions.get(states[i]).contains(s) == result || plantFSM.getStateEventTransitionStates(states[i], s) == null) {
-									result = null;
-									break;
-								}
+				
+				queue.add(handleNewTransition(newSet, eventName, currState, stateSet.getEventPath() + s));		//adds the real event occurring transition to our queue
+				
+				if(plant.getEventAttribute(s, attributeControllableRef)) {			//If the event is controllable, does it violate co-observabilty?
+					Boolean result = badTransitions.get(stateSetStates[0]).contains(s);
+					for(int i = 1; i < stateSetStates.length; i++) {
+						if(agents[i].getEventAttribute(s, attributeControllableRef)) {
+							if(badTransitions.get(stateSetStates[i]).contains(s) == result || plant.getStateEventTransitionStates(stateSetStates[i], s) == null) {
+								result = null;
+								break;
 							}
 						}
-						if(result != null) {
-						  uStructure.setStateAttribute(stateSet.getIdentityState(), !result ? attributeGoodRef : attributeBadRef, true);
-						  if(result) {
-							  goodBadStates.add(stateSet.getIdentityState());
-						  }
-						  else {
-							  badGoodStates.add(stateSet.getIdentityState());
-						  }
-						}
+					}
+					if(result != null) {
+					  uStructure.setStateAttribute(currState, !result ? attributeGoodRef : attributeBadRef, true);
+					  if(result) {
+						  goodBadStates.add(new IllegalConfig(stateSet, s));
+					  }
+					  else {
+						  badGoodStates.add(new IllegalConfig(stateSet, s));
+					  }
 					}
 				}
 			}
 		}
 		uStructure.setEventAttributes(new ArrayList<String>());
+	}
+	
+	private String getNextState(TransitionSystem plant, String currState, String event) {
+		for(String t : plant.getStateTransitionEvents(currState)) {
+			if(t.equals(event)){
+				return plant.getStateEventTransitionStates(currState, t).get(0);
+			}
+		}
+		return null;
+	}
+	
+	private AgentStates handleNewTransition(String[] newSet, String eventName, String currState, String newPath) {
+		AgentStates next = new AgentStates(newSet, newPath);
+		uStructure.addEvent(eventName);
+		uStructure.addState(next.getCompositeName());
+		uStructure.addTransition(currState, eventName, next.getCompositeName());
+		return next;
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -234,19 +233,17 @@ public class UStructure {
 		return uStructure;
 	}
 		
-	public TransitionSystem getPlantFSM() {
-		return plantFSM;
-	}
-
-	public HashSet<String> getIllegalConfigOneStates(){
+	public HashSet<IllegalConfig> getIllegalConfigOneStates(){
 		return badGoodStates;
 	}
 	
-	public HashSet<String> getIllegalConfigTwoStates(){
+	public HashSet<IllegalConfig> getIllegalConfigTwoStates(){
 		return goodBadStates;
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
+	
+	/*
 	
 	private HashSet<String> generateObservablePermutation(HashSet<String> tags, int index,  String total, boolean[] sight){
 		if(index >= sight.length) {
@@ -266,6 +263,8 @@ public class UStructure {
 			return tags;
 		}
 	}
+	
+	*/
 
 }
 

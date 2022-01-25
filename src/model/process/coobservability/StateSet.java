@@ -4,15 +4,26 @@ public class StateSet{
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
+	/** Number of plants*/
 	private static int sizePlants;
-	
+	/** Number of specifications*/
 	private static int sizeSpecs;
-	
+	/** List of our plants*/
 	private String[] plant;
-	
+	/** List of our specifications*/
 	private String[] spec;
 	
 //---  Constructors   -------------------------------------------------------------------------
+	
+	/**
+	 * 
+	 * After statically assigning the size of our plant and specification lists, take an input array
+	 * of Strings representing State names mapping to each of our plant and specifications. Uses the
+	 * number of plants and specifications to know when the Strings stop representing plant States
+	 * and start representing specification States.
+	 * 
+	 * @param in - String[] containing the names of States in plants and specifications
+	 */
 	
 	public StateSet(String[] in) {
 		plant = new String[sizePlants];
@@ -28,6 +39,15 @@ public class StateSet{
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
+	
+	/**
+	 * 
+	 * Static assignment function to inform the StateSet class of objects how many plants and
+	 * specifications there are to expect State names from when representing a set of States.
+	 * 
+	 * @param sizePl
+	 * @param sizeSp
+	 */
 	
 	public static void assignSizes(int sizePl, int sizeSp) {
 		sizePlants = sizePl;

@@ -28,9 +28,16 @@ public class ProcessCoobservability {
 
 //---  Operations   ---------------------------------------------------------------------------
 	
+	//-- Coobservable  ----------------------------------------
+	
 	public static boolean isCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
 		UStructure ustr = constructUStruct(plant, attr, agents);
-		HashSet<String> badGood = enableByDefault ? ustr.getIllegalConfigOneStates() : ustr.getIllegalConfigTwoStates();
+		HashSet<IllegalConfig> badGood = enableByDefault ? ustr.getIllegalConfigOneStates() : ustr.getIllegalConfigTwoStates();
+		return badGood.isEmpty();
+	}
+	
+	private static boolean isCoobservableUStruct(UStructure ustr, boolean enableByDefault) {
+		HashSet<IllegalConfig> badGood = enableByDefault ? ustr.getIllegalConfigOneStates() : ustr.getIllegalConfigTwoStates();
 		return badGood.isEmpty();
 	}
 	
@@ -76,6 +83,170 @@ public class ProcessCoobservability {
 		
 		return isCoobservableUStruct(ultPlant, attr, agents, enableByDefault);
 	}
+
+	public static boolean isCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+		ArrayList<TransitionSystem> copyPlants = new ArrayList<TransitionSystem>();
+		ArrayList<TransitionSystem> copySpecs = new ArrayList<TransitionSystem>();
+		copyPlants.addAll(plants);
+		copySpecs.addAll(specs);
+		
+		while(!copySpecs.isEmpty()) {
+			TransitionSystem pick = pickSpec(copySpecs);								//Get initial spec to use (heuristics choose here)
+			ArrayList<TransitionSystem> hold = new ArrayList<TransitionSystem>();		//List to hold all the plants/specs used in the current iteration
+			copySpecs.remove(pick);
+			hold.add(pick);
+			pick = parallelComp(generateSigmaStarion(plants), pick);			//Immediately merge our sigmaStarion plant with the spec we chose
+			UStructure uStruct = constructUStruct(pick, attr, agents);
+			while(!isCoobservableUStruct(uStruct, enableByDefault)) {
+				if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
+					return false;
+				}
+				IllegalConfig counterexample = pickCounterExample(uStruct, enableByDefault);	//Get a single bad state, probably, maybe write something so UStruct can trace it
+				TransitionSystem use = pickComponent(copyPlants, copySpecs, counterexample);	//Heuristics go here
+				pick = parallelComp(pick, use);
+				uStruct = constructUStruct(pick, attr, agents);
+				if(copySpecs.contains(use)) {
+					hold.add(use);
+					copySpecs.remove(use);
+				}
+				else {
+					hold.add(use);
+					copyPlants.remove(use);
+				}
+				//Get counterexample - here this should mean one of our problem states (badGood/goodBad states)
+				//Find plant or spec that rejects the counterexample - that can make the correct control decision/removes it as a problem
+				// NOTE: Have to just do full coobservability again via parallel comp.
+				// Should also email Dr. Mallik (?) about some stuff and get some context/help; his 2004 paper has the heuristics!
+				//if none exists, return false
+				//otherwise add it to progress and continue on
+			}
+			copyPlants.addAll(hold);
+		}
+		return true;
+	}
+
+	private static TransitionSystem generateSigmaStarion(ArrayList<TransitionSystem> plants) {
+		TransitionSystem sigmaStar = new TransitionSystem("sigmaStarion");
+		sigmaStar.copyAttributes(plants.get(0));
+		String init = "0";
+		sigmaStar.addState(init);
+		sigmaStar.setStateAttribute(init, initialRef, true);
+		for(String e : getAllEvents(plants)) {
+			for(TransitionSystem t : plants) {
+				if(t.eventExists(e)) {
+					sigmaStar.addEvent(e, t);
+					sigmaStar.addTransition(init, e, init);
+					break;
+				}
+			}
+		}
+		return sigmaStar;
+	}
+	
+	/**
+	 * 
+	 * Can probably introduce heuristics for choosing the counterexample? Shortest length, fewest unique events, etc.?
+	 * 
+	 * 
+	 * @param ustruct
+	 * @param enableByDefault
+	 * @return
+	 */
+	
+	private static IllegalConfig pickCounterExample(UStructure ustruct, boolean enableByDefault) {
+		HashSet<IllegalConfig> counters = enableByDefault ? ustruct.getIllegalConfigOneStates() : ustruct.getIllegalConfigTwoStates();
+		if(counters != null && counters.size() > 0)
+			return counters.iterator().next();
+		return null;
+	}
+	
+	/**
+	 * 
+	 * Heuristics:
+	 *  - Always choose plant over spec
+	 *  - Always choose spec over plant
+	 *  - Randomly choose
+	 *  - Choose a component that rejects the counterexample the 'soonest'
+	 *  - Choose a component that rejects the counterexample the 'latest'
+	 *  - Choose a component with the fewest states
+	 *  - Choose a component with the fewest transitions
+	 *  - Choose a component that shares the most events with the current plant
+	 *  - Choose a component with the fewest events 
+	 * 
+	 * TODO: Needs some way to know that a component can even reject the counterexample in the first place, how to do quickly?
+	 *     - Can get the true event path that led to a problem scenario, now how to handle guessing and populating our agents?
+	 * 
+	 * @param plants
+	 * @param specs
+	 * @param counterexample
+	 * @return
+	 */
+	
+	private static TransitionSystem pickComponent(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, IllegalConfig counterexample) {
+		String eventPath = counterexample.getEventPath();
+		String controlEvent = counterexample.getEvent();
+		
+		//Run eventPath through a plant or spec and see if it can make the right control decision for the controlEvent
+		//This should represent 'rejecting' the counterexample
+		
+		//Although this doesn't account for when components guessed along the way of the event path?
+		//Who are our agents in this case? Specs are autonomous FSMs just like plants, not observers with an event map
+		//Our agents are the event maps of each plant and/or spec observing the conglomerate structure
+		
+		if(plants.size() != 0) {
+			return plants.get(0);
+		}
+		return specs.get(0);
+	}
+	
+	/**
+	 * 
+	 * How to model guessing? How do we define rejection if we have to include it to know that it removed it properly, and
+	 * how can we check that the counterexample is gone when the means by which we identify it will change once a new component
+	 * is added?
+	 * 
+	 * And if there is an event in the eventPath that this plant/spec knows about and can see which it cannot perform while tracing
+	 * the eventPath, does that mean it rejects the counterexample by writ of blocking the progression that would have led to that
+	 * error?
+	 * 
+	 * Are making the right control decision and stopping the eventPath from happening both examples of rejecting the counterexample?
+	 * 
+	 * @param plant
+	 * @param eventPath
+	 * @return
+	 */
+	
+	private String navigateTransitionSystem(TransitionSystem plant, String eventPath) {
+		String curr = plant.getStatesWithAttribute(initialRef).get(0);
+		for(String s : eventPath.split("")) {
+			if(plant.getEventNames().contains(s) && plant.getEventsWithAttribute(observableRef).contains(s)) {
+				ArrayList<String> next = plant.getStateEventTransitionStates(curr, s);
+				if(next != null && next.size() > 0) {
+					curr = next.get(0);
+				}
+				else {
+					return null;
+				}
+			}
+		}
+		return curr;
+	}
+	
+	/**
+	 * 
+	 * Function to filter an eventPath to only the events that are relevant to the transition system
+	 * 
+	 * @param plant
+	 * @param eventPath
+	 * @return
+	 */
+	
+	private String observablePath(TransitionSystem plant, String eventPath) {
+		//TODO: This, so we can get functional path length in determining the shortest paths for our heuristics
+		return null;
+	}
+	
+	//-- SB Coobservable  -------------------------------------
 	
 	public static boolean isSBCoobservableUrvashi(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		HashSet<String> eventNamesHold = new HashSet<String>();
@@ -146,60 +317,14 @@ public class ProcessCoobservability {
 		
 		return false;
 	}
+	
+	public static boolean isSBCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 
-	public static boolean isCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
-		ArrayList<TransitionSystem> copyPlants = new ArrayList<TransitionSystem>();
-		ArrayList<TransitionSystem> copySpecs = new ArrayList<TransitionSystem>();
-		copyPlants.addAll(plants);
-		copySpecs.addAll(specs);
 		
-		TransitionSystem sigmaStar = new TransitionSystem("sigmaStarion");
-		sigmaStar.copyAttributes(plants.get(0));
-		String init = "0";
-		sigmaStar.addState(init);
-		sigmaStar.setStateAttribute(init, initialRef, true);
-		for(String e : getAllEvents(plants)) {
-			for(TransitionSystem t : plants) {
-				if(t.eventExists(e)) {
-					sigmaStar.addEvent(e, t);
-					sigmaStar.addTransition(init, e, init);
-					break;
-				}
-			}
-		}
-		while(!copySpecs.isEmpty()) {
-			ArrayList<TransitionSystem> hold = new ArrayList<TransitionSystem>();
-			TransitionSystem pick = pickSpec(copySpecs);	//Gonna use pick as the ongoing construction that resets each loop
-			copySpecs.remove(pick);
-			hold.add(pick);
-			if(!isCoobservableUStruct(parallelComp(sigmaStar, pick), attr, agents, enableByDefault)) {
-				do {
-					if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
-						return false;
-					}
-					String counterexample = "Something?";	//Get a single bad state, probably, maybe write something so UStruct can trace it
-					TransitionSystem use = pickComponent(copyPlants, copySpecs, "I dunno");	//Heuristics go here
-					pick = parallelComp(pick, use);
-					if(copySpecs.contains(pick)) {
-						hold.add(pick);
-						copySpecs.remove(pick);
-					}
-					else {
-						hold.add(pick);
-						copyPlants.remove(pick);
-					}
-					//Get counterexample - here this should mean one of our problem states (badGood/goodBad states)
-					//Find plant or spec that rejects the counterexample - that can make the correct control decision/removes it as a problem
-					// NOTE: Have to just do full coobservability again via parallel comp.
-					// Should also email Dr. Mallik (?) about some stuff and get some context/help
-					//if none exists, return false
-					//otherwise add it to progress and continue on
-				} while(!isCoobservableUStruct(pick, attr, agents, enableByDefault));
-			}
-			copyPlants.addAll(hold);
-		}
-		return true;
+		return false;
 	}
+	
+	//-- Support  ---------------------------------------------
 	
 	public static TransitionSystem convertSoloPlantSpec(TransitionSystem plant) {
 		TransitionSystem out = plant.copy();
@@ -215,18 +340,16 @@ public class ProcessCoobservability {
 		}
 		return out;
 	}
-	
-	private static TransitionSystem pickComponent(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, String counterexample) {
-		if(plants.size() != 0) {
-			return plants.get(0);
-		}
-		return specs.get(0);
+
+	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		ArrayList<Agent> agen = constructAgents(plant.getEventNames(), attr, agents);
+		return new UStructure(plant, attr, agen);
 	}
 	
-	public static boolean isSBCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	//-- Helper  ----------------------------------------------
 
-		
-		return false;
+	private static TransitionSystem pickSpec(ArrayList<TransitionSystem> specs) {
+		return specs.get(0);
 	}
 	
 	private static TransitionSystem parallelComp(TransitionSystem ... in) {
@@ -240,16 +363,7 @@ public class ProcessCoobservability {
 	private static TransitionSystem parallelComp(ArrayList<TransitionSystem> in) {
 		return ProcessDES.parallelComposition(in);
 	}
-	
-	private static TransitionSystem pickSpec(ArrayList<TransitionSystem> specs) {
-		return specs.get(0);
-	}
-	
-	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		ArrayList<Agent> agen = constructAgents(plant.getEventNames(), attr, agents);
-		return new UStructure(plant, attr, agen);
-	}
-	
+
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	//-- Urvashi  ---------------------------------------------

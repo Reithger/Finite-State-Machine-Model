@@ -64,11 +64,11 @@ public class TestFunctionality {
 	private static void basicUStructCheck() {
 		String SystemA = "Example 1";
 		generateSystemA(SystemA);
-		makeImageDisplay(SystemA, model, "Example 1");
+		makeImageDisplay(SystemA, "Example 1");
 
 		String ustruct = model.buildUStructure(SystemA, eventAtt, generateAgentsA());
 		
-		makeImageDisplay(ustruct, model, "Example 1 UStruct");
+		makeImageDisplay(ustruct, "Example 1 UStruct");
 	}
 	
 	private static void checkCoobservable(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
@@ -367,7 +367,7 @@ public class TestFunctionality {
 		return model.readInFSM(model.generateRandomFSM(nom, numStates, numEvents, numTransition, det, strAtt, eveAtt, tranAtt, numbers));
 	}
 	
-	private static void makeImageDisplay(String in, Manager model, String nom) {
+	private static void makeImageDisplay(String in, String nom) {
 		String path = FormatConversion.createImgFromFSM(model.generateFSMDot(in), nom);
 		System.out.println(path);
 		WindowFrame fram = new WindowFrame(800, 800);

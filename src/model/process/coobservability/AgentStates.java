@@ -1,39 +1,43 @@
 package model.process.coobservability;
 
-public class BatchAgentStates implements Comparable<BatchAgentStates>{
+public class AgentStates implements Comparable<AgentStates>{
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private String[] currentStates;
-	private String confirmedObject;
+	
+	private String eventPath;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public BatchAgentStates(String[] states, String identity) {
+	public AgentStates(String[] states, String inPath) {
 		currentStates = states;
-		confirmedObject = identity;
+		eventPath = inPath;
 	}
 	
-//---  Setter Methods   -----------------------------------------------------------------------
-	
-	public void setState(String in) {
-		confirmedObject = in;
-	}
-
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	public String[] getStates() {
 		return currentStates;
 	}
+	
+	public String getEventPath() {
+		return eventPath;
+	}
 
-	public String getIdentityState() {
-		return confirmedObject;
+	public String getCompositeName() {
+		StringBuilder out = new StringBuilder();
+		out.append("(");
+		for(int i = 0; i < currentStates.length; i++) {
+			out.append(currentStates[i] + (i + 1 < currentStates.length ? ", " : ")"));
+		}
+		return out.toString();
 	}
 	
 //---  Mechanics   ----------------------------------------------------------------------------
 
 	@Override
-	public int compareTo(BatchAgentStates o) {
+	public int compareTo(AgentStates o) {
 		boolean fail = false;
 		for(int i = 0; i < this.getStates().length; i++)
 			if(!this.getStates()[i].equals(o.getStates()[i]))
@@ -46,7 +50,7 @@ public class BatchAgentStates implements Comparable<BatchAgentStates>{
 		
 	@Override
 	public boolean equals(Object o1) {
-		return this.confirmedObject.equals(((BatchAgentStates)o1).confirmedObject);
+		return this.getCompositeName().equals(((AgentStates)o1).getCompositeName());
 	}
 	
 }
