@@ -11,6 +11,8 @@ public class GenerateDot {
 //---  Constants   ----------------------------------------------------------------------------
 	
 	private final static String INITIAL_STATE_MARKER = "ArbitraryUnusedNameNoWorriesJustGrooving";
+	//TODO: Make sure there are a lot of potential colors here, preferably prime, to avoid reuse
+	private final static String[] backgroundColorCycle = new String[] {"red", "orange", "yellow", "green", "white", "blue", "purple"};
 
 //---  Operations   ---------------------------------------------------------------------------
 	
@@ -72,9 +74,41 @@ public class GenerateDot {
 		else {
 			line += bad ? "red" : good ? "green" : "black";
 		}
-		line += "\"];";
-		return line;
+		line += "\" style=wedged fillcolor=\"";
+		
+		int count = 0;		// how do we actually record multiple colors onto one node oh god oh no
+		boolean first = true;
+		boolean second = false;
+		while(count < 100) {
+			if(in.getStateAttribute(ref, count+"") != null) {
+				line+= (first ? "" : ":") + backgroundColorCycle[count % backgroundColorCycle.length];
+				if(!first) {
+					second = true;
+				}
+				first = false;
+			}
+			count++;
+		}
+		
+		if(second) {
+			line += "\" style=wedged";
+		}
+		else {
+			if(first) {
+				line += "white";
+			}
+			line += "\" style=filled";
+		}
+		
+		return line + "];";
 	}
+	
+	/*
+
+		line += "\" style=filled fillcolor=red];";
+		return line;
+	 * 
+	 */
 	
 	private static String generateTransitionDot(TransitionSystem in, String state, String event) {
 		String trans = "[label = \"" + event + "\" color=\"";

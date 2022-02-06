@@ -124,6 +124,10 @@ public class StateMap {
 	public void addStateComposition(String keyState, ArrayList<String> composedStates) {
 		composition.put(keyState, composedStates);
 	}
+	
+	public void addAttributeToState(String stateName, String attribute, boolean set) {
+		states.get(stateName).addAttribute(attribute, set);
+	}
 
 //---  Remover Methods   ----------------------------------------------------------------------
 	

@@ -41,7 +41,10 @@ public class TestFunctionality {
 			eventAtt.add(s);
 		}
 		//basicUStructCheck();
-		System.out.println("System A Coobservability:");
+		//crushUStructCheck();
+		crushUStructCheck2();
+		//generateSystems();
+		/*System.out.println("System A Coobservability:");
 		checkSystemACoobservable();
 		System.out.println("System A SB Coobservability:");
 		checkSystemASBCoobservable();
@@ -56,10 +59,28 @@ public class TestFunctionality {
 		System.out.println("System D Coobservability:");
 		checkSystemDCoobservable();
 		System.out.println("System D SB Coobservability:");
-		checkSystemDSBCoobservable();
+		checkSystemDSBCoobservable();*/
 	}
 	
 //---  Automated Testing   --------------------------------------------------------------------
+	
+	private static void generateSystems() {
+		String SystemA = "Example 1";
+		generateSystemA(SystemA);
+		makeImageDisplay(SystemA, "Example 1");
+		
+		String SystemB = "Example 2";
+		generateSystemB(SystemB);
+		makeImageDisplay(SystemB, "Example 2");
+		
+		String SystemC = "Example 3";
+		generateSystemC(SystemC);
+		makeImageDisplay(SystemC, "Example 3");
+		
+		String SystemD = "Example 4";
+		generateSystemD(SystemD);
+		makeImageDisplay(SystemD, "Example 4");
+	}
 	
 	private static void basicUStructCheck() {
 		String SystemA = "Example 1";
@@ -69,6 +90,28 @@ public class TestFunctionality {
 		String ustruct = model.buildUStructure(SystemA, eventAtt, generateAgentsA());
 		
 		makeImageDisplay(ustruct, "Example 1 UStruct");
+	}
+	
+	private static void crushUStructCheck() {
+		String SystemA = "Example 1";
+		generateSystemA(SystemA);
+		makeImageDisplay(SystemA, "Example 1");
+
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemA, eventAtt, generateAgentsA());
+		for(String s : ustruct)
+			makeImageDisplay(s, s);
+	}
+	
+	private static void crushUStructCheck2() {
+		String SystemB = "Example 2";
+		generateSystemB(SystemB);
+		makeImageDisplay(SystemB, "Example 2");
+
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemB, eventAtt, generateAgentsB2());
+		for(String s : ustruct) {
+			makeImageDisplay(s, s);
+			model.exportFSM(s);
+		}
 	}
 	
 	private static void checkCoobservable(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
@@ -295,6 +338,26 @@ public class TestFunctionality {
 			  {false, false},
 			  {false, false},
 			  {true, false},
+			  {true, false},
+			  {false, true}
+			},
+		};
+
+		return generateAgentSet(agentInfo, EVENT_LIST_B);
+	}
+	
+	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsB2(){
+		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
+			  {true, false},	//a
+			  {false, false},	//b
+			  {false, false},	//c
+			  {true, false},	//d
+			  {false, true}		//s
+			},
+		 	{	//Agent 2
+			  {false, false},
+			  {true, false},
+			  {false, false},
 			  {true, false},
 			  {false, true}
 			},

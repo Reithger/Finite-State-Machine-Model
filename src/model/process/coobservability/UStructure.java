@@ -29,11 +29,14 @@ public class UStructure {
 	private HashSet<IllegalConfig> goodBadStates;
 	private HashSet<IllegalConfig> badGoodStates;
 	
+	private CrushMap[] crushMap;
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
 		HashMap<String, HashSet<String>> badTransitions = initializeBadTransitions(thePlant);
 		Agent[] agents = initializeAgents(thePlant, attr, theAgents);
+		crushMap = new CrushMap[agents.length-1];
 
 		goodBadStates = new HashSet<IllegalConfig>();
 		badGoodStates = new HashSet<IllegalConfig>();
@@ -93,10 +96,10 @@ public class UStructure {
 	
 	private TransitionSystem initializeUStructure(TransitionSystem plant) {
 		TransitionSystem out = new TransitionSystem("U-struc", plant.getStateAttributes(), plant.getEventAttributes(), plant.getTransitionAttributes());
-		ArrayList<String> attr = uStructure.getStateAttributes();
+		ArrayList<String> attr = out.getStateAttributes();
 		attr.add(attributeBadRef);
 		attr.add(attributeGoodRef);
-		uStructure.setStateAttributes(attr);
+		out.setStateAttributes(attr);
 		return out;
 	}
 	
@@ -113,7 +116,12 @@ public class UStructure {
 		AgentStates bas = new AgentStates(starting, "");
 		uStructure.addState(bas.getCompositeName());									//create first state, start queue
 		uStructure.setStateAttribute(bas.getCompositeName(), attributeInitialRef, true);
+		uStructure.addAttributeToState(bas.getCompositeName(), "0", true);
 		queue.add(bas);
+		
+		for(int i = 0; i < agents.length - 1; i++) {
+			crushMap[i] = new CrushMap(bas.getCompositeName());
+		}
 		
 		while(!queue.isEmpty()) {
 			AgentStates stateSet = queue.poll();
@@ -125,6 +133,7 @@ public class UStructure {
 			String[] stateSetStates = stateSet.getStates();
 			int stateSetSize = stateSetStates.length;
 			visited.add(currState);
+			System.out.println(currState);
 			
 			
 			HashSet<String> viableEvents = new HashSet<String>();
@@ -136,15 +145,12 @@ public class UStructure {
 			
 			for(String s : viableEvents) {
 				
-				//TODO: Pretty sure, but double check: Can we proceed with this event? If an agent is in a position that can't perform it, does it matter if they can see it?
-				boolean bail = false;								//If not every agent can act on this event, skip
-				for(String t : stateSetStates) {
-					if(getNextState(plant, t, s) == null) {
+				boolean bail = false;								//If not every agent who can see it can act on this event, skip the actual transition
+				for(int i = 0; i < stateSetStates.length; i++) {	//Still have to guess about it though
+					String t = stateSetStates[i];
+					if(getNextState(plant, t, s) == null && agents[i].getEventAttribute(s, attributeObservableRef)) {
 						bail = true;
 					}
-				}
-				if(bail) {
-					continue;
 				}
 				
 				boolean[] canAct = new boolean[stateSetSize];     //Find out what each individual agent is able to do for the given event at their given state
@@ -152,7 +158,7 @@ public class UStructure {
 					if(agents[i].getEventAttribute(s, attributeObservableRef)) {
 						canAct[i] = true;					
 					}
-					else {														//if the agent cannot see the event, it guesses that it happened
+					else if(getNextState(plant, stateSetStates[i], s) != null){		//if the agent cannot see the event, it guesses that it happened
 						String[] newSet = new String[stateSetSize];				//can do these individually because the next state could perform other guesses, captures all permutations
 						String eventName = "<";
 						for(int j = 0; j < stateSetSize; j++) {
@@ -166,8 +172,17 @@ public class UStructure {
 							}
 						}
 
-						queue.add(handleNewTransition(newSet, eventName, currState, stateSet.getEventPath()));	//adds the guess transition to our queue
+						AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath());
+						queue.add(aS);	//adds the guess transition to our queue
+						
+						for(int j = 0; j < agents.length - 1; j++) {	//Any guess transition is a crush equivalency
+							crushMap[j].inheritStateGroups(currState, aS.getCompositeName());
+						}
 					}
+				}
+				
+				if(bail) {
+					continue;
 				}
 				
 				String[] newSet = new String[stateSetSize];				//Knowing visibility, we make the actual event occurrence
@@ -183,7 +198,18 @@ public class UStructure {
 					}
 				}
 				
-				queue.add(handleNewTransition(newSet, eventName, currState, stateSet.getEventPath() + s));		//adds the real event occurring transition to our queue
+				AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath() + s);
+				queue.add(aS);		//adds the real event occurring transition to our queue
+				
+				for(int i = 0; i < agents.length - 1; i++) {
+					if(!agents[i+1].getEventAttribute(s, attributeObservableRef)) {
+						crushMap[i].inheritStateGroups(currState, aS.getCompositeName());
+					}
+					else {
+						crushMap[i].stateGroupTransfer(currState, aS.getCompositeName(), s);
+					}
+				}
+				
 				
 				if(plant.getEventAttribute(s, attributeControllableRef)) {			//If the event is controllable, does it violate co-observabilty?
 					Boolean result = badTransitions.get(stateSetStates[0]).contains(s);
@@ -207,7 +233,7 @@ public class UStructure {
 				}
 			}
 		}
-		uStructure.setEventAttributes(new ArrayList<String>());
+		uStructure.setEventAttributes(new ArrayList<String>());		//Not sure why, probably to avoid weird stuff on the output graph?
 	}
 	
 	private String getNextState(TransitionSystem plant, String currState, String event) {
@@ -232,6 +258,23 @@ public class UStructure {
 	public TransitionSystem getUStructure() {
 		return uStructure;
 	}
+	
+	public ArrayList<TransitionSystem> getCrushUStructures(){
+		ArrayList<TransitionSystem> out = new ArrayList<TransitionSystem>();
+		
+		for(int i = 0; i < crushMap.length; i++) {
+			TransitionSystem local = uStructure.copy();
+			local.setId(uStructure.getId() + " - Observer " + i);
+			for(String s : local.getStateNames()) {
+				for(int j : crushMap[i].getStateMemberships(s)) {
+					local.addAttributeToState(s, j+"", true);
+				}
+			}
+			out.add(local);
+		}
+		
+		return out;
+	}
 		
 	public HashSet<IllegalConfig> getIllegalConfigOneStates(){
 		return badGoodStates;
@@ -239,6 +282,10 @@ public class UStructure {
 	
 	public HashSet<IllegalConfig> getIllegalConfigTwoStates(){
 		return goodBadStates;
+	}
+	
+	public CrushMap[] getCrushMappings() {
+		return crushMap;
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------

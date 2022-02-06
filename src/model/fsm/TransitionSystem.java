@@ -195,6 +195,10 @@ public class TransitionSystem {
 			states.addState(stateName, context.getStateMap());
 	}
 	
+	public void addAttributeToState(String stateName, String attribute, boolean ref) {
+		states.addAttributeToState(stateName, attribute, ref);
+	}
+	
 	/**
 	 * Adds a map of states to the composition of an FSM.
 	 * @param composed HashMap mapping States to an ArrayList of States, which is

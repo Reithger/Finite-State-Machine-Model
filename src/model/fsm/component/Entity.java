@@ -55,6 +55,11 @@ public class Entity {
 		}
 	}
 	
+	public void addAttribute(String attr, boolean set) {
+		wrap.addWrapper(attr);
+		wrap.setValue(attr, set);
+	}
+	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	/**

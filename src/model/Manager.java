@@ -225,6 +225,23 @@ public class Manager {
 		return tS.getId();
 	}
 	
+	public ArrayList<String> buildUStructureCrush(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents){
+		if(bail(ref)) {
+			return null;
+		}
+		//TODO: Other failure checks to do ahead of time?
+		ArrayList<TransitionSystem> tS = ProcessDES.buildUStructureCrush(fsms.get(ref), attr, agents);
+		if(tS == null) {
+			return null;
+		}
+		ArrayList<String> out = new ArrayList<String>();
+		for(TransitionSystem ts : tS) {
+			appendFSM(ts.getId(), ts, false);
+			out.add(ts.getId());
+		}
+		return out;
+	}
+	
 	public Boolean isCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
 		if(bail(ref)) {
 			return null;

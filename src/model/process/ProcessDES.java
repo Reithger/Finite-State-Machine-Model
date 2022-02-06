@@ -75,6 +75,10 @@ public class ProcessDES {
 		return ProcessCoobservability.constructUStruct(plant, attr, agents).getUStructure();
 	}
 	
+	public static ArrayList<TransitionSystem> buildUStructureCrush(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		return ProcessCoobservability.constructUStruct(plant, attr, agents).getCrushUStructures();
+	}
+	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
 	public static void assignAttributeReferences(String init, String mark, String priv, String obs, String cont, String bad, String good) {

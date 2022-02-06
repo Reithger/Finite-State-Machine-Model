@@ -32,6 +32,25 @@ public class ProcessCoobservability {
 	
 	public static boolean isCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
 		UStructure ustr = constructUStruct(plant, attr, agents);
+		
+		/*
+		 * 
+		 * It's not so simple.
+		 * 
+		 * Need to calculate the crush to figure out what states are functionally equivalent to one another according to an agent's
+		 * particular observability of events (guessing being also an equivalence) and ensure that no illegal config 1 state is considered
+		 * equivalent to an illegal config 2 state.
+		 * 
+		 * Only a problem if every single agent is incapable of discerning between the two in their particular context.
+		 * 
+		 * The agents are the specifications' event maps, but not the plants
+		 * 
+		 * U-Structure is not a map, it's all possible avenues, each agent can know they are in a certain selection of states connected
+		 * by unobservable states and we are co-observable as long as they are never able to confuse a violation 1 situation with a violation
+		 * 2 situation, as we can post-analysis fix the system to behave in an appropriate way.
+		 * 
+		 */
+		
 		HashSet<IllegalConfig> badGood = enableByDefault ? ustr.getIllegalConfigOneStates() : ustr.getIllegalConfigTwoStates();
 		return badGood.isEmpty();
 	}
@@ -147,6 +166,7 @@ public class ProcessCoobservability {
 	 * 
 	 * Can probably introduce heuristics for choosing the counterexample? Shortest length, fewest unique events, etc.?
 	 * 
+	 * Counterexample only counts if it's in both lists of illegalconfig
 	 * 
 	 * @param ustruct
 	 * @param enableByDefault
