@@ -37,6 +37,9 @@ public class CrushMap {
 	}
 	
 	public void stateGroupTransfer(String stateParent, String stateChild, String event) {
+		if(stateParent.equals(stateChild)) {
+			return;
+		}
 		for(int i : crushMapping.get(stateParent)) {
 			if(groupEntryMapping.get(groupEventName(i, event)) == null) {
 				groupEntryMapping.put(groupEventName(i, event), newGroupID++);
@@ -56,6 +59,29 @@ public class CrushMap {
 		ArrayList<Integer> out = new ArrayList<Integer>();
 		out.addAll(crushMapping.get(stateName));
 		return out;
+	}
+	
+	public boolean hasStateMembership(String stateName, int group) {
+		if(crushMapping.get(stateName) != null) {
+			return crushMapping.get(stateName).contains(group);
+		}
+		return false;
+	}
+	
+	public ArrayList<Integer> getPotentialTargetGroups(String stateName, String event){
+		if(crushMapping.get(stateName) != null) {
+			ArrayList<Integer> out = new ArrayList<Integer>();
+			for(int i : getStateMemberships(stateName)) {
+				Integer test = groupEntryMapping.get(groupEventName(i, event));
+				if(test == null) {
+					groupEntryMapping.put(groupEventName(i, event), newGroupID++);
+					test = groupEntryMapping.get(groupEventName(i, event));
+				}
+				out.add(test);
+			}
+			return out;
+		}
+		return null;
 	}
 	
 }

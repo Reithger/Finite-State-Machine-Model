@@ -20,6 +20,7 @@ public class TestFunctionality {
 	private final static String[] EVENT_LIST_B = new String[] {"a", "b", "c", "d", "s"};
 	private final static String[] EVENT_LIST_C = new String[] {"a1", "a2", "b1", "b2", "c", "d"};
 	private final static String[] EVENT_LIST_D = new String[] {"a", "b", "c"};
+	private final static String[] EVENT_LIST_E = new String[] {"a1", "a2", "b1", "b2", "c1", "c2", "c3", "d", "s"};
 	
 	private final static String[] EVENT_ATTR_LIST = new String[] {AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE};
 	
@@ -43,6 +44,7 @@ public class TestFunctionality {
 		//basicUStructCheck();
 		//crushUStructCheck();
 		crushUStructCheck2();
+		//crushUStructCheck3();
 		//generateSystems();
 		/*System.out.println("System A Coobservability:");
 		checkSystemACoobservable();
@@ -110,6 +112,18 @@ public class TestFunctionality {
 		ArrayList<String> ustruct = model.buildUStructureCrush(SystemB, eventAtt, generateAgentsB2());
 		for(String s : ustruct) {
 			makeImageDisplay(s, s);
+			model.exportFSM(s);
+		}
+	}
+	
+	private static void crushUStructCheck3() {
+		String SystemE = "Example 5";
+		generateSystemE(SystemE);
+		makeImageDisplay(SystemE, "Example 5");
+
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemE, eventAtt, generateAgentsE());
+		for(String s : ustruct) {
+			makeSVGImage(s, s);
 			model.exportFSM(s);
 		}
 	}
@@ -300,6 +314,45 @@ public class TestFunctionality {
 		setBadTransitions(name, "2", "b", "5", "c");
 	}
 
+	private static void generateSystemE(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 12);
+		model.setStateAttribute(name, "0", AttributeList.ATTRIBUTE_INITIAL, true);
+		
+		initiateEvents(name, EVENT_LIST_E, "s");
+		
+		model.addTransition(name, "0", "c1", "1");
+		model.addTransition(name, "0", "a1", "2");
+		model.addTransition(name, "0", "c2", "3");
+		model.addTransition(name, "0", "a2", "4");
+		model.addTransition(name, "0", "c3", "5");
+
+		model.addTransition(name, "1", "a2", "6");
+		model.addTransition(name, "1", "b2", "6");
+
+		model.addTransition(name, "2", "b1", "6");
+		model.addTransition(name, "2", "b2", "7");
+
+		model.addTransition(name, "3", "a2", "7");
+		model.addTransition(name, "3", "b1", "7");
+
+		model.addTransition(name, "4", "b1", "8");
+		
+		model.addTransition(name, "5", "a1", "8");
+		model.addTransition(name, "5", "b2", "8");
+
+		model.addTransition(name, "6", "d", "9");
+		model.addTransition(name, "7", "d", "10");
+		model.addTransition(name, "8", "d", "11");
+
+		model.addTransition(name, "9", "s", "9");
+		model.addTransition(name, "10", "s", "10");
+		model.addTransition(name, "11", "s", "11");
+		
+		setBadTransitions(name, "10", "s", "11", "s");
+	}
+	
 	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsA() {
 		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
 			  {true, false},	//a1
@@ -402,6 +455,44 @@ public class TestFunctionality {
 		return generateAgentSet(agentInfo, EVENT_LIST_D);
 	}
 	
+	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsE(){
+		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
+			  {true, false},	//a1
+			  {true, false},	//a2
+			  {false, false},	//b1
+			  {false, false},	//b2
+			  {false, false},	//c1
+			  {false, false},	//c2
+			  {false, false},	//c3
+			  {true, false},	//d
+			  {true, true},	//s
+			},
+		 	{	//Agent 2
+			  {false, false},	//a1
+			  {false, false},	//a2
+			  {true, false},	//b1
+			  {true, false},	//b2
+			  {false, false},	//c1
+			  {false, false},	//c2
+			  {false, false},	//c3
+			  {true, false},	//d
+			  {true, true},	//s
+			},
+		 	{	//Agent 3
+			  {false, false},	//a1
+			  {false, false},	//a2
+			  {false, false},	//b1
+			  {false, false},	//b2
+			  {true, false},	//c1
+			  {true, false},	//c2
+			  {true, false},	//c3
+			  {true, false},	//d
+			  {true, true},	//s
+			}
+		};
+		return generateAgentSet(agentInfo, EVENT_LIST_E);
+	}
+	
 	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentSet(boolean[][][] agentInfo, String[] eventList){
 		ArrayList<HashMap<String, ArrayList<Boolean>>> use = new ArrayList<HashMap<String, ArrayList<Boolean>>>();
 		
@@ -442,6 +533,11 @@ public class TestFunctionality {
 		p.setEventReceiver(iD.generateEventReceiver());
 		fram.addPanelToWindow("Main", "pan", p);
 		iD.refresh();
+	}
+	
+	private static void makeSVGImage(String in, String nom) {
+		String path = FormatConversion.createSVGFromFSM(model.generateFSMDot(in), nom);
+		System.out.println(path);
 	}
 	
 }

@@ -33,6 +33,38 @@ public class ProcessCoobservability {
 	public static boolean isCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
 		UStructure ustr = constructUStruct(plant, attr, agents);
 		
+		HashSet<IllegalConfig> typeOne = new HashSet<IllegalConfig>();
+		typeOne.addAll(ustr.getIllegalConfigOneStates());
+		HashSet<IllegalConfig> typeTwo = new HashSet<IllegalConfig>();
+		typeTwo.addAll(ustr.getIllegalConfigTwoStates());
+		CrushMap[] crushes = ustr.getCrushMappings();
+		
+		for(int i = 0; i < crushes.length; i++) {
+			HashSet<Integer> typeOneGroup = new HashSet<Integer>();
+			HashSet<Integer> typeTwoGroup = new HashSet<Integer>();
+			CrushMap crush = crushes[i];
+			for(IllegalConfig ic : typeOne) {
+				String st = ic.getStateSet().getCompositeName();
+				for(int j : crush.getStateMemberships(st)) {
+					typeOneGroup.add(j);
+				}
+			}
+			for(IllegalConfig ic : typeTwo) {
+				String st = ic.getStateSet().getCompositeName();
+				for(int j : crush.getStateMemberships(st)) {
+					typeTwoGroup.add(j);
+				}
+			}
+			
+			for(int j : typeOneGroup) {
+				if(typeTwoGroup.contains(j)) {
+					
+				}
+			}
+			
+		}
+		
+		
 		/*
 		 * 
 		 * It's not so simple.

@@ -119,7 +119,7 @@ public class GraphViz
 	 
 	 DOT = Config.getConfigFileEntry(configPath, "dotAddress");
 	 graph = new StringBuilder();
-	 currentDpiPos = 7;
+	 currentDpiPos = 0;
  }
 
  

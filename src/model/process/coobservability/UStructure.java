@@ -29,6 +29,8 @@ public class UStructure {
 	private HashSet<IllegalConfig> goodBadStates;
 	private HashSet<IllegalConfig> badGoodStates;
 	
+	private HashMap<String, AgentStates> objectMap;
+	
 	private CrushMap[] crushMap;
 	
 //---  Constructors   -------------------------------------------------------------------------
@@ -40,6 +42,7 @@ public class UStructure {
 
 		goodBadStates = new HashSet<IllegalConfig>();
 		badGoodStates = new HashSet<IllegalConfig>();
+		objectMap = new HashMap<String, AgentStates>();
 		createUStructure(thePlant, badTransitions, agents);
 	}
 	
@@ -103,6 +106,8 @@ public class UStructure {
 		return out;
 	}
 	
+	//TODO: Potential for cycles of parentage to not reflect in assigned crush-groups of states
+	
 	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) {
 		uStructure = initializeUStructure(plant);
 		
@@ -114,6 +119,7 @@ public class UStructure {
 			starting[i] = plant.getStatesWithAttribute(attributeInitialRef).get(0);
 		}
 		AgentStates bas = new AgentStates(starting, "");
+		objectMap.put(bas.getCompositeName(), bas);
 		uStructure.addState(bas.getCompositeName());									//create first state, start queue
 		uStructure.setStateAttribute(bas.getCompositeName(), attributeInitialRef, true);
 		uStructure.addAttributeToState(bas.getCompositeName(), "0", true);
@@ -126,14 +132,42 @@ public class UStructure {
 		while(!queue.isEmpty()) {
 			AgentStates stateSet = queue.poll();
 			String currState = stateSet.getCompositeName();
-			
-			if(visited.contains(currState))	//access next state from queue, ensure it hasn't been processed yet
+
+			if(visited.contains(currState)) {	//access next state from queue, ensure it hasn't been processed yet
+				//So all the rest of this is for getting the re-tread of examining group memberships of states for the crush (one pass through will miss cycles)
+				for(String e : uStructure.getStateTransitionEvents(currState)) {
+					String[] use = e.substring(1, e.length() - 1).split(",");
+					for(String out : uStructure.getStateEventTransitionStates(currState, e)) {
+						for(int i = 0; i < crushMap.length; i++) {
+							String loc = use[i+1].trim();
+							if(loc.equals("~") || !agents[i+1].getEventAttribute(loc, attributeObservableRef)) {	//re-doing the guess operation
+								for(int j : crushMap[i].getStateMemberships(currState)) {
+									if(!crushMap[i].hasStateMembership(out, j)) {
+										crushMap[i].assignStateGroup(out, i);
+										queue.add(objectMap.get(out));
+									}
+								}
+							}
+							else {												//re-doing the actual transitions but also checking for new groups
+								ArrayList<Integer> parentGroup = crushMap[i].getPotentialTargetGroups(currState, loc);
+								ArrayList<Integer> childGroup = crushMap[i].getStateMemberships(out);
+								for(int j : parentGroup) {
+									if(!childGroup.contains(j)) {
+										crushMap[i].assignStateGroup(out, j);
+										queue.add(objectMap.get(out));
+									}
+								}
+							}
+						}
+					}
+				}
+				
 				continue;
+			}
 			
 			String[] stateSetStates = stateSet.getStates();
 			int stateSetSize = stateSetStates.length;
 			visited.add(currState);
-			System.out.println(currState);
 			
 			
 			HashSet<String> viableEvents = new HashSet<String>();
@@ -250,6 +284,7 @@ public class UStructure {
 		uStructure.addEvent(eventName);
 		uStructure.addState(next.getCompositeName());
 		uStructure.addTransition(currState, eventName, next.getCompositeName());
+		objectMap.put(next.getCompositeName(), next);
 		return next;
 	}
 
