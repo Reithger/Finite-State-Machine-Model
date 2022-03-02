@@ -31,6 +31,10 @@ public class Agent {
 		}
 	}
 	
+	public Agent(EventMap in) {
+		events = in;
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
 	
 	/**

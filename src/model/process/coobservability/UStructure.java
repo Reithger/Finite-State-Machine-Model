@@ -30,6 +30,7 @@ public class UStructure {
 	private HashSet<IllegalConfig> badGoodStates;
 	
 	private HashMap<String, AgentStates> objectMap;
+	private HashMap<String, String[]> eventNameMap;
 	
 	private CrushMap[] crushMap;
 	
@@ -38,11 +39,12 @@ public class UStructure {
 	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
 		HashMap<String, HashSet<String>> badTransitions = initializeBadTransitions(thePlant);
 		Agent[] agents = initializeAgents(thePlant, attr, theAgents);
-		crushMap = new CrushMap[agents.length-1];
+		crushMap = new CrushMap[agents.length];
 
 		goodBadStates = new HashSet<IllegalConfig>();
 		badGoodStates = new HashSet<IllegalConfig>();
 		objectMap = new HashMap<String, AgentStates>();
+		eventNameMap = new HashMap<String, String[]>();
 		createUStructure(thePlant, badTransitions, agents);
 	}
 	
@@ -64,11 +66,7 @@ public class UStructure {
 	private Agent[] initializeAgents(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
 		Agent[] agents = new Agent[theAgents.size() + 1];
 		
-		agents[0] = new Agent(attr, thePlant.getEventNames());
-		
-		for(String s : attr) {
-			agents[0].setAttributeTrue(s, thePlant.getEventNames());
-		}
+		agents[0] = new Agent(thePlant.getEventMap());
 		
 		for(int i = 0; i < theAgents.size(); i++) {
 			agents[i+1] = theAgents.get(i);
@@ -106,8 +104,6 @@ public class UStructure {
 		return out;
 	}
 	
-	//TODO: Potential for cycles of parentage to not reflect in assigned crush-groups of states
-	
 	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) {
 		uStructure = initializeUStructure(plant);
 		
@@ -122,11 +118,10 @@ public class UStructure {
 		objectMap.put(bas.getCompositeName(), bas);
 		uStructure.addState(bas.getCompositeName());									//create first state, start queue
 		uStructure.setStateAttribute(bas.getCompositeName(), attributeInitialRef, true);
-		uStructure.addAttributeToState(bas.getCompositeName(), "0", true);
 		queue.add(bas);
 		
-		for(int i = 0; i < agents.length - 1; i++) {
-			crushMap[i] = new CrushMap(bas.getCompositeName());
+		for(int i = 0; i < agents.length; i++) {
+			crushMap[i] = new CrushMap();
 		}
 		
 		while(!queue.isEmpty()) {
@@ -134,34 +129,6 @@ public class UStructure {
 			String currState = stateSet.getCompositeName();
 
 			if(visited.contains(currState)) {	//access next state from queue, ensure it hasn't been processed yet
-				//So all the rest of this is for getting the re-tread of examining group memberships of states for the crush (one pass through will miss cycles)
-				for(String e : uStructure.getStateTransitionEvents(currState)) {
-					String[] use = e.substring(1, e.length() - 1).split(",");
-					for(String out : uStructure.getStateEventTransitionStates(currState, e)) {
-						for(int i = 0; i < crushMap.length; i++) {
-							String loc = use[i+1].trim();
-							if(loc.equals("~") || !agents[i+1].getEventAttribute(loc, attributeObservableRef)) {	//re-doing the guess operation
-								for(int j : crushMap[i].getStateMemberships(currState)) {
-									if(!crushMap[i].hasStateMembership(out, j)) {
-										crushMap[i].assignStateGroup(out, i);
-										queue.add(objectMap.get(out));
-									}
-								}
-							}
-							else {												//re-doing the actual transitions but also checking for new groups
-								ArrayList<Integer> parentGroup = crushMap[i].getPotentialTargetGroups(currState, loc);
-								ArrayList<Integer> childGroup = crushMap[i].getStateMemberships(out);
-								for(int j : parentGroup) {
-									if(!childGroup.contains(j)) {
-										crushMap[i].assignStateGroup(out, j);
-										queue.add(objectMap.get(out));
-									}
-								}
-							}
-						}
-					}
-				}
-				
 				continue;
 			}
 			
@@ -194,23 +161,21 @@ public class UStructure {
 					}
 					else if(getNextState(plant, stateSetStates[i], s) != null){		//if the agent cannot see the event, it guesses that it happened
 						String[] newSet = new String[stateSetSize];				//can do these individually because the next state could perform other guesses, captures all permutations
-						String eventName = "<";
+						String[] eventName = new String[stateSetSize];
 						for(int j = 0; j < stateSetSize; j++) {
 							if(i != j) {
 								newSet[j] = stateSetStates[j];
-								eventName += UNOBSERVED_EVENT + (j + 1 < stateSetSize ? ", " : ">");
+								eventName[j] = null;
 							}
 							else {
 								newSet[j] = getNextState(plant, stateSetStates[j], s);
-								eventName += s + (j + 1 < stateSetSize ? ", " : ">");
+								eventName[j] = s;
 							}
 						}
-
-						AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath());
-						queue.add(aS);	//adds the guess transition to our queue
 						
-						for(int j = 0; j < agents.length - 1; j++) {	//Any guess transition is a crush equivalency
-							crushMap[j].inheritStateGroups(currState, aS.getCompositeName());
+						if(!meaninglessTransition(eventName)) {
+							AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath());
+							queue.add(aS);	//adds the guess transition to our queue
 						}
 					}
 				}
@@ -220,30 +185,22 @@ public class UStructure {
 				}
 				
 				String[] newSet = new String[stateSetSize];				//Knowing visibility, we make the actual event occurrence
-				String eventName = "<";
+				String[] eventName = new String[stateSetSize];
 				for(int i = 0; i < stateSetSize; i++) {
 					if(canAct[i]) {
-						eventName += s + (i + 1 < canAct.length ? ", " : ">");
+						eventName[i] = s;
 						newSet[i] = getNextState(plant, stateSetStates[i], s);
 					}
 					else {
-						eventName += UNOBSERVED_EVENT + (i + 1 < canAct.length ? ", " : ">");
+						eventName[i] = null;
 						newSet[i] = stateSetStates[i];
 					}
 				}
 				
-				AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath() + s);
-				queue.add(aS);		//adds the real event occurring transition to our queue
-				
-				for(int i = 0; i < agents.length - 1; i++) {
-					if(!agents[i+1].getEventAttribute(s, attributeObservableRef)) {
-						crushMap[i].inheritStateGroups(currState, aS.getCompositeName());
-					}
-					else {
-						crushMap[i].stateGroupTransfer(currState, aS.getCompositeName(), s);
-					}
+				if(!meaninglessTransition(eventName)) {
+					AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath() + s);
+					queue.add(aS);		//adds the real event occurring transition to our queue
 				}
-				
 				
 				if(plant.getEventAttribute(s, attributeControllableRef)) {			//If the event is controllable, does it violate co-observabilty?
 					Boolean result = badTransitions.get(stateSetStates[0]).contains(s);
@@ -257,17 +214,131 @@ public class UStructure {
 					}
 					if(result != null) {
 					  uStructure.setStateAttribute(currState, !result ? attributeGoodRef : attributeBadRef, true);
+					  String[] observed = new String[stateSetStates.length-1];
+					  for(int i = 0; i < observed.length; i++) {
+						  observed[i] = filterEventPath(stateSet.getEventPath(), agents[i+1]);
+					  }
 					  if(result) {
-						  goodBadStates.add(new IllegalConfig(stateSet, s));
+						  goodBadStates.add(new IllegalConfig(stateSet, observed, s));	//result == true means it was a bad transition (don't enable)
 					  }
 					  else {
-						  badGoodStates.add(new IllegalConfig(stateSet, s));
+						  badGoodStates.add(new IllegalConfig(stateSet, observed, s));
 					  }
 					}
 				}
 			}
 		}
+		
+		calculateCrush(agents);
+		
 		uStructure.setEventAttributes(new ArrayList<String>());		//Not sure why, probably to avoid weird stuff on the output graph?
+	}
+	
+	private boolean meaninglessTransition(String[] events) {
+		for(String s : events) {
+			if(s != null) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private void calculateCrush(Agent[] agents) {
+		for(int i = 0; i < agents.length; i++) {
+			Agent age = agents[i];
+			HashSet<String> init = getReachableStates(uStructure.getStatesWithAttribute(attributeInitialRef).get(0), age, i);
+			
+			LinkedList<HashSet<String>> queue = new LinkedList<HashSet<String>>();
+			queue.add(init);
+			HashSet<HashSet<String>> visited = new HashSet<HashSet<String>>();
+			
+			while(!queue.isEmpty()) {
+				HashSet<String> curr = queue.poll();
+				
+				if(visited.contains(curr)) {
+					continue;
+				}
+				
+				visited.add(curr);
+				
+				for(String s : getPossibleVisibleEvents(curr, age, i)) {
+					HashSet<String> reachable = new HashSet<String>();
+					for(String t : getTargetStates(curr, s, age, i)) {
+						reachable.addAll(getReachableStates(t, age, i));
+					}
+					queue.add(reachable);
+				}
+			}
+
+			int count = 0;
+			for(HashSet<String> group : visited) {
+				for(String s : group) {
+					crushMap[i].assignStateGroup(s, count);
+				}
+				count++;
+			}
+		}
+		
+	}
+	
+	private String filterEventPath(String events, Agent age) {
+		String out = "";
+		for(String s : events.split("")) {
+			if(age.contains(s) && age.getEventAttribute(s, attributeObservableRef)) {
+				out += s;
+			}
+		}
+		return out;
+	}
+	
+	private HashSet<String> getTargetStates(HashSet<String> states, String event, Agent age, int index){
+		HashSet<String> out = new HashSet<String>();
+		
+		for(String s : states) {
+			for(String e : uStructure.getStateTransitionEvents(s)) {
+				String actual = eventNameMap.get(e)[index];
+				if(event.equals(actual)) {
+					out.add(uStructure.getStateEventTransitionStates(s, e).get(0));
+				}
+			}
+		}
+		return out;
+	}
+	
+	private HashSet<String> getPossibleVisibleEvents(HashSet<String> states, Agent age, int index){
+		HashSet<String> out = new HashSet<String>();
+		
+		for(String s : states) {
+			for(String e : uStructure.getStateTransitionEvents(s)) {
+				String actual = eventNameMap.get(e)[index];
+				if(actual != null && age.getEventAttribute(actual, attributeObservableRef)) {
+					out.add(actual);
+				}
+			}
+		}
+		return out;
+	}
+	
+	private HashSet<String> getReachableStates(String start, Agent age, int index){
+		LinkedList<String> queue = new LinkedList<String>();
+		HashSet<String> visited = new HashSet<String>();
+		queue.add(start);
+		
+		while(!queue.isEmpty()) {
+			String curr = queue.poll();
+			if(visited.contains(curr)) {
+				continue;
+			}
+			visited.add(curr);
+			
+			for(String s : uStructure.getStateTransitionEvents(curr)) {
+				String actualEvent = eventNameMap.get(s)[index];
+				if(actualEvent == null || !age.getEventAttribute(actualEvent, attributeObservableRef)) {
+					queue.add(uStructure.getStateEventTransitionStates(curr, s).get(0));
+				}
+			}
+		}
+		return visited;
 	}
 	
 	private String getNextState(TransitionSystem plant, String currState, String event) {
@@ -279,13 +350,23 @@ public class UStructure {
 		return null;
 	}
 	
-	private AgentStates handleNewTransition(String[] newSet, String eventName, String currState, String newPath) {
+	private AgentStates handleNewTransition(String[] newSet, String[] eventName, String currState, String newPath) {
 		AgentStates next = new AgentStates(newSet, newPath);
-		uStructure.addEvent(eventName);
+		String eventNom = constructEventName(eventName);
+		uStructure.addEvent(eventNom);
 		uStructure.addState(next.getCompositeName());
-		uStructure.addTransition(currState, eventName, next.getCompositeName());
+		uStructure.addTransition(currState, eventNom, next.getCompositeName());
 		objectMap.put(next.getCompositeName(), next);
+		eventNameMap.put(eventNom, eventName);
 		return next;
+	}
+	
+	private String constructEventName(String[] es) {
+		String out = "<";
+		for(int i = 0; i < es.length; i++) {
+			out += (es[i] == null ? UNOBSERVED_EVENT : es[i]) + (i + 1 < es.length ? ", " : ">");
+		}
+		return out;
 	}
 
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -299,7 +380,7 @@ public class UStructure {
 		
 		for(int i = 0; i < crushMap.length; i++) {
 			TransitionSystem local = uStructure.copy();
-			local.setId(uStructure.getId() + " - Observer " + i);
+			local.setId(uStructure.getId() + (i == 0 ? " - Plant Observer" : " - Observer " + i));
 			for(String s : local.getStateNames()) {
 				for(int j : crushMap[i].getStateMemberships(s)) {
 					local.addAttributeToState(s, j+"", true);
@@ -322,31 +403,6 @@ public class UStructure {
 	public CrushMap[] getCrushMappings() {
 		return crushMap;
 	}
-	
-//---  Support Methods   ----------------------------------------------------------------------
-	
-	/*
-	
-	private HashSet<String> generateObservablePermutation(HashSet<String> tags, int index,  String total, boolean[] sight){
-		if(index >= sight.length) {
-			tags.add(total);
-			return tags;
-		}
-		if(sight[index]) {
-			tags.addAll(generateObservablePermutation(tags, index + 1,  total + ", " + UNOBSERVED_EVENT, sight));
-			return tags;
-		}
-		else {
-			ArrayList<String> events = agents[index].getEventsAttributeSet(attributeObservableRef, true);
-			for(int i = 0; i < events.size(); i++) {
-				tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + events.get(i), sight));
-			}
-			tags.addAll(generateObservablePermutation(tags, index + 1, total + ", " + UNOBSERVED_EVENT, sight));
-			return tags;
-		}
-	}
-	
-	*/
 
 }
 

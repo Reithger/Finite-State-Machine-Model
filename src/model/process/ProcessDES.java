@@ -58,7 +58,7 @@ public class ProcessDES {
 	}
 	
 	public static Boolean isCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
-		return ProcessCoobservability.isCoobservableUStruct(plant, attr, agents, enableByDefault);
+		return ProcessCoobservability.isCoobservableUStruct(plant, attr, agents);
 	}
 	
 	public static Boolean isCoobservableUStruct(ArrayList<TransitionSystem> plant, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {

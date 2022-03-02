@@ -21,6 +21,11 @@ public class CrushMap {
 		assignStateGroup(firstState, newGroupID++);
 	}
 	
+	public CrushMap() {
+		crushMapping = new HashMap<String, HashSet<Integer>>();
+		groupEntryMapping = new HashMap<String, Integer>();
+	}
+	
 	public void assignStateGroup(String state, int group) {
 		if(crushMapping.get(state) == null) {
 			crushMapping.put(state, new HashSet<Integer>());

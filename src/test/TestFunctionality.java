@@ -46,7 +46,13 @@ public class TestFunctionality {
 		crushUStructCheck2();
 		//crushUStructCheck3();
 		//generateSystems();
-		/*System.out.println("System A Coobservability:");
+		//runAllTests();
+	}
+	
+//---  Automated Testing   --------------------------------------------------------------------
+	
+	private static void runAllTests() {
+		System.out.println("System A Coobservability:");
 		checkSystemACoobservable();
 		System.out.println("System A SB Coobservability:");
 		checkSystemASBCoobservable();
@@ -61,10 +67,8 @@ public class TestFunctionality {
 		System.out.println("System D Coobservability:");
 		checkSystemDCoobservable();
 		System.out.println("System D SB Coobservability:");
-		checkSystemDSBCoobservable();*/
+		checkSystemDSBCoobservable();
 	}
-	
-//---  Automated Testing   --------------------------------------------------------------------
 	
 	private static void generateSystems() {
 		String SystemA = "Example 1";
@@ -260,6 +264,8 @@ public class TestFunctionality {
 		model.setStateAttribute(name, "0", AttributeList.ATTRIBUTE_INITIAL, true);
 		
 		initiateEvents(name, EVENT_LIST_B, "s");
+		
+		model.setEventAttribute(name, "c", AttributeList.ATTRIBUTE_OBSERVABLE, false);
 		
 		model.addTransition(name, "0", "a", "1");
 		model.addTransition(name, "0", "b", "2");

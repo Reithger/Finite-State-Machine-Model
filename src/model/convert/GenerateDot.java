@@ -12,7 +12,7 @@ public class GenerateDot {
 	
 	private final static String INITIAL_STATE_MARKER = "ArbitraryUnusedNameNoWorriesJustGrooving";
 	//TODO: Make sure there are a lot of potential colors here, preferably prime, to avoid reuse
-	private final static String[] backgroundColorCycle = new String[] {"red", "orange", "yellow", "green", "white", "blue", "purple"};
+	private final static String[] backgroundColorCycle = new String[] {"tomato", "orange", "yellow", "green", "slategray1", "cyan", "darkorchid1", "bisque2", "darkolivegreen2"};
 
 //---  Operations   ---------------------------------------------------------------------------
 	
