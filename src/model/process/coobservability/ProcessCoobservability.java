@@ -100,9 +100,6 @@ public class ProcessCoobservability {
 			agents.add(new Agent(s.getEventMap()));
 		}
 		
-		//TODO: Confirm this is the right approach, can we really ignore the specs once they've denoted bad controllable transitions?
-		//TODO: Currently uses specs to identify bad transitions, but then only uses plants for the final UStruct. Is that fine?
-		
 		LinkedList<StateSet> queue = new LinkedList<StateSet>();
 		HashSet<StateSet> visited = new HashSet<StateSet>();
 		ArrayList<String> stAttr = ultPlant.getStateAttributes();
@@ -260,13 +257,7 @@ public class ProcessCoobservability {
 		
 		return false;
 	}
-	
-	public static boolean isSBCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 
-		
-		return false;
-	}
-	
 	//-- Incremental  -----------------------------------------
 
 	public static boolean isCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr) {
@@ -310,6 +301,12 @@ public class ProcessCoobservability {
 			copyPlants.addAll(hold);
 		}
 		return true;
+	}
+	
+	public static boolean isSBCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+
+		
+		return false;
 	}
 	
 	private static TransitionSystem generateSigmaStarion(ArrayList<TransitionSystem> plants) {
@@ -471,7 +468,9 @@ public class ProcessCoobservability {
 			case INCREMENTAL_B_LOW_TRANS:
 				for(TransitionSystem ts : selectionPool) {
 					if(canReject(ts, specs.contains(ts), counterexample)) {
-						//TODO:
+						if(out == null || countTransitions(ts) < countTransitions(out)){
+							out = ts;
+						}
 					}
 				}
 				break;
@@ -487,7 +486,9 @@ public class ProcessCoobservability {
 			case INCREMENTAL_B_SHARE_EVENTS:
 				for(TransitionSystem ts : selectionPool) {
 					if(canReject(ts, specs.contains(ts), counterexample)) {
-						//TODO
+						if(out == null || sharedEvents(ts, counterexample.getEventPath()) < sharedEvents(out, counterexample.getEventPath())){
+							out = ts;
+						}
 					}
 				}
 				break;
@@ -503,13 +504,30 @@ public class ProcessCoobservability {
 				break;
 		}
 		
-		//TODO: Run eventPath through a plant or spec and see if it can make the right control decision for the controlEvent
-		//This should represent 'rejecting' the counterexample
-		
-		//Although this doesn't account for when components guessed along the way of the event path?
-		//Who are our agents in this case? Specs are autonomous FSMs just like plants, not observers with an event map
-		//Our agents are the event maps of each plant and/or spec observing the conglomerate structure
-		
+		return out;
+	}
+	
+	private static int countTransitions(TransitionSystem plant) {
+		int out = 0;
+		for(String s : plant.getStateNames()) {
+			for(String e : plant.getStateTransitionEvents(s)) {
+				out += plant.getStateEventTransitionStates(s, e).size();
+			}
+		}
+		return out;
+	}
+	
+	private static int sharedEvents(TransitionSystem plant, String eventPath) {
+		HashSet<String> events = new HashSet<String>();
+		for(String s : eventPath.split("")) {
+			events.add(s);
+		}
+		int out = 0;
+		for(String s : events) {
+			if(plant.getEventNames().contains(s)) {
+				out++;
+			}
+		}
 		return out;
 	}
 	
