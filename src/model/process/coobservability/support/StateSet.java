@@ -1,4 +1,6 @@
-package model.process.coobservability;
+package model.process.coobservability.support;
+
+import java.util.Arrays;
 
 public class StateSet{
 	
@@ -106,6 +108,11 @@ public class StateSet{
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return Arrays.toString(plant) + " " + Arrays.toString(spec);
 	}
 	
 }

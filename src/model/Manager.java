@@ -242,14 +242,14 @@ public class Manager {
 		return out;
 	}
 	
-	public Boolean isCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+	public Boolean isCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		if(bail(ref)) {
 			return null;
 		}
-		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents, enableByDefault);
+		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents);
 	}
 	
-	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean enableByDefault) {
+	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		if(bail(plants) || bail(specs)) {
 			return null;
 		}
@@ -261,7 +261,7 @@ public class Manager {
 		for(String s : specs) {
 			useSp.add(fsms.get(s));
 		}
-		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr, agents, enableByDefault);
+		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr, agents);
 	}
 
 	public Boolean isSBCoobservableUrvashi(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {

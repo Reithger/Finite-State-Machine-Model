@@ -1,4 +1,4 @@
-package model.process.coobservability;
+package model.process.coobservability.support;
 
 import java.util.HashSet;
 
@@ -42,6 +42,11 @@ public class IllegalConfig {
 	
 	public String getEvent() {
 		return event;
+	}
+	
+	@Override
+	public String toString() {
+		return stateSet.toString();
 	}
 	
 }

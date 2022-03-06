@@ -2,28 +2,19 @@ package test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import controller.FiniteStateMachine;
 import controller.convert.FormatConversion;
-import model.AttributeList;
 import model.Manager;
+import test.help.AgentChicanery;
+import test.help.EventSets;
+import test.help.SystemGeneration;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
 
 public class TestFunctionality {
 
-//---  Constants   ----------------------------------------------------------------------------
-	
-	private final static String[] EVENT_LIST_A = new String[] {"a1", "a2", "b1", "b2", "c"};
-	private final static String[] EVENT_LIST_B = new String[] {"a", "b", "c", "d", "s"};
-	private final static String[] EVENT_LIST_C = new String[] {"a1", "a2", "b1", "b2", "c", "d"};
-	private final static String[] EVENT_LIST_D = new String[] {"a", "b", "c"};
-	private final static String[] EVENT_LIST_E = new String[] {"a1", "a2", "b1", "b2", "c1", "c2", "c3", "d", "s"};
-	
-	private final static String[] EVENT_ATTR_LIST = new String[] {AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE};
-	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private static Manager model;
@@ -37,83 +28,89 @@ public class TestFunctionality {
 		FiniteStateMachine.fileConfiguration();
 		model = new Manager();
 		
+		SystemGeneration.assignManager(model);
+		
 		eventAtt = new ArrayList<String>();
-		for(String s : EVENT_ATTR_LIST) {
+		for(String s : EventSets.EVENT_ATTR_LIST) {
 			eventAtt.add(s);
 		}
 		//basicUStructCheck();
 		//crushUStructCheck();
-		crushUStructCheck2();
+		//crushUStructCheck2();
 		//crushUStructCheck3();
 		//generateSystems();
-		//runAllTests();
+		runAllTests();
 	}
 	
 //---  Automated Testing   --------------------------------------------------------------------
 	
 	private static void runAllTests() {
-		System.out.println("System A Coobservability:");
+		System.out.print("System A Coobservability: \t");
 		checkSystemACoobservable();
-		System.out.println("System A SB Coobservability:");
+		System.out.print("System A SB Coobservability: \t");
 		checkSystemASBCoobservable();
-		System.out.println("System B Coobservability:");
+		System.out.print("System B Coobservability: \t");
 		checkSystemBCoobservable();
-		System.out.println("System B SB Coobservability:");
+		System.out.print("System B SB Coobservability: \t");
 		checkSystemBSBCoobservable();
-		System.out.println("System C Coobservability:");
+		System.out.print("System C Coobservability: \t");
 		checkSystemCCoobservable();
-		System.out.println("System C SB Coobservability:");
+		System.out.print("System C SB Coobservability: \t");
 		checkSystemCSBCoobservable();
-		System.out.println("System D Coobservability:");
+		System.out.print("System D Coobservability: \t");
 		checkSystemDCoobservable();
-		System.out.println("System D SB Coobservability:");
+		System.out.print("System D SB Coobservability: \t");
 		checkSystemDSBCoobservable();
+		System.out.print("System E Coobservability: \t");
+		checkSystemECoobservable();
+		System.out.print("System E SB Coobservability: \t");
+		checkSystemESBCoobservable();
 	}
 	
 	private static void generateSystems() {
 		String SystemA = "Example 1";
-		generateSystemA(SystemA);
+		SystemGeneration.generateSystemA(SystemA);
 		makeImageDisplay(SystemA, "Example 1");
 		
 		String SystemB = "Example 2";
-		generateSystemB(SystemB);
+		SystemGeneration.generateSystemB(SystemB);
 		makeImageDisplay(SystemB, "Example 2");
 		
 		String SystemC = "Example 3";
-		generateSystemC(SystemC);
+		SystemGeneration.generateSystemC(SystemC);
 		makeImageDisplay(SystemC, "Example 3");
 		
 		String SystemD = "Example 4";
-		generateSystemD(SystemD);
+		SystemGeneration.generateSystemD(SystemD);
 		makeImageDisplay(SystemD, "Example 4");
 	}
 	
 	private static void basicUStructCheck() {
 		String SystemA = "Example 1";
-		generateSystemA(SystemA);
+		SystemGeneration.generateSystemA(SystemA);
 		makeImageDisplay(SystemA, "Example 1");
 
-		String ustruct = model.buildUStructure(SystemA, eventAtt, generateAgentsA());
+		String ustruct = model.buildUStructure(SystemA, eventAtt, AgentChicanery.generateAgentsA());
 		
 		makeImageDisplay(ustruct, "Example 1 UStruct");
 	}
 	
 	private static void crushUStructCheck() {
 		String SystemA = "Example 1";
-		generateSystemA(SystemA);
+		SystemGeneration.generateSystemA(SystemA);
 		makeImageDisplay(SystemA, "Example 1");
 
-		ArrayList<String> ustruct = model.buildUStructureCrush(SystemA, eventAtt, generateAgentsA());
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemA, eventAtt, AgentChicanery.generateAgentsA());
 		for(String s : ustruct)
 			makeImageDisplay(s, s);
 	}
 	
 	private static void crushUStructCheck2() {
 		String SystemB = "Example 2";
-		generateSystemB(SystemB);
+		SystemGeneration.generateSystemB(SystemB);
 		makeImageDisplay(SystemB, "Example 2");
 
-		ArrayList<String> ustruct = model.buildUStructureCrush(SystemB, eventAtt, generateAgentsB2());
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemB, eventAtt, AgentChicanery.generateAgentsB2());
 		for(String s : ustruct) {
 			makeImageDisplay(s, s);
 			model.exportFSM(s);
@@ -122,19 +119,55 @@ public class TestFunctionality {
 	
 	private static void crushUStructCheck3() {
 		String SystemE = "Example 5";
-		generateSystemE(SystemE);
+		SystemGeneration.generateSystemE(SystemE);
 		makeImageDisplay(SystemE, "Example 5");
 
-		ArrayList<String> ustruct = model.buildUStructureCrush(SystemE, eventAtt, generateAgentsE());
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemE, eventAtt, AgentChicanery.generateAgentsE());
 		for(String s : ustruct) {
 			makeSVGImage(s, s);
 			model.exportFSM(s);
 		}
 	}
 	
+	//-- Coobservable  ------------------------------------------------------------------------
+	
 	private static void checkCoobservable(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		System.out.println(model.isCoobservableUStruct(name, eventAtt, agents, false));
+		long t = System.currentTimeMillis();
+		System.out.println(model.isCoobservableUStruct(name, eventAtt, agents));
+		System.out.println("\t\t\t\tTook " + (System.currentTimeMillis() - t) + " ms\n");
 	}
+	
+	private static void checkSystemACoobservable() {
+		String SystemA = "Example 1";
+		SystemGeneration.generateSystemA(SystemA);
+		checkCoobservable(SystemA, AgentChicanery.generateAgentsA());
+	}
+	
+	private static void checkSystemBCoobservable() {
+		String SystemB = "Example B 1";
+		SystemGeneration.generateSystemB(SystemB);
+		checkCoobservable(SystemB, AgentChicanery.generateAgentsB());
+	}
+	
+	private static void checkSystemCCoobservable() {
+		String SystemC = "Example C 1";
+		SystemGeneration.generateSystemC(SystemC);
+		checkCoobservable(SystemC, AgentChicanery.generateAgentsC());
+	}
+	
+	private static void checkSystemDCoobservable() {
+		String SystemD = "Example D 1";
+		SystemGeneration.generateSystemD(SystemD);
+		checkCoobservable(SystemD, AgentChicanery.generateAgentsD());
+	}	
+	
+	private static void checkSystemECoobservable() {
+		String SystemE = "Example E 1";
+		SystemGeneration.generateSystemE(SystemE);
+		checkCoobservable(SystemE, AgentChicanery.generateAgentsE());
+	}
+	
+	//-- SBCoobservable  ----------------------------------------------------------------------
 	
 	private static void checkSBCoobservable(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		String b = name + "_spec";
@@ -143,378 +176,39 @@ public class TestFunctionality {
 		ArrayList<String> specs = new ArrayList<String>();
 		plants.add(name);
 		specs.add(b);
+		long t = System.currentTimeMillis();
 		System.out.println(model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents));
+		System.out.println("\t\t\t\tTook " + (System.currentTimeMillis() - t) + " ms\n");
 	}
-	
-	private static void checkSystemACoobservable() {
-		String SystemA = "Example 1";
-		generateSystemA(SystemA);
-		System.out.println(model.isCoobservableUStruct(SystemA, eventAtt, generateAgentsA(), false));
-	}
-	
+
 	private static void checkSystemASBCoobservable() {
 		String a = "Ex1";
-		generateSystemA(a);
-		checkSBCoobservable(a, generateAgentsA());
+		SystemGeneration.generateSystemA(a);
+		checkSBCoobservable(a, AgentChicanery.generateAgentsA());
 	}
-	
-	private static void checkSystemBCoobservable() {
-		String SystemB = "Example B 1";
-		generateSystemB(SystemB);
-		System.out.println(model.isCoobservableUStruct(SystemB, eventAtt, generateAgentsB(), false));
-	}
-	
+
 	private static void checkSystemBSBCoobservable() {
 		String ex1 = "Ex B 1";
-		generateSystemB(ex1);
-		checkSBCoobservable(ex1, generateAgentsB());
+		SystemGeneration.generateSystemB(ex1);
+		checkSBCoobservable(ex1, AgentChicanery.generateAgentsB());
 	}
-	
-	private static void checkSystemCCoobservable() {
-		String SystemC = "Example C 1";
-		generateSystemC(SystemC);
-		System.out.println(model.isCoobservableUStruct(SystemC, eventAtt, generateAgentsC(), false));
-	}
-	
+
 	private static void checkSystemCSBCoobservable() {
 		String ex1 = "Ex C 1";
-		generateSystemC(ex1);
-		checkSBCoobservable(ex1, generateAgentsC());
+		SystemGeneration.generateSystemC(ex1);
+		checkSBCoobservable(ex1, AgentChicanery.generateAgentsC());
 	}
-	
-	private static void checkSystemDCoobservable() {
-		String SystemD = "Example D 1";
-		generateSystemD(SystemD);
-		System.out.println(model.isCoobservableUStruct(SystemD, eventAtt, generateAgentsD(), false));
-	}
-	
+
 	private static void checkSystemDSBCoobservable() {
 		String ex1 = "Ex D 1";
-		generateSystemD(ex1);
-		checkSBCoobservable(ex1, generateAgentsD());
+		SystemGeneration.generateSystemD(ex1);
+		checkSBCoobservable(ex1, AgentChicanery.generateAgentsD());
 	}
 	
-//---  Prefabs   ------------------------------------------------------------------------------
-	
-	private static void generateSystemDefault(String name) {
-		model.generateEmptyFSM(name);
-		
-		ArrayList<String> stateAtt = new ArrayList<String>();
-		ArrayList<String> eventAtt = new ArrayList<String>();
-		ArrayList<String> transAtt = new ArrayList<String>();
-		
-		stateAtt.add(AttributeList.ATTRIBUTE_INITIAL);
-		for(String s : EVENT_ATTR_LIST) {
-			eventAtt.add(s);
-		}
-		transAtt.add(AttributeList.ATTRIBUTE_BAD);
-		
-		model.assignStateAttributes(name, stateAtt);
-		model.assignEventAttributes(name, eventAtt);
-		model.assignTransitionAttributes(name, transAtt);
-		
-	}
-	
-	private static void initiateEvents(String name, String[] eventList, String ... controllables) {
-		for(String s : eventList) {
-			model.addEvent(name, s);
-			model.setEventAttribute(name, s, AttributeList.ATTRIBUTE_OBSERVABLE, true);
-		}
-		for(String s : controllables) {
-			model.setEventAttribute(name, s, AttributeList.ATTRIBUTE_CONTROLLABLE, true);
-		}
-	}
-	
-	private static void setBadTransitions(String name, String ... pairTrans) {
-		for(int i = 0; i < pairTrans.length; i += 2) {
-			model.setTransitionAttribute(name, pairTrans[i], pairTrans[i+1], AttributeList.ATTRIBUTE_BAD, true);
-		}
-	}
-	
-	private static void generateSystemA(String name) {
-		generateSystemDefault(name);
-		
-		model.addStates(name, 8);
-		model.removeState(name, "0");
-		
-		model.setStateAttribute(name, "1", AttributeList.ATTRIBUTE_INITIAL, true);
-		
-		initiateEvents(name, EVENT_LIST_A, "c");
-		
-		model.addTransition(name, "1", "a1", "2");
-		model.addTransition(name, "1", "a2", "3");
-		model.addTransition(name, "2", "b1", "4");
-		model.addTransition(name, "2", "b2", "5");
-		model.addTransition(name, "3", "b1", "6");
-		model.addTransition(name, "3", "b2", "7");
-		
-		model.addTransition(name, "4", "c", "4");
-		model.addTransition(name, "5", "c", "5");
-		model.addTransition(name, "6", "c", "6");
-		model.addTransition(name, "7", "c", "7");
-		
-		setBadTransitions(name, "5", "c", "6", "c");
-	}
-
-	private static void generateSystemB(String name) {
-		generateSystemDefault(name);
-		
-		model.addStates(name, 6);
-		
-		model.setStateAttribute(name, "0", AttributeList.ATTRIBUTE_INITIAL, true);
-		
-		initiateEvents(name, EVENT_LIST_B, "s");
-		
-		model.setEventAttribute(name, "c", AttributeList.ATTRIBUTE_OBSERVABLE, false);
-		
-		model.addTransition(name, "0", "a", "1");
-		model.addTransition(name, "0", "b", "2");
-		model.addTransition(name, "1", "b", "3");
-		model.addTransition(name, "1", "c", "2");
-		model.addTransition(name, "2", "b", "3");
-		model.addTransition(name, "2", "d", "5");
-		model.addTransition(name, "3", "d", "4");
-		model.addTransition(name, "4", "s", "4");
-		model.addTransition(name, "5", "s", "5");
-		
-		setBadTransitions(name, "5", "s");
-	}
-	
-	private static void generateSystemC(String name) {
-		generateSystemDefault(name);
-		
-		model.addStates(name, 5);
-		
-		model.setStateAttribute(name, "0", AttributeList.ATTRIBUTE_INITIAL, true);
-		
-		initiateEvents(name, EVENT_LIST_C, "c");
-		
-		model.addTransition(name, "0", "a1", "1");
-		model.addTransition(name, "0", "b1", "1");
-		model.addTransition(name, "0", "a2", "2");
-		model.addTransition(name, "0", "b2", "2");
-		model.addTransition(name, "1", "c", "3");
-		model.addTransition(name, "2", "d", "3");
-		model.addTransition(name, "2", "c", "4");
-		
-		setBadTransitions(name, "2", "c");
-	}
-
-	private static void generateSystemD(String name) {
-		generateSystemDefault(name);
-		
-		model.addStates(name, 7);
-		model.removeState(name, "0");
-		
-		model.setStateAttribute(name, "1", AttributeList.ATTRIBUTE_INITIAL, true);
-
-		initiateEvents(name, EVENT_LIST_D, "b", "c");
-		
-		model.addTransition(name, "1", "a", "3");
-		model.addTransition(name, "1", "b", "2");
-		model.addTransition(name, "2", "c", "4");
-		model.addTransition(name, "2", "b", "5");
-		model.addTransition(name, "3", "b", "5");
-		model.addTransition(name, "5", "c", "6");
-		
-		setBadTransitions(name, "2", "b", "5", "c");
-	}
-
-	private static void generateSystemE(String name) {
-		generateSystemDefault(name);
-		
-		model.addStates(name, 12);
-		model.setStateAttribute(name, "0", AttributeList.ATTRIBUTE_INITIAL, true);
-		
-		initiateEvents(name, EVENT_LIST_E, "s");
-		
-		model.addTransition(name, "0", "c1", "1");
-		model.addTransition(name, "0", "a1", "2");
-		model.addTransition(name, "0", "c2", "3");
-		model.addTransition(name, "0", "a2", "4");
-		model.addTransition(name, "0", "c3", "5");
-
-		model.addTransition(name, "1", "a2", "6");
-		model.addTransition(name, "1", "b2", "6");
-
-		model.addTransition(name, "2", "b1", "6");
-		model.addTransition(name, "2", "b2", "7");
-
-		model.addTransition(name, "3", "a2", "7");
-		model.addTransition(name, "3", "b1", "7");
-
-		model.addTransition(name, "4", "b1", "8");
-		
-		model.addTransition(name, "5", "a1", "8");
-		model.addTransition(name, "5", "b2", "8");
-
-		model.addTransition(name, "6", "d", "9");
-		model.addTransition(name, "7", "d", "10");
-		model.addTransition(name, "8", "d", "11");
-
-		model.addTransition(name, "9", "s", "9");
-		model.addTransition(name, "10", "s", "10");
-		model.addTransition(name, "11", "s", "11");
-		
-		setBadTransitions(name, "10", "s", "11", "s");
-	}
-	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsA() {
-		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
-			  {true, false},	//a1
-			  {true, false},	//a2
-			  {false, false},	//b1
-			  {false, false},	//b2
-			  {true, true}		//c
-			},
-		 	{	//Agent 2
-			  {false, false},
-			  {false, false},
-			  {true, false},
-			  {true, false},
-			  {true, true}
-			}
-		};
-		return generateAgentSet(agentInfo, EVENT_LIST_A);
-	}
-	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsB(){
-		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
-			  {true, false},	//a
-			  {false, false},	//b
-			  {false, false},	//c
-			  {true, false},	//d
-			  {false, true}		//s
-			},
-		 	{	//Agent 2
-			  {false, false},
-			  {true, false},
-			  {false, false},
-			  {true, false},
-			  {false, true}
-			},
-		 	{	//Agent 3
-			  {false, false},
-			  {false, false},
-			  {true, false},
-			  {true, false},
-			  {false, true}
-			},
-		};
-
-		return generateAgentSet(agentInfo, EVENT_LIST_B);
-	}
-	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsB2(){
-		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
-			  {true, false},	//a
-			  {false, false},	//b
-			  {false, false},	//c
-			  {true, false},	//d
-			  {false, true}		//s
-			},
-		 	{	//Agent 2
-			  {false, false},
-			  {true, false},
-			  {false, false},
-			  {true, false},
-			  {false, true}
-			},
-		};
-
-		return generateAgentSet(agentInfo, EVENT_LIST_B);
-	}
-	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsC() {
-		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
-			  {true, false},	//a1
-			  {true, false},	//a2
-			  {false, false},	//b1
-			  {false, false},	//b2
-			  {false, true},		//c
-			  {false, false}		//d
-			},
-		 	{	//Agent 2
-			  {false, false},
-			  {false, false},
-			  {true, false},
-			  {true, false},
-			  {false, true},
-			  {false, false}
-			}
-		};
-		return generateAgentSet(agentInfo, EVENT_LIST_C);
-	}
-	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsD() {
-		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
-			  {true, false},	//a
-			  {false, false},	//b
-			  {false, true},	//c
-			},
-		 	{	//Agent 2
-			  {false, false},
-			  {true, true},
-			  {false, true},
-			}
-		};
-		return generateAgentSet(agentInfo, EVENT_LIST_D);
-	}
-	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsE(){
-		boolean[][][] agentInfo = new boolean[][][] {	{	//Agent 1
-			  {true, false},	//a1
-			  {true, false},	//a2
-			  {false, false},	//b1
-			  {false, false},	//b2
-			  {false, false},	//c1
-			  {false, false},	//c2
-			  {false, false},	//c3
-			  {true, false},	//d
-			  {true, true},	//s
-			},
-		 	{	//Agent 2
-			  {false, false},	//a1
-			  {false, false},	//a2
-			  {true, false},	//b1
-			  {true, false},	//b2
-			  {false, false},	//c1
-			  {false, false},	//c2
-			  {false, false},	//c3
-			  {true, false},	//d
-			  {true, true},	//s
-			},
-		 	{	//Agent 3
-			  {false, false},	//a1
-			  {false, false},	//a2
-			  {false, false},	//b1
-			  {false, false},	//b2
-			  {true, false},	//c1
-			  {true, false},	//c2
-			  {true, false},	//c3
-			  {true, false},	//d
-			  {true, true},	//s
-			}
-		};
-		return generateAgentSet(agentInfo, EVENT_LIST_E);
-	}
-	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentSet(boolean[][][] agentInfo, String[] eventList){
-		ArrayList<HashMap<String, ArrayList<Boolean>>> use = new ArrayList<HashMap<String, ArrayList<Boolean>>>();
-		
-		for(int i = 0; i < agentInfo.length; i++) {
-			HashMap<String, ArrayList<Boolean>> agen = new HashMap<String, ArrayList<Boolean>>();
-			for(int j = 0; j < eventList.length; j++) {
-				String e = eventList[j];
-				ArrayList<Boolean> att = new ArrayList<Boolean>();
-				for(int k = 0; k < eventAtt.size(); k++) {
-					att.add(agentInfo[i][j][k]);
-				}
-				agen.put(e, att);
-			}
-			use.add(agen);
-		}
-		return use;
+	private static void checkSystemESBCoobservable() {
+		String SystemE = "Example E 1";
+		SystemGeneration.generateSystemE(SystemE);
+		checkSBCoobservable(SystemE, AgentChicanery.generateAgentsE());
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------

@@ -4,14 +4,15 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import model.fsm.TransitionSystem;
+import model.process.coobservability.support.Agent;
+import model.process.coobservability.support.AgentStates;
+import model.process.coobservability.support.CrushMap;
+import model.process.coobservability.support.IllegalConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class UStructure {
-	
-	//TODO: Get subautomota representing the paths that can reach goodBad/badGood states (flip transition direction, set initial as marked, etc.)
-	//TODO: Integrate bad state analysis into the construction of the U-structure to save time
 	
 //---  Constants   ----------------------------------------------------------------------------
 	
@@ -84,9 +85,9 @@ public class UStructure {
 		}
 		return agents;
 	}
-	
-//---  Operations   ---------------------------------------------------------------------------
-	
+
+//---  Static Assignments   -------------------------------------------------------------------
+
 	public static void assignAttributeReferences(String init, String obs, String cont, String bad, String good) {
 		attributeInitialRef = init;
 		attributeObservableRef = obs;
@@ -95,15 +96,8 @@ public class UStructure {
 		attributeGoodRef = good;
 	}
 	
-	private TransitionSystem initializeUStructure(TransitionSystem plant) {
-		TransitionSystem out = new TransitionSystem("U-struc", plant.getStateAttributes(), plant.getEventAttributes(), plant.getTransitionAttributes());
-		ArrayList<String> attr = out.getStateAttributes();
-		attr.add(attributeBadRef);
-		attr.add(attributeGoodRef);
-		out.setStateAttributes(attr);
-		return out;
-	}
-	
+//---  Operations   ---------------------------------------------------------------------------
+
 	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) {
 		uStructure = initializeUStructure(plant);
 		
@@ -173,7 +167,7 @@ public class UStructure {
 							}
 						}
 						
-						if(!meaninglessTransition(eventName)) {
+						if(!isMeaninglessTransition(eventName)) {
 							AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath());
 							queue.add(aS);	//adds the guess transition to our queue
 						}
@@ -197,7 +191,7 @@ public class UStructure {
 					}
 				}
 				
-				if(!meaninglessTransition(eventName)) {
+				if(!isMeaninglessTransition(eventName)) {
 					AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath() + s);
 					queue.add(aS);		//adds the real event occurring transition to our queue
 				}
@@ -234,15 +228,15 @@ public class UStructure {
 		uStructure.setEventAttributes(new ArrayList<String>());		//Not sure why, probably to avoid weird stuff on the output graph?
 	}
 	
-	private boolean meaninglessTransition(String[] events) {
-		for(String s : events) {
-			if(s != null) {
-				return false;
-			}
-		}
-		return true;
+	private TransitionSystem initializeUStructure(TransitionSystem plant) {
+		TransitionSystem out = new TransitionSystem("U-struc", plant.getStateAttributes(), plant.getEventAttributes(), plant.getTransitionAttributes());
+		ArrayList<String> attr = out.getStateAttributes();
+		attr.add(attributeBadRef);
+		attr.add(attributeGoodRef);
+		out.setStateAttributes(attr);
+		return out;
 	}
-	
+
 	private void calculateCrush(Agent[] agents) {
 		for(int i = 0; i < agents.length; i++) {
 			Agent age = agents[i];
@@ -280,15 +274,66 @@ public class UStructure {
 		}
 		
 	}
+
+//---  Getter Methods   -----------------------------------------------------------------------
+
+	public HashSet<IllegalConfig> getFilteredIllegalConfigStates(){
+		HashSet<IllegalConfig> typeOne = new HashSet<IllegalConfig>();
+		typeOne.addAll(getIllegalConfigOneStates());
+		HashSet<IllegalConfig> typeTwo = new HashSet<IllegalConfig>();
+		typeTwo.addAll(getIllegalConfigTwoStates());
+		
+		filterGroups(typeOne, typeTwo);
+		
+		if(typeTwo.isEmpty())
+			return typeTwo;
+		
+		filterGroups(typeTwo, typeOne);
+		typeOne.addAll(typeTwo);
+		return typeOne;
+		
+	}
+
+	public TransitionSystem getUStructure() {
+		return uStructure;
+	}
 	
-	private String filterEventPath(String events, Agent age) {
-		String out = "";
-		for(String s : events.split("")) {
-			if(age.contains(s) && age.getEventAttribute(s, attributeObservableRef)) {
-				out += s;
+	public ArrayList<TransitionSystem> getCrushUStructures(){
+		ArrayList<TransitionSystem> out = new ArrayList<TransitionSystem>();
+		
+		for(int i = 0; i < crushMap.length; i++) {
+			TransitionSystem local = uStructure.copy();
+			local.setId(uStructure.getId() + (i == 0 ? " - Plant Observer" : " - Observer " + i));
+			for(String s : local.getStateNames()) {
+				for(int j : crushMap[i].getStateMemberships(s)) {
+					local.addAttributeToState(s, j+"", true);
+				}
+			}
+			out.add(local);
+		}
+		
+		return out;
+	}
+		
+	public HashSet<IllegalConfig> getIllegalConfigOneStates(){
+		return badGoodStates;
+	}
+	
+	public HashSet<IllegalConfig> getIllegalConfigTwoStates(){
+		return goodBadStates;
+	}
+	
+	public CrushMap[] getCrushMappings() {
+		return crushMap;
+	}
+
+	private String getNextState(TransitionSystem plant, String currState, String event) {
+		for(String t : plant.getStateTransitionEvents(currState)) {
+			if(t.equals(event)){
+				return plant.getStateEventTransitionStates(currState, t).get(0);
 			}
 		}
-		return out;
+		return null;
 	}
 	
 	private HashSet<String> getTargetStates(HashSet<String> states, String event, Agent age, int index){
@@ -341,15 +386,27 @@ public class UStructure {
 		return visited;
 	}
 	
-	private String getNextState(TransitionSystem plant, String currState, String event) {
-		for(String t : plant.getStateTransitionEvents(currState)) {
-			if(t.equals(event)){
-				return plant.getStateEventTransitionStates(currState, t).get(0);
+//---  Support Methods   ----------------------------------------------------------------------
+	
+	private boolean isMeaninglessTransition(String[] events) {
+		for(String s : events) {
+			if(s != null) {
+				return false;
 			}
 		}
-		return null;
+		return true;
 	}
 	
+	private String filterEventPath(String events, Agent age) {
+		String out = "";
+		for(String s : events.split("")) {
+			if(age.contains(s) && age.getEventAttribute(s, attributeObservableRef)) {
+				out += s;
+			}
+		}
+		return out;
+	}
+
 	private AgentStates handleNewTransition(String[] newSet, String[] eventName, String currState, String newPath) {
 		AgentStates next = new AgentStates(newSet, newPath);
 		String eventNom = constructEventName(eventName);
@@ -368,41 +425,33 @@ public class UStructure {
 		}
 		return out;
 	}
-
-//---  Getter Methods   -----------------------------------------------------------------------
 	
-	public TransitionSystem getUStructure() {
-		return uStructure;
-	}
-	
-	public ArrayList<TransitionSystem> getCrushUStructures(){
-		ArrayList<TransitionSystem> out = new ArrayList<TransitionSystem>();
-		
-		for(int i = 0; i < crushMap.length; i++) {
-			TransitionSystem local = uStructure.copy();
-			local.setId(uStructure.getId() + (i == 0 ? " - Plant Observer" : " - Observer " + i));
-			for(String s : local.getStateNames()) {
-				for(int j : crushMap[i].getStateMemberships(s)) {
-					local.addAttributeToState(s, j+"", true);
+	private void filterGroups(HashSet<IllegalConfig> typeOne, HashSet<IllegalConfig> typeTwo){
+		for(int i = 1; i < crushMap.length; i++) {
+			HashSet<Integer> typeOneGroup = new HashSet<Integer>();
+			CrushMap crush = crushMap[i];
+			for(IllegalConfig ic : typeOne) {
+				String st = ic.getStateSet().getCompositeName();
+				for(int j : crush.getStateMemberships(st)) {
+					typeOneGroup.add(j);
 				}
 			}
-			out.add(local);
+			HashSet<IllegalConfig> typeTwoRemove = new HashSet<IllegalConfig>();
+			for(IllegalConfig ic : typeTwo) {
+				String st = ic.getStateSet().getCompositeName();
+				boolean conflict = false;
+				for(int j : typeOneGroup) {
+					if(crush.hasStateMembership(st, j)) {
+						conflict = true;
+					}
+				}
+				if(!conflict) {
+					typeTwoRemove.add(ic);
+				}
+			}
+			typeTwo.removeAll(typeTwoRemove);
 		}
-		
-		return out;
-	}
-		
-	public HashSet<IllegalConfig> getIllegalConfigOneStates(){
-		return badGoodStates;
 	}
 	
-	public HashSet<IllegalConfig> getIllegalConfigTwoStates(){
-		return goodBadStates;
-	}
-	
-	public CrushMap[] getCrushMappings() {
-		return crushMap;
-	}
-
 }
 

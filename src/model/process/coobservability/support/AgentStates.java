@@ -1,4 +1,6 @@
-package model.process.coobservability;
+package model.process.coobservability.support;
+
+import java.util.Arrays;
 
 public class AgentStates implements Comparable<AgentStates>{
 	
@@ -51,6 +53,11 @@ public class AgentStates implements Comparable<AgentStates>{
 	@Override
 	public boolean equals(Object o1) {
 		return this.getCompositeName().equals(((AgentStates)o1).getCompositeName());
+	}
+
+	@Override
+	public String toString() {
+		return Arrays.toString(currentStates);
 	}
 	
 }

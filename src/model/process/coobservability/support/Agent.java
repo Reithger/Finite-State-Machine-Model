@@ -1,4 +1,4 @@
-package model.process.coobservability;
+package model.process.coobservability.support;
 
 import java.util.ArrayList;
 import java.util.Collection;
