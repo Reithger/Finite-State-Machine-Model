@@ -12,7 +12,7 @@ import model.process.coobservability.support.IllegalConfig;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class UStructure {
+public class UStructure implements MemoryMeasure{
 	
 //---  Constants   ----------------------------------------------------------------------------
 	
@@ -35,9 +35,15 @@ public class UStructure {
 	
 	private CrushMap[] crushMap;
 	
+	private ArrayList<Long> spaceUsage;
+	
+	private long startingMemory;
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
+		startingMemory = getMemoryUsage();
+		spaceUsage = new ArrayList<Long>();
 		HashMap<String, HashSet<String>> badTransitions = initializeBadTransitions(thePlant);
 		Agent[] agents = initializeAgents(thePlant, attr, theAgents);
 		crushMap = new CrushMap[agents.length];
@@ -48,7 +54,7 @@ public class UStructure {
 		eventNameMap = new HashMap<String, String[]>();
 		createUStructure(thePlant, badTransitions, agents);
 	}
-	
+
 	private HashMap<String, HashSet<String>> initializeBadTransitions(TransitionSystem thePlant){
 		HashMap<String, HashSet<String>> badTransitions = new HashMap<String, HashSet<String>>();
 		for(String s : thePlant.getStateNames()) {
@@ -125,6 +131,8 @@ public class UStructure {
 			if(visited.contains(currState)) {	//access next state from queue, ensure it hasn't been processed yet
 				continue;
 			}
+			
+			logMemoryUsage();
 			
 			String[] stateSetStates = stateSet.getStates();
 			int stateSetSize = stateSetStates.length;
@@ -225,6 +233,8 @@ public class UStructure {
 		
 		calculateCrush(agents);
 		
+		//System.out.println(spaceUsage);
+		
 		uStructure.setEventAttributes(new ArrayList<String>());		//Not sure why, probably to avoid weird stuff on the output graph?
 	}
 	
@@ -252,6 +262,8 @@ public class UStructure {
 				if(visited.contains(curr)) {
 					continue;
 				}
+				
+				logMemoryUsage();
 				
 				visited.add(curr);
 				
@@ -293,7 +305,43 @@ public class UStructure {
 		return typeOne;
 		
 	}
-
+	
+	private long getMemoryUsage() {
+		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+	}
+	
+	private void logMemoryUsage() {
+		spaceUsage.add(getMemoryUsage() - startingMemory);
+	}
+	
+	public double getAverageMemoryUsage() {
+		long add = 0;
+		for(Long l : spaceUsage) {
+			add += l;
+		}
+		return threeSig(inMB((add / spaceUsage.size())));
+	}
+	
+	public double getMaximumMemoryUsage() {
+		long max = 0;
+		for(Long l : spaceUsage) {
+			if(l > max) {
+				max = l;
+			}
+		}
+		return threeSig(inMB(max));
+	}
+	
+	private static double inMB(long in) {
+		return (double)in / 1000000;
+	}
+	
+	private static Double threeSig(double in) {
+		String use = in+"000000000";
+		int posit = use.indexOf(".") + 4;
+		return Double.parseDouble(use.substring(0, posit));
+	}
+	
 	public TransitionSystem getUStructure() {
 		return uStructure;
 	}

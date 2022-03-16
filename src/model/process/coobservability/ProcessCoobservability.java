@@ -138,12 +138,17 @@ public class ProcessCoobservability {
 		eventUse.addAll(events);
 		
 		StateBased use = new StateBased(plants, specs, attr, constructAgents(eventUse, attr, agents));
+
+		printMemoryUsage(use);
+		
 		return use.isSBCoobservable();
 	}
 
 	//-- Incremental  -----------------------------------------
 
 	public static boolean isCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr) {
+		ConcreteMemoryMeasure cmm = new ConcreteMemoryMeasure();
+		
 		ArrayList<TransitionSystem> copyPlants = new ArrayList<TransitionSystem>();
 		ArrayList<TransitionSystem> copySpecs = new ArrayList<TransitionSystem>();
 		copyPlants.addAll(plants);
@@ -160,8 +165,10 @@ public class ProcessCoobservability {
 			UStructure uStruct = constructUStructRaw(pick, attr, agents);
 			while(!isCoobservableUStruct(uStruct)) {
 				if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
+					printMemoryUsage(cmm);
 					return false;
 				}
+				cmm.logMemoryUsage();
 				IllegalConfig counterexample = Incremental.pickCounterExample(uStruct.getFilteredIllegalConfigStates());	//Get a single bad state, probably, maybe write something so UStruct can trace it
 				TransitionSystem use = Incremental.pickComponent(copyPlants, copySpecs, counterexample);	//Heuristics go here
 				pick = parallelComp(pick, use);
@@ -183,6 +190,7 @@ public class ProcessCoobservability {
 			}
 			copyPlants.addAll(hold);
 		}
+		printMemoryUsage(cmm);
 		return true;
 	}
 	
@@ -210,7 +218,9 @@ public class ProcessCoobservability {
 	}
 
 	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		return new UStructure(plant, attr, constructAgents(plant.getEventNames(), attr, agents));
+		UStructure u = new UStructure(plant, attr, constructAgents(plant.getEventNames(), attr, agents));
+		printMemoryUsage(u);
+		return u;
 	}
 	
 	public static UStructure constructUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
@@ -251,6 +261,10 @@ public class ProcessCoobservability {
 			agen.add(a);
 		}
 		return agen;
+	}
+	
+	private static void printMemoryUsage(MemoryMeasure m) {
+		System.out.println("\t\t\t\tAverage Memory: " + m.getAverageMemoryUsage() + " Mb, Max Memory: " + m.getMaximumMemoryUsage() + " Mb");
 	}
 	
 }

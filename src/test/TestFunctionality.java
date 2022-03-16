@@ -45,25 +45,25 @@ public class TestFunctionality {
 //---  Automated Testing   --------------------------------------------------------------------
 	
 	private static void runAllTests() {
-		System.out.print("System A Coobservability: \t");
+		System.out.println("System A Coobservability: \t");
 		checkSystemACoobservable();
-		System.out.print("System A SB Coobservability: \t");
+		System.out.println("System A SB Coobservability: \t");
 		checkSystemASBCoobservable();
-		System.out.print("System B Coobservability: \t");
+		System.out.println("System B Coobservability: \t");
 		checkSystemBCoobservable();
-		System.out.print("System B SB Coobservability: \t");
+		System.out.println("System B SB Coobservability: \t");
 		checkSystemBSBCoobservable();
-		System.out.print("System C Coobservability: \t");
+		System.out.println("System C Coobservability: \t");
 		checkSystemCCoobservable();
-		System.out.print("System C SB Coobservability: \t");
+		System.out.println("System C SB Coobservability: \t");
 		checkSystemCSBCoobservable();
-		System.out.print("System D Coobservability: \t");
+		System.out.println("System D Coobservability: \t");
 		checkSystemDCoobservable();
-		System.out.print("System D SB Coobservability: \t");
+		System.out.println("System D SB Coobservability: \t");
 		checkSystemDSBCoobservable();
-		System.out.print("System E Coobservability: \t");
+		System.out.println("System E Coobservability: \t");
 		checkSystemECoobservable();
-		System.out.print("System E SB Coobservability: \t");
+		System.out.println("System E SB Coobservability: \t");
 		checkSystemESBCoobservable();
 	}
 	
@@ -133,10 +133,14 @@ public class TestFunctionality {
 	
 	private static void checkCoobservable(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		long t = System.currentTimeMillis();
-		System.out.println(model.isCoobservableUStruct(name, eventAtt, agents));
-		System.out.println("\t\t\t\tTook " + (System.currentTimeMillis() - t) + " ms\n");
+		long hold = getCurrentMemoryUsage();
+		boolean result = model.isCoobservableUStruct(name, eventAtt, agents);
+		printTimeTook(t);
+		printMemoryUsage(hold);
+		System.out.println("\t\t\t\tCoobservable: " + result);
+		garbageCollect();
 	}
-	
+
 	private static void checkSystemACoobservable() {
 		String SystemA = "Example 1";
 		SystemGeneration.generateSystemA(SystemA);
@@ -170,15 +174,33 @@ public class TestFunctionality {
 	//-- SBCoobservable  ----------------------------------------------------------------------
 	
 	private static void checkSBCoobservable(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		long t = System.currentTimeMillis();
+		long hold = getCurrentMemoryUsage();
+		boolean result = prepSoloSpecRunSB(name, agents);
+		printTimeTook(t);
+		printMemoryUsage(hold);
+		System.out.println("\t\t\t\tSB-Coobservable: " + result);
+		garbageCollect();
+	}
+	
+	private static void checkSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		long t = System.currentTimeMillis();
+		long hold = getCurrentMemoryUsage();
+		boolean result = model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents);
+		printTimeTook(t);
+		printMemoryUsage(hold);
+		System.out.println("\t\t\t\tSB-Coobservable: " + result);
+		garbageCollect();
+	}
+	
+	private static boolean prepSoloSpecRunSB(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		String b = name + "_spec";
 		generateSoloSpecPlant(name, b);
 		ArrayList<String> plants = new ArrayList<String>();
 		ArrayList<String> specs = new ArrayList<String>();
 		plants.add(name);
 		specs.add(b);
-		long t = System.currentTimeMillis();
-		System.out.println(model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents));
-		System.out.println("\t\t\t\tTook " + (System.currentTimeMillis() - t) + " ms\n");
+		return model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents);
 	}
 
 	private static void checkSystemASBCoobservable() {
@@ -211,7 +233,49 @@ public class TestFunctionality {
 		checkSBCoobservable(SystemE, AgentChicanery.generateAgentsE());
 	}
 	
+	//-- Incremental Coobservable  ------------------------------------------------------------
+	
+	private static void checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs) {
+		long t = System.currentTimeMillis();
+		long hold = getCurrentMemoryUsage();
+		boolean result = model.isIncrementalCoobservable(plants, specs, eventAtt);
+		printTimeTook(t);
+		printMemoryUsage(hold);
+		System.out.println("\t\t\tIncremental Coobservable: " + result);
+		garbageCollect();
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
+	
+	private static void garbageCollect() {
+		System.gc();
+		Runtime.getRuntime().gc();
+		
+	}
+	
+	private static void printTimeTook(long t) {
+		System.out.println("\t\t\t\tTook " + (System.currentTimeMillis() - t) + " ms");
+	}
+	
+	private static void printMemoryUsage(long reduction) {
+		System.out.println("\t\t\t\tUsing " + threeSig(inMB(getCurrentMemoryUsage() - reduction)) + " Mb");
+		garbageCollect();
+	}
+	
+	private static long getCurrentMemoryUsage() {
+		Runtime r = Runtime.getRuntime();
+		return ((r.totalMemory() - r.freeMemory()));
+	}
+	
+	private static double inMB(long in) {
+		return (double)in / 1000000;
+	}
+	
+	private static String threeSig(double in) {
+		String use = in+"000000000";
+		int posit = use.indexOf(".") + 4;
+		return use.substring(0, posit);
+	}
 	
 	private static void generateSoloSpecPlant(String plant, String spec) {
 		model.convertSoloPlantSpec(plant, spec);

@@ -19,6 +19,8 @@ public class SystemGeneration {
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
+	//-- Solo System  -----------------------------------------
+	
 	public static void generateSystemA(String name) {
 		generateSystemDefault(name);
 		
@@ -145,6 +147,12 @@ public class SystemGeneration {
 		model.addTransition(name, "11", "s", "11");
 		
 		setBadTransitions(name, "10", "s", "11", "s");
+	}
+	
+	//-- Poly System  -----------------------------------------
+	
+	public static void generateSystemSetA(ArrayList<String> name) {
+		
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------

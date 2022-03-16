@@ -8,7 +8,7 @@ import java.util.Random;
 import model.fsm.TransitionSystem;
 import model.process.coobservability.support.IllegalConfig;
 
-public class Incremental {
+public class Incremental implements MemoryMeasure {
 	
 //---  Constants   ----------------------------------------------------------------------------
 	
@@ -358,6 +358,19 @@ public class Incremental {
 			}
 		}
 		return out;
+	}
+
+
+	@Override
+	public double getAverageMemoryUsage() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getMaximumMemoryUsage() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 	
 }

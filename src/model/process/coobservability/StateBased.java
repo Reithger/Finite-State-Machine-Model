@@ -9,7 +9,7 @@ import model.fsm.TransitionSystem;
 import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.StateSet;
 
-public class StateBased {
+public class StateBased implements MemoryMeasure {
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -20,9 +20,15 @@ public class StateBased {
 	private HashMap<String, HashSet<StateSet>> disable;
 	private HashMap<String, HashSet<StateSet>> enable;
 	
+	private long startingMemory;
+	
+	private ArrayList<Long> spaceUsage;
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public StateBased(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agents) {
+		startingMemory = getMemoryUsage();
+		spaceUsage = new ArrayList<Long>();
 		disable = new HashMap<String, HashSet<StateSet>>();
 		enable = new HashMap<String, HashSet<StateSet>>();
 		operate(plants, specs, attr, agents);
@@ -37,7 +43,7 @@ public class StateBased {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public boolean isSBCoobservable() {
-		System.out.println("\n" + enable + "\n" + disable + "\n");
+		//System.out.println("\n" + enable + "\n" + disable + "\n");
 		for(String c : disable.keySet()) {
 			if(!disable.get(c).isEmpty()) {
 				return false;
@@ -89,6 +95,8 @@ public class StateBased {
 			if(skip) {
 				continue;
 			}
+			
+			logMemoryUsage();
 			
 			ArrayList<String> observable = a.getEventsAttributeSet(attributeObservableRef, true);
 			controllable = a.getEventsAttributeSet(attributeControllableRef, true);
@@ -177,6 +185,8 @@ public class StateBased {
 			}
 			visited.add(curr);
 			
+			logMemoryUsage();
+			
 			HashSet<StateSet> totalGrouping = new HashSet<StateSet>();
 			LinkedList<StateSet> diminishGroup = new LinkedList<StateSet>();
 			diminishGroup.addAll(curr);
@@ -220,6 +230,42 @@ public class StateBased {
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	private long getMemoryUsage() {
+		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+	}
+	
+	private void logMemoryUsage() {
+		spaceUsage.add(getMemoryUsage() - startingMemory);
+	}
+	
+	public double getAverageMemoryUsage() {
+		long add = 0;
+		for(Long l : spaceUsage) {
+			add += l;
+		}
+		return threeSig(inMB(add / spaceUsage.size()));
+	}
+	
+	public double getMaximumMemoryUsage() {
+		long max = 0;
+		for(Long l : spaceUsage) {
+			if(l > max) {
+				max = l;
+			}
+		}
+		return threeSig(inMB(max));
+	}
+	
+	private static double inMB(long in) {
+		return (double)in / 1000000;
+	}
+	
+	private static Double threeSig(double in) {
+		String use = in+"000000000";
+		int posit = use.indexOf(".") + 4;
+		return Double.parseDouble(use.substring(0, posit));
+	}
 	
 	private String getInitialState(TransitionSystem t) {
 		return t.getStatesWithAttribute(attributeInitialRef).get(0);

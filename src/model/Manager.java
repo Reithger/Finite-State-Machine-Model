@@ -2,14 +2,12 @@ package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import model.convert.GenerateDot;
 import model.convert.GenerateFSM;
 import model.convert.ReadWrite;
 import model.fsm.TransitionSystem;
 import model.process.ProcessDES;
-import model.process.coobservability.ProcessCoobservability;
 
 public class Manager {
 
@@ -249,7 +247,7 @@ public class Manager {
 		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents);
 	}
 	
-	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr) {
 		if(bail(plants) || bail(specs)) {
 			return null;
 		}
@@ -261,7 +259,7 @@ public class Manager {
 		for(String s : specs) {
 			useSp.add(fsms.get(s));
 		}
-		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr, agents);
+		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr);
 	}
 
 	public Boolean isSBCoobservableUrvashi(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
@@ -277,6 +275,21 @@ public class Manager {
 			specs.add(fsms.get(s));
 		}
 		return ProcessDES.isSBCoobservableUrvashi(plants, specs, attr, agents);
+	}
+	
+	public Boolean isIncrementalCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr) {
+		if(bail(refPlants) || bail(refSpecs)) {
+			return null;
+		}
+		ArrayList<TransitionSystem> plants = new ArrayList<TransitionSystem>();
+		ArrayList<TransitionSystem> specs = new ArrayList<TransitionSystem>();
+		for(String s : refPlants) {
+			plants.add(fsms.get(s));
+		}
+		for(String s : refSpecs) {
+			specs.add(fsms.get(s));
+		}
+		return ProcessDES.isIncrementalCoobservable(plants, specs, attr);
 	}
 	
 	public String convertSoloPlantSpec(String ref, String newName) {
