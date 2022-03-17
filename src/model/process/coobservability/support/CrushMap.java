@@ -6,25 +6,18 @@ import java.util.HashSet;
 
 public class CrushMap {
 	
-	private final static String GROUP_EVENT_NOTATION = "_~_";
-
+//---  Instance Variables   -------------------------------------------------------------------
+	
 	// Maps the State name to a list of group IDs they belong to
 	private HashMap<String, HashSet<Integer>> crushMapping;
-	// Maps a <group, event> pair to the group that that pair leads to
-	private HashMap<String, Integer> groupEntryMapping;
 	
-	private int newGroupID;
-	
-	public CrushMap(String firstState) {
-		crushMapping = new HashMap<String, HashSet<Integer>>();
-		groupEntryMapping = new HashMap<String, Integer>();
-		assignStateGroup(firstState, newGroupID++);
-	}
+//---  Constructors   -------------------------------------------------------------------------
 	
 	public CrushMap() {
 		crushMapping = new HashMap<String, HashSet<Integer>>();
-		groupEntryMapping = new HashMap<String, Integer>();
 	}
+	
+//---  Operations   ---------------------------------------------------------------------------
 	
 	public void assignStateGroup(String state, int group) {
 		if(crushMapping.get(state) == null) {
@@ -33,29 +26,44 @@ public class CrushMap {
 		crushMapping.get(state).add(group);
 	}
 	
-	public void inheritStateGroups(String stateParent, String stateChild) {
-		if(crushMapping.get(stateParent) != null) {
-			for(int i : crushMapping.get(stateParent)) {
-				assignStateGroup(stateChild, i);
+	public String getOutput(ArrayList<String> importantStates) {
+		StringBuilder sb = new StringBuilder();
+		
+		HashMap<Integer, HashSet<String>> mapCrush = new HashMap<Integer, HashSet<String>>();
+		
+		for(String s : crushMapping.keySet()) {
+			for(int i : crushMapping.get(s)) {
+				if(mapCrush.get(i) == null) {
+					mapCrush.put(i, new HashSet<String>());
+				}
+				mapCrush.get(i).add(s);
 			}
 		}
-	}
-	
-	public void stateGroupTransfer(String stateParent, String stateChild, String event) {
-		if(stateParent.equals(stateChild)) {
-			return;
-		}
-		for(int i : crushMapping.get(stateParent)) {
-			if(groupEntryMapping.get(groupEventName(i, event)) == null) {
-				groupEntryMapping.put(groupEventName(i, event), newGroupID++);
+		
+		for(int i : mapCrush.keySet()) {
+			sb.append("\t" + i +": ");
+			for(String s : mapCrush.get(i)) {
+				sb.append(s + ",");
 			}
-			assignStateGroup(stateChild, groupEntryMapping.get(groupEventName(i, event)));
+			sb.append("\n");
 		}
+		
+		sb.append("By request, in particular:\n");
+		
+		if(importantStates != null) {
+			for(String s : importantStates) {
+				sb.append("\t" + s + ": ");
+				for(int i : crushMapping.get(s)) {
+					sb.append(i + ", ");
+				}
+				sb.append("\n");
+			}
+		}
+		
+		return sb.toString();
 	}
 	
-	private String groupEventName(int in, String event) {
-		return in + GROUP_EVENT_NOTATION + event;
-	}
+//---  Getter Methods   -----------------------------------------------------------------------
 	
 	public ArrayList<Integer> getStateMemberships(String stateName){
 		if(!crushMapping.containsKey(stateName)) {
@@ -71,22 +79,6 @@ public class CrushMap {
 			return crushMapping.get(stateName).contains(group);
 		}
 		return false;
-	}
-	
-	public ArrayList<Integer> getPotentialTargetGroups(String stateName, String event){
-		if(crushMapping.get(stateName) != null) {
-			ArrayList<Integer> out = new ArrayList<Integer>();
-			for(int i : getStateMemberships(stateName)) {
-				Integer test = groupEntryMapping.get(groupEventName(i, event));
-				if(test == null) {
-					groupEntryMapping.put(groupEventName(i, event), newGroupID++);
-					test = groupEntryMapping.get(groupEventName(i, event));
-				}
-				out.add(test);
-			}
-			return out;
-		}
-		return null;
 	}
 	
 }

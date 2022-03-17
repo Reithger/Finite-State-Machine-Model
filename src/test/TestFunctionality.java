@@ -28,6 +28,8 @@ public class TestFunctionality {
 		FiniteStateMachine.fileConfiguration();
 		model = new Manager();
 		
+		model.assignCoobservabilityPrintOutState(true, true);
+		
 		SystemGeneration.assignManager(model);
 		
 		eventAtt = new ArrayList<String>();
@@ -36,10 +38,10 @@ public class TestFunctionality {
 		}
 		//basicUStructCheck();
 		//crushUStructCheck();
-		//crushUStructCheck2();
+		crushUStructCheck2();
 		//crushUStructCheck3();
 		//generateSystems();
-		runAllTests();
+		//runAllTests();
 	}
 	
 //---  Automated Testing   --------------------------------------------------------------------

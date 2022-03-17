@@ -20,6 +20,9 @@ public class ProcessCoobservability {
 	private static String initialRef;
 	private static String badTransRef;
 	
+	private static boolean showCrushInfo;
+	private static boolean showImportantCrushInfo;
+	
 //---  Meta   ---------------------------------------------------------------------------------
 	
 	public static void assignReferences(String cont, String obs, String init, String badTrans) {
@@ -31,6 +34,11 @@ public class ProcessCoobservability {
 		Incremental.assignAttributeReference(init, obs);
 	}
 	
+	public static void assignCrushState(boolean in, boolean important) {
+		showCrushInfo = in;
+		showImportantCrushInfo = important;
+	}
+	
 	public static void assignIncrementalOptions(int a, int b, int c) {
 		Incremental.assignIncrementalOptions(a, b, c);
 	}
@@ -38,25 +46,7 @@ public class ProcessCoobservability {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	//-- Coobservable  ----------------------------------------
-	
-	/*
-	 * 
-	 * It's not so simple.
-	 * 
-	 * Need to calculate the crush to figure out what states are functionally equivalent to one another according to an agent's
-	 * particular observability of events (guessing being also an equivalence) and ensure that no illegal config 1 state is considered
-	 * equivalent to an illegal config 2 state.
-	 * 
-	 * Only a problem if every single agent is incapable of discerning between the two in their particular context.
-	 * 
-	 * The agents are the specifications' event maps, but not the plants
-	 * 
-	 * U-Structure is not a map, it's all possible avenues, each agent can know they are in a certain selection of states connected
-	 * by unobservable states and we are co-observable as long as they are never able to confuse a violation 1 situation with a violation
-	 * 2 situation, as we can post-analysis fix the system to behave in an appropriate way.
-	 * 
-	 */
-	
+		
 	public static boolean isCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		UStructure ustr = constructUStruct(plant, attr, agents);
 		return isCoobservableUStruct(ustr);
@@ -220,6 +210,9 @@ public class ProcessCoobservability {
 	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		UStructure u = new UStructure(plant, attr, constructAgents(plant.getEventNames(), attr, agents));
 		printMemoryUsage(u);
+		if(showCrushInfo) {
+			System.out.println(u.printOutCrushMaps(showImportantCrushInfo));
+		}
 		return u;
 	}
 	

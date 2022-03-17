@@ -287,6 +287,27 @@ public class UStructure implements MemoryMeasure{
 		
 	}
 
+	public String printOutCrushMaps(boolean pointOut) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < crushMap.length; i++) {
+			CrushMap cm = crushMap[i];
+			sb.append("Agent " + i + " Crush Map Info\n");
+			ArrayList<String> important = new ArrayList<String>();
+			
+			if(pointOut) {
+				for(IllegalConfig ic : goodBadStates) {
+					important.add(ic.getStateSet().getCompositeName());
+				}
+				for(IllegalConfig ic : badGoodStates) {
+					important.add(ic.getStateSet().getCompositeName());
+				}
+			}
+			
+			sb.append(cm.getOutput(important) + "\n");
+		}
+		return sb.toString();
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 
 	public HashSet<IllegalConfig> getFilteredIllegalConfigStates(){

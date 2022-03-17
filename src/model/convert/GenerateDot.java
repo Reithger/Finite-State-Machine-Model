@@ -12,8 +12,13 @@ public class GenerateDot {
 	
 	private final static String INITIAL_STATE_MARKER = "ArbitraryUnusedNameNoWorriesJustGrooving";
 	//TODO: Make sure there are a lot of potential colors here, preferably prime, to avoid reuse
-	private final static String[] backgroundColorCycle = new String[] {"tomato", "orange", "yellow", "green", "slategray1", "cyan", "darkorchid1", "bisque2", "darkolivegreen2"};
-
+	private final static ColorPack[] backgroundColorCycle = new ColorPack[] {new ColorPack(65, 174, 118),
+																			 new ColorPack(140, 107, 177),
+																			 new ColorPack(78, 179, 211),
+																		 	 new ColorPack(239, 101, 72),
+																			 new ColorPack(223, 101, 176),
+																			 new ColorPack(115, 115, 115),
+																			 new ColorPack(29, 145, 192)};
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public static String generateDot(TransitionSystem in) {
@@ -81,7 +86,7 @@ public class GenerateDot {
 		boolean second = false;
 		while(count < 100) {
 			if(in.getStateAttribute(ref, count+"") != null) {
-				line+= (first ? "" : ":") + backgroundColorCycle[count % backgroundColorCycle.length];
+				line+= (first ? "" : ":") + backgroundColorCycle[count % backgroundColorCycle.length].cycleColor(count / backgroundColorCycle.length);
 				if(!first) {
 					second = true;
 				}
