@@ -28,7 +28,7 @@ public class TestFunctionality {
 		FiniteStateMachine.fileConfiguration();
 		model = new Manager();
 		
-		model.assignCoobservabilityPrintOutState(true, true);
+		//model.assignCoobservabilityPrintOutState(true, true);
 		
 		SystemGeneration.assignManager(model);
 		
@@ -38,10 +38,14 @@ public class TestFunctionality {
 		}
 		//basicUStructCheck();
 		//crushUStructCheck();
-		crushUStructCheck2();
+		//crushUStructCheck2();
 		//crushUStructCheck3();
 		//generateSystems();
-		//runAllTests();
+		runAllTests();
+		
+		//checkSystemBCoobservable();
+		//checkSystemBAltCoobservable();
+		//checkSystemFinnCoobservable();
 	}
 	
 //---  Automated Testing   --------------------------------------------------------------------
@@ -155,6 +159,18 @@ public class TestFunctionality {
 		checkCoobservable(SystemB, AgentChicanery.generateAgentsB());
 	}
 	
+	private static void checkSystemBAltCoobservable() {
+		String SystemB = "Example B 1";
+		SystemGeneration.generateSystemBAlt(SystemB);
+		makeImageDisplay(SystemB, SystemB);
+		checkCoobservable(SystemB, AgentChicanery.generateAgentsB());
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemB, eventAtt, AgentChicanery.generateAgentsB());
+		for(String s : ustruct) {
+			makeImageDisplay(s, s);
+			model.exportFSM(s);
+		}
+	}
+	
 	private static void checkSystemCCoobservable() {
 		String SystemC = "Example C 1";
 		SystemGeneration.generateSystemC(SystemC);
@@ -171,6 +187,18 @@ public class TestFunctionality {
 		String SystemE = "Example E 1";
 		SystemGeneration.generateSystemE(SystemE);
 		checkCoobservable(SystemE, AgentChicanery.generateAgentsE());
+	}
+	
+	private static void checkSystemFinnCoobservable() {
+		String SystemFinn = "Example Finn";
+		SystemGeneration.generateSystemFinn(SystemFinn);
+		makeImageDisplay(SystemFinn, SystemFinn);
+		checkCoobservable(SystemFinn, AgentChicanery.generateAgentsFinn5());
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemFinn, eventAtt, AgentChicanery.generateAgentsFinn5());
+		for(String s : ustruct) {
+			makeImageDisplay(s, s);
+			model.exportFSM(s);
+		}
 	}
 	
 	//-- SBCoobservable  ----------------------------------------------------------------------
@@ -252,7 +280,6 @@ public class TestFunctionality {
 	private static void garbageCollect() {
 		System.gc();
 		Runtime.getRuntime().gc();
-		
 	}
 	
 	private static void printTimeTook(long t) {

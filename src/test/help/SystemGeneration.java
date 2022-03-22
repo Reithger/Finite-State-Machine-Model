@@ -70,6 +70,31 @@ public class SystemGeneration {
 		setBadTransitions(name, "5", "s");
 	}
 	
+	public static void generateSystemBAlt(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 6);
+		
+		model.setStateAttribute(name, "0", AttributeList.ATTRIBUTE_INITIAL, true);
+		
+		initiateEvents(name, EventSets.EVENT_LIST_B, "s");
+		
+		model.setEventAttribute(name, "c", AttributeList.ATTRIBUTE_OBSERVABLE, false);
+		
+		model.addTransition(name, "0", "a", "1");
+		model.addTransition(name, "0", "b", "2");
+		model.addTransition(name, "1", "b", "3");
+		model.addTransition(name, "1", "c", "2");
+		model.addTransition(name, "2", "b", "3");
+		model.addTransition(name, "2", "a", "3");
+		model.addTransition(name, "2", "d", "5");
+		model.addTransition(name, "3", "d", "4");
+		model.addTransition(name, "4", "s", "4");
+		model.addTransition(name, "5", "s", "5");
+		
+		setBadTransitions(name, "5", "s");
+	}
+	
 	public static void generateSystemC(String name) {
 		generateSystemDefault(name);
 		
@@ -147,6 +172,51 @@ public class SystemGeneration {
 		model.addTransition(name, "11", "s", "11");
 		
 		setBadTransitions(name, "10", "s", "11", "s");
+	}
+	
+	public static void generateSystemFinn(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 19);
+		//model.removeState(name, "0");
+		
+		model.setStateAttribute(name, "0", AttributeList.ATTRIBUTE_INITIAL, true);
+
+		initiateEvents(name, EventSets.EVENT_LIST_FINN5, "s");
+		
+		model.addTransition(name, "0", "a1", "1");
+		model.addTransition(name, "0", "a2", "2");
+		model.addTransition(name, "0", "a3", "3");
+		model.addTransition(name, "0", "a4", "4");
+		model.addTransition(name, "0", "a5", "5");
+		model.addTransition(name, "0", "a6", "6");
+		model.addTransition(name, "1", "b1", "7");
+		model.addTransition(name, "1", "b2", "8");
+		model.addTransition(name, "2", "b2", "9");
+		model.addTransition(name, "2", "b3", "10");
+		model.addTransition(name, "3", "b3", "11");
+		model.addTransition(name, "3", "b4", "12");
+		model.addTransition(name, "4", "b4", "13");
+		model.addTransition(name, "4", "b5", "14");
+		model.addTransition(name, "5", "b5", "15");
+		model.addTransition(name, "5", "b6", "16");
+		model.addTransition(name, "6", "b6", "17");
+		model.addTransition(name, "6", "b1", "18");
+		
+		model.addTransition(name, "7", "s", "7");
+		model.addTransition(name, "8", "s", "8");
+		model.addTransition(name, "9", "s", "9");
+		model.addTransition(name, "10", "s", "10");
+		model.addTransition(name, "11", "s", "11");
+		model.addTransition(name, "12", "s", "12");
+		model.addTransition(name, "13", "s", "13");
+		model.addTransition(name, "14", "s", "14");
+		model.addTransition(name, "15", "s", "15");
+		model.addTransition(name, "16", "s", "16");
+		model.addTransition(name, "17", "s", "17");
+		model.addTransition(name, "18", "s", "18");
+		
+		setBadTransitions(name, "8", "s", "10", "s","12", "s","14", "s","16", "s","17", "s");
 	}
 	
 	//-- Poly System  -----------------------------------------

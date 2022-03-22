@@ -146,6 +146,43 @@ public class AgentChicanery {
 		};
 		return generateAgentSet(agentInfo, EventSets.EVENT_LIST_E);
 	}
+
+	public static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsFinn5(){
+		boolean[][][] agentInfo = new boolean[][][] {	{	
+			//Agent 1
+			  {true, false},	//a1
+			  {true, false},	//a2
+			  {true, false},	//a3
+			  {true, false},	//a4
+			  {true, false},    //a5
+			  {true, false},	//a6
+			  {false, false},	//b1
+			  {false, false},	//b2
+			  {false, false},	//b3
+			  {false, false},	//b4
+			  {false, false},   //b5
+			  {false, false},	//b6
+			  {false, true}	//s
+			},
+		 	{	//Agent 2
+				  {false, false},	//a1
+				  {false, false},	//a2
+				  {false, false},	//a3
+				  {false, false},	//a4
+				  {false, false},   //a5
+				  {false, false},	//a6
+				  {true, false},	//b1
+				  {true, false},	//b2
+				  {true, false},	//b3
+				  {true, false},	//b4
+				  {true, false},    //b5
+				  {true, false},	//b6
+				  {false, true}	//s
+			},
+		};
+
+		return generateAgentSet(agentInfo, EventSets.EVENT_LIST_FINN5);
+	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
 	

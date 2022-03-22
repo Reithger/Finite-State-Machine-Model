@@ -1,15 +1,23 @@
 package model.convert;
 
 public class ColorPack {
+	
+	private static final double COLOR_ADJUST = .3;
 
 	private int r;
 	private int g;
 	private int b;
 	
-	public ColorPack(int a, int b, int c) {
+	public ColorPack(int a, int d, int c) {
 		r = affixColor(a);
-		g = affixColor(b);
+		g = affixColor(d);
 		b = affixColor(c);
+	}
+	
+	public ColorPack(String a, String d, String c) {
+		r = affixColor(Integer.parseInt(a, 16));
+		g = affixColor(Integer.parseInt(d, 16));
+		b = affixColor(Integer.parseInt(c, 16));
 	}
 	
 	public String getGraphvizColor() {
@@ -34,7 +42,7 @@ public class ColorPack {
 	}
 	
 	public ColorPack cycleColor() {
-		return new ColorPack(r + (int)((255 - r) * .1), g + (int)((255 - g) * .1), b + (int)((255 - b) * .1));
+		return new ColorPack(r + (int)((255 - r) * COLOR_ADJUST), g + (int)((255 - g) * COLOR_ADJUST), b + (int)((255 - b) * COLOR_ADJUST));
 	}
 	
 	private int affixColor(int in) {

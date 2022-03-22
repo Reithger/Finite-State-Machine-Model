@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import model.fsm.TransitionSystem;
 import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.AgentStates;
+import model.process.coobservability.support.CrushIdentityGroup;
 import model.process.coobservability.support.CrushMap;
 import model.process.coobservability.support.IllegalConfig;
 
@@ -252,12 +253,13 @@ public class UStructure implements MemoryMeasure{
 			Agent age = agents[i];
 			HashSet<String> init = getReachableStates(uStructure.getStatesWithAttribute(attributeInitialRef).get(0), age, i);
 			
-			LinkedList<HashSet<String>> queue = new LinkedList<HashSet<String>>();
-			queue.add(init);
-			HashSet<HashSet<String>> visited = new HashSet<HashSet<String>>();
+			//TODO: Probably just need these HashSet<String> object to incorporate the event and state set that led to them
 			
+			LinkedList<CrushIdentityGroup> queue = new LinkedList<CrushIdentityGroup>();
+			queue.add(new CrushIdentityGroup(null, null, init));
+			HashSet<CrushIdentityGroup> visited = new HashSet<CrushIdentityGroup>();
 			while(!queue.isEmpty()) {
-				HashSet<String> curr = queue.poll();
+				CrushIdentityGroup curr = queue.poll();
 				
 				if(visited.contains(curr)) {
 					continue;
@@ -267,24 +269,23 @@ public class UStructure implements MemoryMeasure{
 				
 				visited.add(curr);
 				
-				for(String s : getPossibleVisibleEvents(curr, age, i)) {
+				for(String s : getPossibleVisibleEvents(curr.getGroup(), age, i)) {
 					HashSet<String> reachable = new HashSet<String>();
-					for(String t : getTargetStates(curr, s, age, i)) {
+					for(String t : getTargetStates(curr.getGroup(), s, age, i)) {
 						reachable.addAll(getReachableStates(t, age, i));
 					}
-					queue.add(reachable);
+					queue.add(new CrushIdentityGroup(curr, s, reachable));
 				}
 			}
 
 			int count = 0;
-			for(HashSet<String> group : visited) {
-				for(String s : group) {
+			for(CrushIdentityGroup group : visited) {
+				for(String s : group.getGroup()) {
 					crushMap[i].assignStateGroup(s, count);
 				}
 				count++;
 			}
 		}
-		
 	}
 
 	public String printOutCrushMaps(boolean pointOut) {
@@ -404,6 +405,8 @@ public class UStructure implements MemoryMeasure{
 		}
 		return null;
 	}
+	
+	//-- Crush  -----------------------------------------------
 	
 	private HashSet<String> getTargetStates(HashSet<String> states, String event, Agent age, int index){
 		HashSet<String> out = new HashSet<String>();
