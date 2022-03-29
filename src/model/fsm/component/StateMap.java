@@ -152,7 +152,6 @@ public class StateMap {
 		for(Entity e : states.values()) {
 			LinkedList<String> use = new LinkedList<String>();
 			use.addAll(attributes);
-			e.wipeAttributes();
 			e.setAttributes(use);
 		}
 	}

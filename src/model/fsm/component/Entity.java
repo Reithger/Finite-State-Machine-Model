@@ -9,6 +9,8 @@ import java.util.LinkedList;
  * 
  * This class is a part of the support.event package
  * 
+ * TODO: Clean up the functions between this and Attribute, they're clunky and a bit weird
+ * 
  * @author Ada Clevinger and Graeme Zinck
  */
 
@@ -56,8 +58,12 @@ public class Entity {
 	}
 	
 	public void addAttribute(String attr, boolean set) {
-		wrap.addWrapper(attr);
-		wrap.setValue(attr, set);
+		if(wrap == null) {
+			wrap = new Attribute(attr);
+		}
+		if(wrap.getValue(attr) == null) {
+			wrap.setValue(attr, set);
+		}
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -81,8 +87,9 @@ public class Entity {
 
 	public void setAttributes(LinkedList<String> refs) {
 		if(refs != null && refs.size() != 0) {
-			wrap = new Attribute(refs.poll());
-			wrap.setAttributes(refs);
+			for(String s : refs) {
+				addAttribute(s, false);
+			}
 		}
 	}
 	

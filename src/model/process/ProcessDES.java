@@ -61,16 +61,16 @@ public class ProcessDES {
 		return ProcessCoobservability.isCoobservableUStruct(plant, attr, agents);
 	}
 	
-	public static Boolean isCoobservableUStruct(ArrayList<TransitionSystem> plant, ArrayList<TransitionSystem> specs, ArrayList<String> attr) {
-		return ProcessCoobservability.isCoobservableUStruct(plant, specs, attr);
+	public static Boolean isCoobservableUStruct(ArrayList<TransitionSystem> plant, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		return ProcessCoobservability.isCoobservableUStruct(plant, specs, attr, agents);
 	}
 	
 	public static Boolean isSBCoobservableUrvashi(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		return ProcessCoobservability.isSBCoobservableUrvashi(plants, specs, attr, agents);
 	}
 	
-	public static Boolean isIncrementalCoobservable(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr) {
-		return ProcessCoobservability.isCoobservableLiu(plants, specs, attr);
+	public static Boolean isIncrementalCoobservable(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		return ProcessCoobservability.isCoobservableLiu(plants, specs, attr, agents);
 	}
 	
 	//-- UStructure  ------------------------------------------

@@ -79,6 +79,10 @@ public class Manager {
 		return null;
 	}
 	
+	public void flushFSMs() {
+		fsms = new HashMap<String, TransitionSystem>();
+	}
+	
 	//-- FSM Generation  --------------------------------------
 	
 	public String generateEmptyFSM(String nom) {
@@ -251,7 +255,7 @@ public class Manager {
 		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents);
 	}
 	
-	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr) {
+	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		if(bail(plants) || bail(specs)) {
 			return null;
 		}
@@ -263,7 +267,7 @@ public class Manager {
 		for(String s : specs) {
 			useSp.add(fsms.get(s));
 		}
-		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr);
+		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr, agents);
 	}
 
 	public Boolean isSBCoobservableUrvashi(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
@@ -281,7 +285,7 @@ public class Manager {
 		return ProcessDES.isSBCoobservableUrvashi(plants, specs, attr, agents);
 	}
 	
-	public Boolean isIncrementalCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr) {
+	public Boolean isIncrementalCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		if(bail(refPlants) || bail(refSpecs)) {
 			return null;
 		}
@@ -293,7 +297,7 @@ public class Manager {
 		for(String s : refSpecs) {
 			specs.add(fsms.get(s));
 		}
-		return ProcessDES.isIncrementalCoobservable(plants, specs, attr);
+		return ProcessDES.isIncrementalCoobservable(plants, specs, attr, agents);
 	}
 	
 	public String convertSoloPlantSpec(String ref, String newName) {

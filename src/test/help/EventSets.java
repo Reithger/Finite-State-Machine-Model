@@ -20,4 +20,6 @@ public class EventSets {
 
 	public final static String[] EVENT_LIST_FINN5 = new String[] {"a1", "a2", "a3","a4","a5","a6","b1", "b2", "b3","b4","b5","b6", "s"};
 	
+	public final static String[] EVENT_LIST_LIU_ONE = new String[] {"a", "b", "g"};
+	
 }

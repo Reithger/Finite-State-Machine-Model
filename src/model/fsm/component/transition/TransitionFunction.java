@@ -215,7 +215,6 @@ public class TransitionFunction {
 			for(Transition e : getTransitions(s)) {
 				LinkedList<String> use = new LinkedList<String>();
 				use.addAll(attributes);
-				e.wipeAttributes();
 				e.setAttributes(use);
 			}
 		}

@@ -222,7 +222,95 @@ public class SystemGeneration {
 	//-- Poly System  -----------------------------------------
 	
 	public static void generateSystemSetA(ArrayList<String> name) {
+		generateLiuG1(name.get(0));
+		generateLiuH1(name.get(1));
+	}
+	
+	public static void generateSystemSetB(ArrayList<String> name) {
+		generateLiuG3(name.get(0));
+		generateLiuG4(name.get(1));
+		generateLiuH1(name.get(2));
+	}
+	
+	private static void generateLiuG1(String name) {
+		generateSystemDefault(name);
 		
+		model.addStates(name, 5);
+		model.removeState(name, "0");
+		
+		model.setStateAttribute(name, "1", AttributeList.ATTRIBUTE_INITIAL, true);
+		
+		initiateEvents(name, EventSets.EVENT_LIST_LIU_ONE, "g");
+		
+		model.addTransition(name, "1", "a", "2");
+		model.addTransition(name, "1", "b", "2");
+		model.addTransition(name, "2", "a", "3");
+		model.addTransition(name, "2", "b", "3");
+		model.addTransition(name, "3", "g", "4");
+	}
+
+	private static void generateLiuG2(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 7);
+		model.removeState(name, "0");
+		
+		model.setStateAttribute(name, "1", AttributeList.ATTRIBUTE_INITIAL, true);
+		
+		initiateEvents(name, EventSets.EVENT_LIST_LIU_ONE, "g");
+		
+		addTransitions(name, "a", "1", "2", "2", "4", "3", "5");
+		addTransitions(name, "b", "1", "3", "3", "4", "2", "5");
+		addTransitions(name, "g", "5", "6");
+	}
+	
+	private static void generateLiuH1(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 6);
+		model.removeState(name, "0");
+
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_LIU_ONE, "g");
+		
+		addTransitions(name, "a", "1", "2", "3", "4");
+		addTransitions(name, "b", "1", "3", "2", "4");
+		addTransitions(name, "g", "4", "5");
+	}
+	
+	private static void generateLiuG3(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 9);
+		model.removeState(name, "0");
+		
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_LIU_ONE, "g");
+		
+		addTransitions(name, "a", "1", "2", "2", "4", "3", "5");
+		addTransitions(name, "b", "1", "3", "3", "6", "2", "5");
+		addTransitions(name, "g", "4", "7", "5", "8");
+	}
+	
+	private static void generateLiuG4(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 9);
+		model.removeState(name, "0");
+		
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_LIU_ONE, "g");
+		
+		addTransitions(name, "a", "1", "2", "2", "4", "3", "5");
+		addTransitions(name, "b", "1", "3", "3", "6", "2", "5");
+		addTransitions(name, "g", "6", "7", "5", "8");
+	}
+	
+	private static void generateLiuH2(String name) {
+		generateSystemDefault(name);
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
@@ -262,4 +350,14 @@ public class SystemGeneration {
 		}
 	}
 
+	private static void addTransitions(String name, String event, String ... statePairs) {
+		for(int i = 0; i < statePairs.length; i += 2) {
+			model.addTransition(name, statePairs[i], event, statePairs[i+1]);
+		}
+	}
+	
+	private static void initialState(String name, String state) {
+		model.setStateAttribute(name, state, AttributeList.ATTRIBUTE_INITIAL, true);
+	}
+	
 }

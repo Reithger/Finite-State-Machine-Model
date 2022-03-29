@@ -535,6 +535,15 @@ public class TransitionSystem {
 		return transitions.getStateEvents(state);
 	}
 	
+	/**
+	 * 
+	 * Presently returns null to signify no states
+	 * 
+	 * @param state
+	 * @param event
+	 * @return
+	 */
+	
 	public ArrayList<String> getStateEventTransitionStates(String state, String event){
 		return transitions.getTransitionStates(state, event);
 	}

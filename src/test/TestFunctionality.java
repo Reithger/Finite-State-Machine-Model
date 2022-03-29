@@ -41,7 +41,17 @@ public class TestFunctionality {
 		//crushUStructCheck2();
 		//crushUStructCheck3();
 		//generateSystems();
-		runAllTests();
+		//runAllTests();
+		
+		checkIncrementalCoobservableLiuOne();
+		model.flushFSMs();
+		checkIncrementalCoobservableLiuTwo();
+		
+		model.flushFSMs();
+		
+		checkSystemLiuOneCoobservable();
+		model.flushFSMs();
+		checkSystemLiuTwoCoobservable();
 		
 		//checkSystemBCoobservable();
 		//checkSystemBAltCoobservable();
@@ -146,6 +156,16 @@ public class TestFunctionality {
 		System.out.println("\t\t\t\tCoobservable: " + result);
 		garbageCollect();
 	}
+	
+	private static void checkCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		long t = System.currentTimeMillis();
+		long hold = getCurrentMemoryUsage();
+		boolean result = model.isCoobservableUStruct(plants, specs, eventAtt, agents);
+		printTimeTook(t);
+		printMemoryUsage(hold);
+		System.out.println("\t\t\t\tCoobservable: " + result);
+		garbageCollect();
+	}
 
 	private static void checkSystemACoobservable() {
 		String SystemA = "Example 1";
@@ -199,6 +219,34 @@ public class TestFunctionality {
 			makeImageDisplay(s, s);
 			model.exportFSM(s);
 		}
+	}
+	
+	private static void checkSystemLiuOneCoobservable() {
+		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<String> plant = new ArrayList<String>();
+		ArrayList<String> spec = new ArrayList<String>();
+		names.add("G1");
+		plant.add("G1");
+		names.add("H1");
+		spec.add("H1");
+		SystemGeneration.generateSystemSetA(names);
+		System.out.println("System Liu One Coobservability: \t");
+		checkCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
+	}
+	
+	private static void checkSystemLiuTwoCoobservable() {
+		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<String> plant = new ArrayList<String>();
+		ArrayList<String> spec = new ArrayList<String>();
+		names.add("G3");
+		plant.add("G3");
+		names.add("G4");
+		plant.add("G4");
+		names.add("H1");
+		spec.add("H1");
+		SystemGeneration.generateSystemSetB(names);
+		System.out.println("System Liu Two Coobservability: \t");
+		checkCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
 	}
 	
 	//-- SBCoobservable  ----------------------------------------------------------------------
@@ -265,14 +313,42 @@ public class TestFunctionality {
 	
 	//-- Incremental Coobservable  ------------------------------------------------------------
 	
-	private static void checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs) {
+	private static void checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
-		boolean result = model.isIncrementalCoobservable(plants, specs, eventAtt);
+		boolean result = model.isIncrementalCoobservable(plants, specs, eventAtt, agents);
 		printTimeTook(t);
 		printMemoryUsage(hold);
-		System.out.println("\t\t\tIncremental Coobservable: " + result);
+		System.out.println("\t\t\t\tIncremental Coobservable: " + result);
 		garbageCollect();
+	}
+	
+	private static void checkIncrementalCoobservableLiuOne() {
+		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<String> plant = new ArrayList<String>();
+		ArrayList<String> spec = new ArrayList<String>();
+		names.add("G1");
+		plant.add("G1");
+		names.add("H1");
+		spec.add("H1");
+		SystemGeneration.generateSystemSetA(names);
+		System.out.println("System Liu One Incremental Coobservability: \t");
+		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
+	}
+	
+	private static void checkIncrementalCoobservableLiuTwo() {
+		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<String> plant = new ArrayList<String>();
+		ArrayList<String> spec = new ArrayList<String>();
+		names.add("G3");
+		plant.add("G3");
+		names.add("G4");
+		plant.add("G4");
+		names.add("H1");
+		spec.add("H1");
+		SystemGeneration.generateSystemSetB(names);
+		System.out.println("System Liu Two Incremental Coobservability: \t");
+		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------

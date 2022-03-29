@@ -312,7 +312,6 @@ public class ProcessOperation {
 			nom.addAll(in.getStateComposition(stateA));
 			nom.addAll(other.getStateComposition(stateB));
 			String newString = out.compileStateName(nom); // Add the new state
-			System.out.println(newString);
 			if(visited.contains(newString)) {
 				continue;
 			}

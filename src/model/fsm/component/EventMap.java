@@ -108,7 +108,6 @@ public class EventMap {
 		for(Entity e : events.values()) {
 			LinkedList<String> use = new LinkedList<String>();
 			use.addAll(attributes);
-			e.wipeAttributes();
 			e.setAttributes(use);
 		}
 	}

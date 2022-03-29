@@ -44,7 +44,10 @@ public class Attribute {
 		if(id.equals(ref)) {
 			value = in;
 		}
-		if(wrap != null) {
+		else {
+			if(wrap == null) {
+				wrap = new Attribute(ref);
+			}
 			wrap.setValue(ref, in);
 		}
 	}

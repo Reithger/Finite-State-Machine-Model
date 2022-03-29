@@ -8,7 +8,7 @@ import java.util.Random;
 import model.fsm.TransitionSystem;
 import model.process.coobservability.support.IllegalConfig;
 
-public class Incremental implements MemoryMeasure {
+public class Incremental {
 	
 //---  Constants   ----------------------------------------------------------------------------
 	
@@ -294,6 +294,9 @@ public class Incremental implements MemoryMeasure {
 	}
 	
 	private static boolean canReject(TransitionSystem plant, boolean spec, IllegalConfig ic) {
+		if(ic == null) {
+			return true;
+		}
 		String reachedState = navigateTransitionSystem(plant, observablePath(plant, ic.getEventPath() + (spec ? "" : ic.getEvent())));
 		if(reachedState != null) {
 			for(String s : ic.getObservedPaths()) {
@@ -360,17 +363,4 @@ public class Incremental implements MemoryMeasure {
 		return out;
 	}
 
-
-	@Override
-	public double getAverageMemoryUsage() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getMaximumMemoryUsage() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
 }

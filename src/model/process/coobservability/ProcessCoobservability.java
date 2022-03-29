@@ -31,7 +31,7 @@ public class ProcessCoobservability {
 		initialRef = init;
 		badTransRef = badTrans;
 		StateBased.assignAttributeReference(init, obs, cont);
-		Incremental.assignAttributeReference(init, obs);
+		Incremental.assignAttributeReference(obs, init);
 	}
 	
 	public static void assignCrushState(boolean in, boolean important) {
@@ -57,14 +57,10 @@ public class ProcessCoobservability {
 		return isCoobservableUStruct(ustr);
 	}
 
-	public static boolean isCoobservableUStruct(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr) {
-		ArrayList<Agent> agents = new ArrayList<Agent>();
+	public static boolean isCoobservableUStruct(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		ArrayList<Agent> age = constructAgents(getAllEvents(plants, specs), attr, agents);
 		
-		for(TransitionSystem s : specs) {
-			agents.add(new Agent(s.getEventMap()));
-		}
-		
-		return isCoobservableUStructRaw(deriveTruePlant(plants, specs, attr), attr, agents);
+		return isCoobservableUStructRaw(deriveTruePlant(plants, specs, attr), attr, age);
 	}
 	
 	private static TransitionSystem deriveTruePlant(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr) {
@@ -74,9 +70,9 @@ public class ProcessCoobservability {
 		LinkedList<StateSet> queue = new LinkedList<StateSet>();
 		HashSet<StateSet> visited = new HashSet<StateSet>();
 		ArrayList<String> stAttr = ultPlant.getStateAttributes();
-		attr.add(badTransRef);
+		stAttr.add(badTransRef);
 		ultPlant.setStateAttributes(stAttr);
-			
+		
 		StateSet.assignSizes(1, 1);
 		String[] use = new String[] {ultPlant.getStatesWithAttribute(initialRef).get(0), ultSpec.getStatesWithAttribute(initialRef).get(0)};
 		
@@ -93,7 +89,7 @@ public class ProcessCoobservability {
 			String specState = curr.getSpecState(0);
 			
 			for(String e : ultPlant.getStateTransitionEvents(plantState)) {
-				if(ultSpec.getStateEventTransitionStates(specState, e).isEmpty() ) {	//Do we need to check for bad transitions behind this?
+				if(ultSpec.getStateEventTransitionStates(specState, e) == null) {	//Do we need to check for bad transitions behind this?
 					if(ultPlant.getEventAttribute(e, controllableRef)) {
 						ultPlant.setTransitionAttribute(plantState, e, badTransRef, true);
 					}
@@ -136,7 +132,7 @@ public class ProcessCoobservability {
 
 	//-- Incremental  -----------------------------------------
 
-	public static boolean isCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr) {
+	public static boolean isCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		ConcreteMemoryMeasure cmm = new ConcreteMemoryMeasure();
 		
 		ArrayList<TransitionSystem> copyPlants = new ArrayList<TransitionSystem>();
@@ -144,15 +140,16 @@ public class ProcessCoobservability {
 		copyPlants.addAll(plants);
 		copySpecs.addAll(specs);
 		
+		ArrayList<Agent> age = constructAgents(getAllEvents(plants, specs), attr, agents);
+		
 		while(!copySpecs.isEmpty()) {
 			TransitionSystem pick = Incremental.pickComponent(null, copySpecs, null);								//Get initial spec to use (heuristics choose here)
 			ArrayList<TransitionSystem> hold = new ArrayList<TransitionSystem>();		//List to hold all the plants/specs used in the current iteration
 			copySpecs.remove(pick);
 			hold.add(pick);
-			ArrayList<Agent> agents = new ArrayList<Agent>();
-			agents.add(new Agent(pick.getEventMap()));
 			pick = parallelComp(Incremental.generateSigmaStarion(plants), pick);			//Immediately merge our sigmaStarion plant with the spec we chose
-			UStructure uStruct = constructUStructRaw(pick, attr, agents);
+			UStructure uStruct = constructUStructQuiet(pick, attr, age);
+			cmm.logMemoryUsage();
 			while(!isCoobservableUStruct(uStruct)) {
 				if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
 					printMemoryUsage(cmm);
@@ -162,7 +159,7 @@ public class ProcessCoobservability {
 				IllegalConfig counterexample = Incremental.pickCounterExample(uStruct.getFilteredIllegalConfigStates());	//Get a single bad state, probably, maybe write something so UStruct can trace it
 				TransitionSystem use = Incremental.pickComponent(copyPlants, copySpecs, counterexample);	//Heuristics go here
 				pick = parallelComp(pick, use);
-				uStruct = constructUStructRaw(pick, attr, agents);
+				uStruct = constructUStructQuiet(pick, attr, age);
 				if(copySpecs.contains(use)) {
 					hold.add(use);
 					copySpecs.remove(use);
@@ -217,6 +214,15 @@ public class ProcessCoobservability {
 	}
 	
 	public static UStructure constructUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
+		UStructure u = new UStructure(plant, attr, agents);
+		printMemoryUsage(u);
+		if(showCrushInfo) {
+			System.out.println(u.printOutCrushMaps(showImportantCrushInfo));
+		}
+		return u;
+	}
+	
+	private static UStructure constructUStructQuiet(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
 		return new UStructure(plant, attr, agents);
 	}
 	
@@ -231,9 +237,22 @@ public class ProcessCoobservability {
 	}
 	
 	private static TransitionSystem parallelComp(ArrayList<TransitionSystem> in) {
-		return ProcessDES.parallelComposition(in);
+		TransitionSystem out = ProcessDES.parallelComposition(in);
+		return out;
 	}
 
+	private static ArrayList<String> getAllEvents(ArrayList<TransitionSystem> ... in){
+		ArrayList<String> out = new ArrayList<String>();
+		HashSet<String> hold = new HashSet<String>();
+		for(ArrayList<TransitionSystem> aT : in) {
+			for(TransitionSystem t : aT) {
+				hold.addAll(t.getEventNames());
+			}
+		}
+		out.addAll(hold);
+		return out;
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private static ArrayList<Agent> constructAgents(ArrayList<String> event, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents){

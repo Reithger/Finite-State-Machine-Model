@@ -110,7 +110,7 @@ public class UStructure implements MemoryMeasure{
 		
 		LinkedList<AgentStates> queue = new LinkedList<AgentStates>();		//initialize queue
 		HashSet<String> visited = new HashSet<String>();
-
+		
 		String[] starting = new String[agents.length];
 		for(int i = 0; i < starting.length; i++) {
 			starting[i] = plant.getStatesWithAttribute(attributeInitialRef).get(0);
