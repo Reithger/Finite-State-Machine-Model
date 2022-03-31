@@ -48,9 +48,9 @@ public class CrushMap {
 			sb.append("\n");
 		}
 		
-		sb.append("By request, in particular:\n");
 		
-		if(importantStates != null) {
+		if(importantStates != null && importantStates.size() != 0) {
+			sb.append("By request, in particular:\n");
 			for(String s : importantStates) {
 				sb.append("\t" + s + ": ");
 				for(int i : crushMapping.get(s)) {

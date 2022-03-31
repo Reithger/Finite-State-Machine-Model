@@ -28,7 +28,7 @@ public class TestFunctionality {
 		FiniteStateMachine.fileConfiguration();
 		model = new Manager();
 		
-		//model.assignCoobservabilityPrintOutState(true, true);
+		model.assignCoobservabilityPrintOutState(false, false, true);
 		
 		SystemGeneration.assignManager(model);
 		
@@ -41,8 +41,9 @@ public class TestFunctionality {
 		//crushUStructCheck2();
 		//crushUStructCheck3();
 		//generateSystems();
-		//runAllTests();
+		runAllTests();
 		
+		/*
 		checkIncrementalCoobservableLiuOne();
 		model.flushFSMs();
 		checkIncrementalCoobservableLiuTwo();
@@ -52,6 +53,7 @@ public class TestFunctionality {
 		checkSystemLiuOneCoobservable();
 		model.flushFSMs();
 		checkSystemLiuTwoCoobservable();
+		*/
 		
 		//checkSystemBCoobservable();
 		//checkSystemBAltCoobservable();

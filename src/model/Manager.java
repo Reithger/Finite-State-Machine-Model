@@ -39,8 +39,8 @@ public class Manager {
 		ProcessDES.assignAttributeReferences(AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE, AttributeList.ATTRIBUTE_BAD, AttributeList.ATTRIBUTE_GOOD);
 	}
 	
-	public void assignCoobservabilityPrintOutState(boolean print, boolean important) {
-		ProcessDES.assignCoobservableCrushPrintOut(print, important);
+	public void assignCoobservabilityPrintOutState(boolean print, boolean important, boolean ustru) {
+		ProcessDES.assignCoobservableCrushPrintOut(print, important, ustru);
 	}
 	
 	//-- File Meta  -------------------------------------------

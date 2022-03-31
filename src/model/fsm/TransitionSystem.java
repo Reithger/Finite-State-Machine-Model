@@ -535,6 +535,17 @@ public class TransitionSystem {
 		return transitions.getStateEvents(state);
 	}
 	
+	public int getNumberTransitions() {
+		int out = 0;
+		for(String s : getStateNames()) {
+			for(String e : getStateTransitionEvents(s)) {
+				ArrayList<String> tra = getStateEventTransitionStates(s, e);
+				out += tra == null ? 0 : tra.size();
+			}
+		}
+		return out;
+	}
+	
 	/**
 	 * 
 	 * Presently returns null to signify no states

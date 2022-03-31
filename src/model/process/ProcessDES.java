@@ -93,8 +93,8 @@ public class ProcessDES {
 		UStructure.assignAttributeReferences(init, obs, cont, bad, good);
 	}
 	
-	public static void assignCoobservableCrushPrintOut(boolean print, boolean important) {
-		ProcessCoobservability.assignCrushState(print, important);
+	public static void assignCoobservableCrushPrintOut(boolean print, boolean important, boolean ustruct) {
+		ProcessCoobservability.assignAdditionalInfo(print, important, ustruct);
 	}
 	
 }

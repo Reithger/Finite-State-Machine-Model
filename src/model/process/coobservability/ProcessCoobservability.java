@@ -22,6 +22,7 @@ public class ProcessCoobservability {
 	
 	private static boolean showCrushInfo;
 	private static boolean showImportantCrushInfo;
+	private static boolean showUStructureInfo;
 	
 //---  Meta   ---------------------------------------------------------------------------------
 	
@@ -34,9 +35,10 @@ public class ProcessCoobservability {
 		Incremental.assignAttributeReference(obs, init);
 	}
 	
-	public static void assignCrushState(boolean in, boolean important) {
+	public static void assignAdditionalInfo(boolean in, boolean important, boolean ustru) {
 		showCrushInfo = in;
 		showImportantCrushInfo = important;
+		showUStructureInfo = ustru;
 	}
 	
 	public static void assignIncrementalOptions(int a, int b, int c) {
@@ -206,19 +208,13 @@ public class ProcessCoobservability {
 
 	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		UStructure u = new UStructure(plant, attr, constructAgents(plant.getEventNames(), attr, agents));
-		printMemoryUsage(u);
-		if(showCrushInfo) {
-			System.out.println(u.printOutCrushMaps(showImportantCrushInfo));
-		}
+		presentAdditionalInfo(u);
 		return u;
 	}
 	
 	public static UStructure constructUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
 		UStructure u = new UStructure(plant, attr, agents);
-		printMemoryUsage(u);
-		if(showCrushInfo) {
-			System.out.println(u.printOutCrushMaps(showImportantCrushInfo));
-		}
+		presentAdditionalInfo(u);
 		return u;
 	}
 	
@@ -251,6 +247,16 @@ public class ProcessCoobservability {
 		}
 		out.addAll(hold);
 		return out;
+	}
+	
+	private static void presentAdditionalInfo(UStructure u) {
+		printMemoryUsage(u);
+		if(showCrushInfo) {
+			System.out.println(u.printOutCrushMaps(showImportantCrushInfo));
+		}
+		if(showUStructureInfo) {
+			System.out.println("\t\t\t\tState Size: " + u.getUStructure().getStateNames().size() + ", Transition Size: " + u.getUStructure().getNumberTransitions());
+		}
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
