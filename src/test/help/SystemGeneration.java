@@ -31,12 +31,12 @@ public class SystemGeneration {
 		
 		initiateEvents(name, EventSets.EVENT_LIST_A, "c");
 		
-		model.addTransition(name, "1", "a1", "2");
-		model.addTransition(name, "1", "a2", "3");
-		model.addTransition(name, "2", "b1", "4");
-		model.addTransition(name, "2", "b2", "5");
-		model.addTransition(name, "3", "b1", "6");
-		model.addTransition(name, "3", "b2", "7");
+		model.addTransition(name, "1", "a_{1}", "2");
+		model.addTransition(name, "1", "a_{2}", "3");
+		model.addTransition(name, "2", "b_{1}", "4");
+		model.addTransition(name, "2", "b_{2}", "5");
+		model.addTransition(name, "3", "b_{1}", "6");
+		model.addTransition(name, "3", "b_{2}", "7");
 		
 		model.addTransition(name, "4", "c", "4");
 		model.addTransition(name, "5", "c", "5");
@@ -104,10 +104,10 @@ public class SystemGeneration {
 		
 		initiateEvents(name, EventSets.EVENT_LIST_C, "c");
 		
-		model.addTransition(name, "0", "a1", "1");
-		model.addTransition(name, "0", "b1", "1");
-		model.addTransition(name, "0", "a2", "2");
-		model.addTransition(name, "0", "b2", "2");
+		model.addTransition(name, "0", "a_{1}", "1");
+		model.addTransition(name, "0", "b_{1}", "1");
+		model.addTransition(name, "0", "a_{2}", "2");
+		model.addTransition(name, "0", "b_{2}", "2");
 		model.addTransition(name, "1", "c", "3");
 		model.addTransition(name, "2", "d", "3");
 		model.addTransition(name, "2", "c", "4");
@@ -144,24 +144,24 @@ public class SystemGeneration {
 		initiateEvents(name, EventSets.EVENT_LIST_E, "s");
 		
 		model.addTransition(name, "0", "c1", "1");
-		model.addTransition(name, "0", "a1", "2");
+		model.addTransition(name, "0", "a_{1}", "2");
 		model.addTransition(name, "0", "c2", "3");
-		model.addTransition(name, "0", "a2", "4");
+		model.addTransition(name, "0", "a_{2}", "4");
 		model.addTransition(name, "0", "c3", "5");
 
-		model.addTransition(name, "1", "a2", "6");
-		model.addTransition(name, "1", "b2", "6");
+		model.addTransition(name, "1", "a_{2}", "6");
+		model.addTransition(name, "1", "b_{2}", "6");
 
-		model.addTransition(name, "2", "b1", "6");
-		model.addTransition(name, "2", "b2", "7");
+		model.addTransition(name, "2", "b_{1}", "6");
+		model.addTransition(name, "2", "b_{2}", "7");
 
-		model.addTransition(name, "3", "a2", "7");
-		model.addTransition(name, "3", "b1", "7");
+		model.addTransition(name, "3", "a_{2}", "7");
+		model.addTransition(name, "3", "b_{1}", "7");
 
-		model.addTransition(name, "4", "b1", "8");
+		model.addTransition(name, "4", "b_{1}", "8");
 		
-		model.addTransition(name, "5", "a1", "8");
-		model.addTransition(name, "5", "b2", "8");
+		model.addTransition(name, "5", "a_{1}", "8");
+		model.addTransition(name, "5", "b_{2}", "8");
 
 		model.addTransition(name, "6", "d", "9");
 		model.addTransition(name, "7", "d", "10");
@@ -184,24 +184,24 @@ public class SystemGeneration {
 
 		initiateEvents(name, EventSets.EVENT_LIST_FINN5, "s");
 		
-		model.addTransition(name, "0", "a1", "1");
-		model.addTransition(name, "0", "a2", "2");
-		model.addTransition(name, "0", "a3", "3");
-		model.addTransition(name, "0", "a4", "4");
-		model.addTransition(name, "0", "a5", "5");
-		model.addTransition(name, "0", "a6", "6");
-		model.addTransition(name, "1", "b1", "7");
-		model.addTransition(name, "1", "b2", "8");
-		model.addTransition(name, "2", "b2", "9");
-		model.addTransition(name, "2", "b3", "10");
-		model.addTransition(name, "3", "b3", "11");
-		model.addTransition(name, "3", "b4", "12");
-		model.addTransition(name, "4", "b4", "13");
-		model.addTransition(name, "4", "b5", "14");
-		model.addTransition(name, "5", "b5", "15");
-		model.addTransition(name, "5", "b6", "16");
-		model.addTransition(name, "6", "b6", "17");
-		model.addTransition(name, "6", "b1", "18");
+		model.addTransition(name, "0", "a_{1}", "1");
+		model.addTransition(name, "0", "a_{2}", "2");
+		model.addTransition(name, "0", "a_{3}", "3");
+		model.addTransition(name, "0", "a_{4}", "4");
+		model.addTransition(name, "0", "a_{5}", "5");
+		model.addTransition(name, "0", "a_{6}", "6");
+		model.addTransition(name, "1", "b_{1}", "7");
+		model.addTransition(name, "1", "b_{2}", "8");
+		model.addTransition(name, "2", "b_{2}", "9");
+		model.addTransition(name, "2", "b_{3}", "10");
+		model.addTransition(name, "3", "b_{3}", "11");
+		model.addTransition(name, "3", "b_{4}", "12");
+		model.addTransition(name, "4", "b_{4}", "13");
+		model.addTransition(name, "4", "b_{5}", "14");
+		model.addTransition(name, "5", "b_{5}", "15");
+		model.addTransition(name, "5", "b_{6}", "16");
+		model.addTransition(name, "6", "b_{6}", "17");
+		model.addTransition(name, "6", "b_{1}", "18");
 		
 		model.addTransition(name, "7", "s", "7");
 		model.addTransition(name, "8", "s", "8");
@@ -312,7 +312,7 @@ public class SystemGeneration {
 	private static void generateLiuH2(String name) {
 		generateSystemDefault(name);
 	}
-	
+
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private static void generateSystemDefault(String name) {

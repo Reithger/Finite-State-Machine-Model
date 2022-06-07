@@ -2,6 +2,7 @@ package model.convert;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import model.AttributeList;
 import model.fsm.TransitionSystem;
@@ -27,6 +28,15 @@ public class GenerateDot {
 																			 new ColorPack("8b", "45", "13"),
 																			 };
 	
+	private final static String SUB_START = "_{";
+	private final static String SUP_START = "^{";
+	private final static String SCRIPT_END = "}";
+	
+	private final static String SUB_CONVERT_START = "<sub>";
+	private final static String SUB_CONVERT_END = "</sub>";
+	private final static String SUP_CONVERT_START = "<SUP>";
+	private final static String SUP_CONVERT_END = "</SUP>";
+	
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public static String generateDot(TransitionSystem in) {
@@ -39,7 +49,7 @@ public class GenerateDot {
 		
 		for(String e : in.getStateNames()) {
 			nameMap.put(e, "n" + counter++);
-			String line = "\"" + nameMap.get(e) + "\"[label=\"" + e + "\"shape=" + generateStateDot(in, e);
+			String line = "\"" + nameMap.get(e) + "\"[label= <" + processObjectNameScripts(e) + "> shape=" + generateStateDot(in, e);
 			states.add(line);
 			Boolean init = in.getStateAttribute(e, AttributeList.ATTRIBUTE_INITIAL);
 			if(init != null && init) {
@@ -126,7 +136,7 @@ public class GenerateDot {
 	 */
 	
 	private static String generateTransitionDot(TransitionSystem in, String state, String event) {
-		String trans = "[label = \"" + event + "\" color=\"";
+		String trans = "[label = <" + processObjectNameScripts(event) + "> color=\"";
 		Boolean obs = in.getEventAttribute(event, AttributeList.ATTRIBUTE_OBSERVABLE);
 		Boolean atkObs = in.getEventAttribute(event, AttributeList.ATTRIBUTE_ATTACKER_OBSERVABLE);
 		Boolean cont = in.getEventAttribute(event, AttributeList.ATTRIBUTE_CONTROLLABLE);
@@ -139,6 +149,20 @@ public class GenerateDot {
 		trans += bad != null && bad ? "dashed" : "";
 		trans += "\"];";
 		return trans;
+	}
+	
+	private static String processObjectNameScripts(String in) {
+		String out = new String(in.toCharArray());
+		while(out.contains(SUB_START)) {
+			out = out.substring(0, out.indexOf(SUB_START)) + out.substring(out.indexOf(SUB_START)).replaceFirst(SCRIPT_END, SUB_CONVERT_END);
+			out = out.replaceFirst(Pattern.quote(SUB_START), SUB_CONVERT_START);
+			break;
+		}
+		while(out.contains(SUP_START)) {
+			out = out.substring(0, out.indexOf(SUP_START)) + out.substring(out.indexOf(SUP_START)).replaceFirst(SCRIPT_END, SUP_CONVERT_END);
+			out = out.replaceFirst(Pattern.quote(SUP_START), SUP_CONVERT_START);
+		}
+		return out;
 	}
 	
 }

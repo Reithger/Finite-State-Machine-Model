@@ -8,6 +8,7 @@ import controller.convert.FormatConversion;
 import model.Manager;
 import test.help.AgentChicanery;
 import test.help.EventSets;
+import test.help.RandomGeneration;
 import test.help.SystemGeneration;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
@@ -23,7 +24,7 @@ public class TestFunctionality {
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		FormatConversion.assignPaths(FiniteStateMachine.ADDRESS_IMAGES, FiniteStateMachine.ADDRESS_CONFIG);
 		FiniteStateMachine.fileConfiguration();
 		model = new Manager();
@@ -41,7 +42,10 @@ public class TestFunctionality {
 		//crushUStructCheck2();
 		//crushUStructCheck3();
 		//generateSystems();
-		runAllTests();
+		//runAllTests();
+		
+		RandomGeneration.setupRandomFSMConditions(model, 1, 1, 1);
+		makeImageDisplay(RandomGeneration.generateRandomFSM("rand", model, 5, 3, 2, true), "Rand");
 		
 		/*
 		checkIncrementalCoobservableLiuOne();
@@ -387,11 +391,7 @@ public class TestFunctionality {
 	private static void generateSoloSpecPlant(String plant, String spec) {
 		model.convertSoloPlantSpec(plant, spec);
 	}
-	
-	private static String generateRandomFSM(String nom, Manager model, int numStates, int numEvents, int numTransition, boolean det, ArrayList<String> strAtt, ArrayList<String> eveAtt, ArrayList<String> tranAtt, ArrayList<Integer> numbers) {
-		return model.readInFSM(model.generateRandomFSM(nom, numStates, numEvents, numTransition, det, strAtt, eveAtt, tranAtt, numbers));
-	}
-	
+
 	private static void makeImageDisplay(String in, String nom) {
 		String path = FormatConversion.createImgFromFSM(model.generateFSMDot(in), nom);
 		System.out.println(path);

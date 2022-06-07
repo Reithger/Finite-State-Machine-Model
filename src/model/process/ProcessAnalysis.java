@@ -25,15 +25,24 @@ public class ProcessAnalysis {
 	 * It marks bad states along the way.
 	 * 
 	 * @return - Returns a boolean value; true if the FSM is found to be blocking, false otherwise.
+	 * @throws Exception 
 	 */
 	
-	public static Boolean isBlocking(TransitionSystem in) {
+	public static Boolean isBlocking(TransitionSystem in) throws Exception {
 		if(!in.hasStateAttribute(attributeInitialRef)) {
 			return null;
 		}
 		TransitionSystem coAccess = ProcessClean.makeCoAccessible(in);
 		return in.getStateNames().size() == coAccess.getStateNames().size();
 	} // isBlocking()
+	
+	public static Boolean isAccessible(TransitionSystem in) {
+		if(!in.hasStateAttribute(attributeInitialRef)) {
+			return null;
+		}
+		TransitionSystem access = ProcessClean.makeAccessible(in);
+		return in.getStateNames().size() == access.getStateNames().size();
+	}
 	
 	public static ArrayList<String> findPrivateStates(TransitionSystem in){
 		if(!in.hasStateAttribute(attributePrivateRef)) {

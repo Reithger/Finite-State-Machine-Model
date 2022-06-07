@@ -91,8 +91,28 @@ public class Manager {
 		return nom;
 	}
 	
-	public String generateRandomFSM(String nom, int numStates, int numEvents, int numTrans, boolean det, ArrayList<String> stateAttr, ArrayList<String> eventAttr, ArrayList<String> transAttr, ArrayList<Integer> numbers) {
-		return GenerateFSM.createNewFSM(nom, numStates, numEvents, numTrans, det, stateAttr, eventAttr, transAttr, numbers);
+	public void assignRandomFSMStateConfiguration(ArrayList<String> stateAttr, ArrayList<Integer> stateNumb) {
+		GenerateFSM.assignStateAttributes(stateAttr, stateNumb);
+	}
+	
+	public void assignRandomFSMDefaultStateSet(ArrayList<String> defaultState) {
+		GenerateFSM.assignDefaultStateSet(defaultState);
+	}
+	
+	public void assignRandomFSMEventConfiguration(ArrayList<String> eventAttr, ArrayList<Integer> eventNumb) {
+		GenerateFSM.assignEventAttributes(eventAttr, eventNumb);
+	}
+	
+	public void assignRandomFSMDefaultEventSet(ArrayList<String> defaultEvent) {
+		GenerateFSM.assignDefaultEventSet(defaultEvent);
+	}
+
+	public void assignRandomFSMTransitionConfiguration(ArrayList<String> transAttr, ArrayList<Integer> transNumb) {
+		GenerateFSM.assignTransitionAttributes(transAttr, transNumb);
+	}
+	
+	public String generateRandomFSM(String nom, int numStates, int numEvents, int numTrans, boolean det) throws Exception {
+		return GenerateFSM.createNewFSM(nom, numStates, numEvents, numTrans, det);
 	}
 	
 	//-- Processes  -------------------------------------------
@@ -143,7 +163,7 @@ public class Manager {
 	
 	//-- Clean  -----------------------------------------------
 	
-	public String trim(String ref) {
+	public String trim(String ref) throws Exception {
 		if(bail(ref)) {
 			return null;
 		}
@@ -167,7 +187,7 @@ public class Manager {
 		return out.getId();
 	}
 	
-	public String makeCoAccessible(String ref) {
+	public String makeCoAccessible(String ref) throws Exception {
 		if(bail(ref)) {
 			return null;
 		}
@@ -195,11 +215,18 @@ public class Manager {
 		return fsms.get(ref).eventExists(nom);
 	}
 	
-	public Boolean isBlocking(String ref) {
+	public Boolean isBlocking(String ref) throws Exception {
 		if(bail(ref)) {
 			return null;
 		}
 		return ProcessDES.isBlocking(fsms.get(ref));
+	}
+	
+	public Boolean isAccessible(String ref) throws Exception {
+		if(bail(ref)) {
+			return null;
+		}
+		return ProcessDES.isAccessible(fsms.get(ref));
 	}
 	
 	public Boolean testOpacity(String ref) {
@@ -342,7 +369,7 @@ public class Manager {
 		if(ref == null || fsms.get(ref) == null) {
 			return;
 		}
-		fsms.get(ref).setEventAttributes(eventAttr);
+		fsms.get(ref).addEventAttributes(eventAttr);
 	}
 	
 	public void assignTransitionAttributes(String ref, ArrayList<String> tranAttr) {
@@ -496,7 +523,7 @@ public class Manager {
 		if(ref == null || fsms.get(ref) == null) {
 			return;
 		}
-		fsms.get(ref).setEventAttributes(attri);
+		fsms.get(ref).overwriteEventAttributes(attri);
 	}
 	
 	public void setFSMTransitionAttributes(String ref, ArrayList<String> attri) {

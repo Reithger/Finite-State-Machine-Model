@@ -103,7 +103,20 @@ public class EventMap {
 
 //---  Setter Methods   -----------------------------------------------------------------------
 
-	public void setAttributes(ArrayList<String> attrib) {
+	public void addAttributes(ArrayList<String> attrib) {
+		for(String s : attrib) {
+			if(!attributes.contains(s)) {
+				attributes.add(s);
+			}
+		}
+		for(Entity e : events.values()) {
+			LinkedList<String> use = new LinkedList<String>();
+			use.addAll(attributes);
+			e.addAttributes(use);
+		}
+	}
+	
+	public void overwriteAttributes(ArrayList<String> attrib) {
 		attributes = attrib;
 		for(Entity e : events.values()) {
 			LinkedList<String> use = new LinkedList<String>();

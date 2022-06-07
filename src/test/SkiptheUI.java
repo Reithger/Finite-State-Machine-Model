@@ -299,11 +299,6 @@ public class SkiptheUI {
 	
 //---  Helper Methods   -----------------------------------------------------------------------
 	
-	private static String generateRandomFSM(String nom, int numStates, int numEvents, int numTransition, boolean det, ArrayList<String> strAtt, ArrayList<String> eveAtt, ArrayList<String> tranAtt, ArrayList<Integer> numbers) {
-		return model.readInFSM(model.generateRandomFSM(nom, numStates, numEvents, numTransition, det, strAtt, eveAtt, tranAtt, numbers));
-	}
-	
-	
 	private static void makeImageDisplay(String in) {
 		String path = FormatConversion.createImgFromFSM(model.generateFSMDot(in), in);
 		System.out.println(path);

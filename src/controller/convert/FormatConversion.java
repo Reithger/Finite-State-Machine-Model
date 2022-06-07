@@ -24,6 +24,7 @@ public class FormatConversion {
 	
 	private final static String TYPE_SVG = "svg";
 	private final static String TYPE_JPG = "jpg";
+	private final static String TYPE_PNG = "png";
 	private final static int DPI_INCREASE = 8;
 	
 //---  Instance Variables   -------------------------------------------------------------------
@@ -54,7 +55,7 @@ public class FormatConversion {
 	
 	public static String createImgFromFSM(String fsm, String name){
 		if(initializeCheck()) {
-		    return generateDotFile(fsm, name, TYPE_JPG).getAbsolutePath();
+		    return generateDotFile(fsm, name, TYPE_PNG).getAbsolutePath();
 		}
 		return null;
 	}

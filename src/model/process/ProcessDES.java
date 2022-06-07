@@ -31,7 +31,7 @@ public class ProcessDES {
 	
 	//-- Clean  -----------------------------------------------
 	
-	public static TransitionSystem trim(TransitionSystem in) {
+	public static TransitionSystem trim(TransitionSystem in) throws Exception {
 		return ProcessClean.trim(in);
 	}
 	
@@ -39,14 +39,18 @@ public class ProcessDES {
 		return ProcessClean.makeAccessible(in);
 	}
 	
-	public static TransitionSystem makeCoAccessible(TransitionSystem in) {
+	public static TransitionSystem makeCoAccessible(TransitionSystem in) throws Exception {
 		return ProcessClean.makeCoAccessible(in);
 	}
 	
 	//-- Analysis  --------------------------------------------
 	
-	public static Boolean isBlocking(TransitionSystem in) {
+	public static Boolean isBlocking(TransitionSystem in) throws Exception {
 		return ProcessAnalysis.isBlocking(in);
+	}
+	
+	public static Boolean isAccessible(TransitionSystem in) throws Exception {
+		return ProcessAnalysis.isAccessible(in);
 	}
 	
 	public static ArrayList<String> findPrivateStates(TransitionSystem in){

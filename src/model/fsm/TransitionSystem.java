@@ -123,7 +123,7 @@ public class TransitionSystem {
 
 	public void copyAttributes(TransitionSystem ot) {
 		setStateAttributes(ot.getStateAttributes());
-		setEventAttributes(ot.getEventAttributes());
+		overwriteEventAttributes(ot.getEventAttributes());
 		setTransitionAttributes(ot.getTransitionAttributes());
 	}
 	
@@ -359,8 +359,12 @@ public class TransitionSystem {
 
 	//-- Event  -----------------------------------------------
 	
-	public void setEventAttributes(ArrayList<String> attrib) {
-		events.setAttributes(attrib);
+	public void addEventAttributes(ArrayList<String> attrib) {
+		events.addAttributes(attrib);
+	}
+	
+	public void overwriteEventAttributes(ArrayList<String> attrib) {
+		events.overwriteAttributes(attrib);
 	}
 	
 	public void setEventAttribute(String nom, String ref, boolean val) {

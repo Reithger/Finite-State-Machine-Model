@@ -313,12 +313,12 @@ public class FiniteStateMachine implements InputReceiver{
 		String ret = "";
 		switch(code) {
 			case CodeReference.CODE_TRIM:
-				ret = model.trim(currFSM);
-				if(ret == null) {
-					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to trim did not possess attributes: State - Initial, Marked");
-				}
-				else {
+				try {
+					ret = model.trim(currFSM);
 					allotFSMToView(ret);
+				} catch (Exception e) {
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to trim did not possess attributes: State - Initial, Marked");
+					e.printStackTrace();
 				}
 				break;
 			case CodeReference.CODE_ACCESSIBLE:
@@ -331,12 +331,12 @@ public class FiniteStateMachine implements InputReceiver{
 				}
 				break;
 			case CodeReference.CODE_CO_ACCESSIBLE:
-				ret = model.makeCoAccessible(currFSM);
-				if(ret == null) {
-					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to make coaccessible did not possess attributes: State - Initial, Marked");
-				}
-				else {
+				try {
+					ret = model.makeCoAccessible(currFSM);
 					allotFSMToView(ret);
+				} catch (Exception e) {
+					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to make coaccessible did not possess attributes: State - Initial, Marked");
+					e.printStackTrace();
 				}
 				break;
 			case CodeReference.CODE_OBSERVER:
@@ -377,12 +377,13 @@ public class FiniteStateMachine implements InputReceiver{
 				requestFSMChoice(code);
 				break;
 			case CodeReference.CODE_BLOCKING:
-				Boolean res = model.isBlocking(currFSM);
-				if(res == null) {
+				Boolean res;
+				try {
+					res = model.isBlocking(currFSM);
+					view.displayAlert("FSM is " + (res ? "" : "not") + " blocking");
+				} catch (Exception e) {
 					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "Error: FSM given to query Blocking did not possess attributes: State - Initial");
-				}
-				else {
-					view.displayAlert((currFSM == null) ? "Error: No selected FSM" : "FSM is " + (res ? "" : "not") + " blocking");
+					e.printStackTrace();
 				}
 				break;
 			case CodeReference.CODE_STATE_EXISTS:
@@ -545,7 +546,13 @@ public class FiniteStateMachine implements InputReceiver{
 				numbers.add(Integer.parseInt(two[1]));
 			}
 			
-			allotFSMToView(	model.readInFSM(model.generateRandomFSM(nom, st, ev, tr, det, stateAttr, eventAttr, transAttr, numbers)));
+			//TODO: Gotta fix up the pipeline for the new input format; a means of setting up the attributes/numbers or default sets pre-generation
+			
+			try {
+				allotFSMToView(	model.readInFSM(model.generateRandomFSM(nom, st, ev, tr, det)));
+			} catch (Exception e) {
+				view.displayAlert("Failure to Generate new Random FSM, check you have assigned Attributes Correctly.");
+			}
 		}
 	}
 

@@ -1,6 +1,7 @@
 package model.convert;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -41,84 +42,160 @@ public class GenerateFSM {
 	private static String REGION_SEPARATOR;
 	private static String TRUE_SYMBOL;
 	private static String FALSE_SYMBOL;
-
+	
+//---  Instance Variables   -------------------------------------------------------------------
+	
+	private static ArrayList<String> stateAttributes;
+	private static ArrayList<Integer> stateNumbers;
+	private static ArrayList<String> eventAttributes;
+	private static ArrayList<Integer> eventNumbers;
+	private static ArrayList<String> transitionAttributes;
+	private static ArrayList<Integer> transitionNumbers;
+	
+	private static ArrayList<String> defaultStateSet;
+	private static ArrayList<String> defaultEventSet;
+	
+//---  Static Assignment   --------------------------------------------------------------------
+	
+	public static void assignStateAttributes(ArrayList<String> in, ArrayList<Integer> amounts) {
+		stateAttributes = in;
+		stateNumbers = amounts;
+	}
+	
+	public static void assignEventAttributes(ArrayList<String> in, ArrayList<Integer> amounts) {
+		eventAttributes = in;
+		eventNumbers = amounts;
+	}
+	
+	public static void assignTransitionAttributes(ArrayList<String> in, ArrayList<Integer> amounts) {
+		transitionAttributes = in;
+		transitionNumbers = amounts;
+	}
+	
+	public static void assignDefaultStateSet(ArrayList<String> in) {
+		defaultStateSet = in;
+	}
+	
+	public static void wipeDefaultStateSet() {
+		defaultStateSet = null;
+	}
+	
+	public static void assignDefaultEventSet(ArrayList<String> in) {
+		defaultEventSet = in;
+	}
+	
+	public static void wipeDefaultEventSet() {
+		defaultEventSet = null;
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
-
+	
 	/**
-	 * This method generates a file corresponding to the nomenclature of an FSM's file input via the
-	 * properties described by its parameters: Number of States, Marked States, Unique Events, Paths,
-	 * Initial States, Private States, Unobservable Events, and Uncontrollable Events.
+	 * The produced FSM object will be randomized according to the bounds described by the provided arguments.
 	 * 
-	 * The produced FSM object will be randomized according to the bounds described by the provided arguments,
-	 * saving the produced file to the location described by the input and returning the exact address of this
-	 * new file as a String object.
+	 * Arguments for sizeStates and sizeEvents are ignored in the case that default sets have been assigned to the GenerateFSM class.
 	 * 
-	 * File type: .fsm
-	 * 
-	 * @param sizeStates - int value describing how many States to include in the FSM.
-	 * @param sizeMarked - int value describing how many Marked States to include in the FSM.
-	 * @param sizeEvents - int value describing how many Unique Events to include in the FSM.
-	 * @param sizePaths - int value describing the maximal number of Paths leading out from a given State in the FSM.
-	 * @param sizeInitial - int value describing how many Initial States to include in the FSM.
-	 * @param sizePrivate - int value describing how many Private States to include in the FSM.
-	 * @param sizeUnobserv - int value describing how many Events to mark as Unobservable to the System in the FSM. 
-	 * @param sizeAtacker - int value describing how many Events to mark as Unobservable to the Attacker in the FSM on top of those to the System.
-	 * @param sizeControl - int value describing how many Events to mark as Uncontrollable in the FSM.
-	 * @param nonDet - boolean value denoting whether or not the FSM is Deterministic or Non-Deterministic.
-	 * @param name - String object used to denote the title of the File being generated.
-	 * @param filePath - String object specifying where in the file system to place the file.
-	 * @return - Returns a String describing the location of the generated File in the file system.
+	 * @param name
+	 * @param sizeStates
+	 * @param sizeEvents
+	 * @param sizeTrans
+	 * @param nonDet
+	 * @return
+	 * @throws Exception
 	 */
 
-	public static String createNewFSM(String name, int sizeStates, int sizeEvents, int sizeTrans, boolean nonDet, ArrayList<String> stateAttri, ArrayList<String> eventAttri, ArrayList<String> transAttri, ArrayList<Integer> numbers) {
+	public static String createNewFSM(String name, int sizeStates, int sizeEvents, int sizeTrans, boolean det) throws Exception{
+		if(stateAttributes == null || eventAttributes == null || transitionAttributes == null) {
+			throw new Exception("Error: FSM Attribute Component Not Defined; Check State/Event/Transition Attribute Assignment");
+		}
 		StringBuilder out = new StringBuilder();
 		out.append(name + "\n");
 		out.append(REGION_SEPARATOR + "\n");
-		writeAttribute(out, stateAttri);
-		writeAttribute(out, eventAttri);
-		writeAttribute(out, transAttri);
+		writeAttribute(out, stateAttributes);
+		writeAttribute(out, eventAttributes);
+		writeAttribute(out, transitionAttributes);
 		out.append(REGION_SEPARATOR + "\n");
 		
 		ArrayList<Integer> track = new ArrayList<Integer>();
-		for(int i : numbers) {
+		for(int i = 0; i < stateNumbers.size() + eventNumbers.size() + transitionNumbers.size(); i++) {
 			track.add(0);
 		}
 		
 		Random rand = new Random();
 		
-		for(int i = 0; i < sizeStates; i++) {
-			String line = generateName(i, false);
-			line += writeAttributes(getRandomValue(rand), sizeStates, i, stateAttri, 0, numbers, track);
+		HashMap<Integer, String> stateNames = defaultStateSet == null ? writeComponentGenerative(out, rand, sizeStates, stateAttributes, stateNumbers, true) : writeComponentDefaultSet(out, rand, defaultStateSet, stateAttributes, stateNumbers);
+		
+		HashMap<Integer, String> eventNames = defaultEventSet == null ? writeComponentGenerative(out, rand, sizeEvents, eventAttributes, eventNumbers, false) : writeComponentDefaultSet(out, rand, defaultEventSet, eventAttributes, eventNumbers);
+		
+		writeTransitions(out, rand, stateNames, eventNames, sizeTrans, det);
+		
+		return out.toString();
+	}
+	
+	private static HashMap<Integer, String> writeComponentGenerative(StringBuilder out, Random rand, int sizeComponent, ArrayList<String> attributes, ArrayList<Integer> numbers, boolean stateNames) {
+		ArrayList<Integer> track = new ArrayList<Integer>();
+		for(Integer i : numbers) {
+			track.add(0);
+		}
+		HashMap<Integer, String> nameMapping = new HashMap<Integer, String>();
+		for(int i = 0; i < sizeComponent; i++) {
+			String name = generateName(i, stateNames);
+			nameMapping.put(i, name);
+			String line = name + writeAttributes(getRandomValue(rand), sizeComponent, i, attributes, numbers, track);
 			out.append(line + "\n");
 		}
 		out.append(REGION_SEPARATOR + "\n");
-		for(int i = 0; i < sizeEvents; i++) {
-			String line = generateName(i, true);
-			line += writeAttributes(getRandomValue(rand), sizeEvents, i, eventAttri, stateAttri.size(), numbers, track);
+		return nameMapping;
+	}
+	
+	private static HashMap<Integer, String> writeComponentDefaultSet(StringBuilder out, Random rand, ArrayList<String> components, ArrayList<String> attributes, ArrayList<Integer> numbers){
+		ArrayList<Integer> track = new ArrayList<Integer>();
+		for(Integer i : numbers) {
+			track.add(0);
+		}
+		HashMap<Integer, String> nameMapping = new HashMap<Integer, String>();
+		for(int i = 0; i < components.size(); i++) {
+			String name = components.get(i);
+			nameMapping.put(i, name);
+			String line = name + writeAttributes(getRandomValue(rand), components.size(), i, attributes, numbers, track);
 			out.append(line + "\n");
 		}
 		out.append(REGION_SEPARATOR + "\n");
+		return nameMapping;
+	}
+	
+	private static StringBuilder writeTransitions(StringBuilder out, Random rand, HashMap<Integer, String> stateNames, HashMap<Integer, String> eventNames, int sizeTrans, boolean isDet) {	
+		ArrayList<Integer> track = new ArrayList<Integer>();
+		for(Integer i : transitionNumbers) {
+			track.add(0);
+		}
+		int sizeStates = stateNames.keySet().size();
+		int sizeEvents = eventNames.keySet().size();
+		ArrayList<Integer> numTransPerState = new ArrayList<Integer>();
 		for(int i = 0; i < sizeStates; i++) {
-			int numTr = rand.nextInt(sizeTrans) + 1;
+			numTransPerState.add(rand.nextInt(sizeTrans) + 1);
+		}
+		for(int i = 0; i < sizeStates; i++) {
+			int numTr = numTransPerState.get(i);
 			HashSet<Integer> det = new HashSet<Integer>();
 			for(int j = 0; j < numTr; j++) {
 				int state1 = i;
 				int state2 = rand.nextInt(sizeStates);
 				int event = rand.nextInt(sizeEvents);
-				while(nonDet && det.contains(event) && det.size() < sizeEvents) {
+				while(isDet && det.contains(event) && det.size() < sizeEvents) {
 					event = rand.nextInt(sizeEvents);
 				}
-				if(nonDet && det.contains(event)) {
+				if(isDet && det.contains(event)) {
 					continue;
 				}
 				det.add(event);
-				String line = generateName(state1, false) + SEPARATOR + generateName(event, true) + SEPARATOR + generateName(state2, false);
-				line += writeAttributes(getRandomValue(rand), sizeTrans, i, transAttri, stateAttri.size() + eventAttri.size(), numbers, track);
+				String line = stateNames.get(state1) + SEPARATOR + eventNames.get(event) + SEPARATOR + stateNames.get(state2);
+				//TODO: Examine use of sizeTrans here for proportion of transition attributes
+				line += writeAttributes(getRandomValue(rand), numTransPerState.size(), i, transitionAttributes, transitionNumbers, track);
 				out.append(line + "\n");
 			}
 		}
-		
-		return out.toString();
+		return out;
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -134,7 +211,7 @@ public class GenerateFSM {
 	
 	private static String generateName(int i, boolean character) {
 		String out = "";
-		String language = character ? ALPHABET_EVENT : ALPHABET_STATE;
+		String language = character ? ALPHABET_STATE : ALPHABET_EVENT;
 		do {
 			int use = i % (language.length());
 			out = language.charAt(use) + out;
@@ -148,13 +225,13 @@ public class GenerateFSM {
 		return rand.nextInt(MAX_PERCENTAGE_VALUE);
 	}
 	
-	private static String writeAttributes(int rand, int size, int index, ArrayList<String> attri, int offset, ArrayList<Integer> numbers, ArrayList<Integer> track) {
+	private static String writeAttributes(int rand, int size, int index, ArrayList<String> attri, ArrayList<Integer> numbers, ArrayList<Integer> track) {
 		String line = "";
 		for(int j = 0; j < attri.size(); j++) {
-			int prop = MAX_PERCENTAGE_VALUE * numbers.get(j + offset) / size;
-			boolean result = (track.get(offset + j) < numbers.get(j + offset) && (rand <= prop || size - index == numbers.get(j + offset) - track.get(j + offset)));
+			int prop = MAX_PERCENTAGE_VALUE * numbers.get(j) / size;
+			boolean result = (track.get(j) < numbers.get(j) && (rand <= prop || size - index == numbers.get(j) - track.get(j)));
 			line += SEPARATOR + (result ? TRUE_SYMBOL : FALSE_SYMBOL);
-			track.set(j + offset, track.get(j + offset) + (result ? 1 : 0));
+			track.set(j, track.get(j) + (result ? 1 : 0));
 		}
 		return line;
 	}

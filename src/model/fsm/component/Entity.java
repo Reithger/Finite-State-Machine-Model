@@ -60,8 +60,9 @@ public class Entity {
 	public void addAttribute(String attr, boolean set) {
 		if(wrap == null) {
 			wrap = new Attribute(attr);
+			wrap.setValue(attr, set);
 		}
-		if(wrap.getValue(attr) == null) {
+		else {
 			wrap.setValue(attr, set);
 		}
 	}
@@ -85,11 +86,19 @@ public class Entity {
 		wrap.setValue(ref, val);
 	}
 
-	public void setAttributes(LinkedList<String> refs) {
+	public void addAttributes(LinkedList<String> refs) {
 		if(refs != null && refs.size() != 0) {
 			for(String s : refs) {
 				addAttribute(s, false);
 			}
+		}
+	}
+	
+	public void setAttributes(LinkedList<String> refs) {
+		Attribute hold = wrap;
+		wipeAttributes();
+		for(String s : refs) {
+			addAttribute(s, hold == null || hold.getValue(s) == null ? false : hold.getValue(s));
 		}
 	}
 	

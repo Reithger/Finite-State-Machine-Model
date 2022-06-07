@@ -8,6 +8,10 @@ import model.fsm.TransitionSystem;
 
 public class ProcessClean {
 	
+//---  Constants   ----------------------------------------------------------------------------
+	
+	private static Exception BAD_STATE_ATTRIBUTES = new Exception("Invalid State Attributes in Source TransitionSystem");
+	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	public static String attributeInitialRef;
@@ -28,11 +32,12 @@ public class ProcessClean {
 	 * 
 	 * @return - Returns a TransitionSystem<<r>T> object representing the trimmed
 	 * version of the calling TransitionSystem object.
+	 * @throws Exception 
 	 */
 	
-	public static TransitionSystem trim(TransitionSystem in) {
+	public static TransitionSystem trim(TransitionSystem in) throws Exception {
 		if(!in.hasStateAttribute(attributeInitialRef) || !in.hasStateAttribute(attributeMarkedRef)) {
-			return null;
+			throw BAD_STATE_ATTRIBUTES;
 		}
 		TransitionSystem out = in.copy();
 		out = makeAccessible(out);
@@ -104,9 +109,9 @@ public class ProcessClean {
 	 * TransitionSystem.
 	 */
 	
-	public static TransitionSystem makeCoAccessible(TransitionSystem in) {
+	public static TransitionSystem makeCoAccessible(TransitionSystem in) throws Exception{
 		if(!in.hasStateAttribute(attributeInitialRef) || !in.hasStateAttribute(attributeMarkedRef)) {
-			return null;
+			throw BAD_STATE_ATTRIBUTES;
 		}
 		TransitionSystem out = new TransitionSystem(in.getId() + "_coaccess");
 		out.copyAttributes(in);

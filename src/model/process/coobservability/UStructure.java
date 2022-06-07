@@ -236,7 +236,7 @@ public class UStructure implements MemoryMeasure{
 		
 		//System.out.println(spaceUsage);
 		
-		uStructure.setEventAttributes(new ArrayList<String>());		//Not sure why, probably to avoid weird stuff on the output graph?
+		uStructure.overwriteEventAttributes(new ArrayList<String>());		//Not sure why, probably to avoid weird stuff on the output graph?
 	}
 	
 	private TransitionSystem initializeUStructure(TransitionSystem plant) {
