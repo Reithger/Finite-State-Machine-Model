@@ -44,13 +44,30 @@ public class TestFunctionality {
 		//generateSystems();
 		//runAllTests();
 		
-		RandomGeneration.setupRandomFSMConditions(model, 1, 1, 1);
-		makeImageDisplay(RandomGeneration.generateRandomFSM("rand", model, 5, 3, 2, true), "Rand");
+		//RandomGeneration.setupRandomFSMConditions(model, 1, 1, 1);
+		//makeImageDisplay(RandomGeneration.generateRandomFSM("rand", model, 5, 3, 2, true), "Rand");
+		
+		//runAllCoobsTests();
+		//runAllSBTests();
+		
+		//runAllTests();
+
+		
+		//runAllSBTests();
+		//runAllIncrementalCoobsTests();
+		
+		//checkSystemDSBCoobservable();
+		
+		autoTestNewRandomSystem("test", 2, 2, 5, 2, 4, 2, .35, 2, 0, .3, .3);
+
+		//generateSystems();
+		
+		//checkSystemUrvashiSBCoobservable();
 		
 		/*
-		checkIncrementalCoobservableLiuOne();
+		checkSystemLiuOneIncrementalCoobservable();
 		model.flushFSMs();
-		checkIncrementalCoobservableLiuTwo();
+		checkSystemLiuTwoIncrementalCoobservable();
 		
 		model.flushFSMs();
 		
@@ -67,26 +84,79 @@ public class TestFunctionality {
 //---  Automated Testing   --------------------------------------------------------------------
 	
 	private static void runAllTests() {
-		System.out.println("System A Coobservability: \t");
-		checkSystemACoobservable();
-		System.out.println("System A SB Coobservability: \t");
+		System.out.println("\n\t\t\t\t~~~ Testing System A ~~~\n");
+		checkSystemACoobservable(false);
 		checkSystemASBCoobservable();
-		System.out.println("System B Coobservability: \t");
-		checkSystemBCoobservable();
-		System.out.println("System B SB Coobservability: \t");
+
+		System.out.println("\n\t\t\t\t~~~ Testing System B ~~~\n");
+		checkSystemBCoobservable(false);
 		checkSystemBSBCoobservable();
-		System.out.println("System C Coobservability: \t");
-		checkSystemCCoobservable();
-		System.out.println("System C SB Coobservability: \t");
+
+		System.out.println("\n\t\t\t\t~~~ Testing System C ~~~\n");
+		checkSystemCCoobservable(false);
 		checkSystemCSBCoobservable();
-		System.out.println("System D Coobservability: \t");
-		checkSystemDCoobservable();
-		System.out.println("System D SB Coobservability: \t");
+
+		System.out.println("\n\t\t\t\t~~~ Testing System D ~~~\n");
+		checkSystemDCoobservable(false);
 		checkSystemDSBCoobservable();
-		System.out.println("System E Coobservability: \t");
-		checkSystemECoobservable();
-		System.out.println("System E SB Coobservability: \t");
+
+		System.out.println("\n\t\t\t\t~~~ Testing System E ~~~\n");
+		checkSystemECoobservable(false);
 		checkSystemESBCoobservable();
+
+		System.out.println("\n\t\t\t\t~~~ Testing System Finn ~~~\n");
+		checkSystemFinnCoobservable(false);
+		
+		System.out.println("\n\t\t\t\t~~~ Testing System Urvashi ~~~\n");
+		checkSystemUrvashiSBCoobservable();
+
+		System.out.println("\n\t\t\t\t~~~ Testing System Liu One ~~~\n");
+		checkSystemLiuOneCoobservable(false);
+		checkSystemLiuOneSBCoobservable();
+		checkSystemLiuOneIncrementalCoobservable();
+
+		System.out.println("\n\t\t\t\t~~~ Testing System Liu Two ~~~\n");
+		checkSystemLiuTwoCoobservable(false);
+		checkSystemLiuTwoSBCoobservable();
+		checkSystemLiuTwoIncrementalCoobservable();
+	}
+	
+	private static void runAllCoobsTests() {
+		checkSystemACoobservable(false);
+		checkSystemBCoobservable(false);
+		checkSystemCCoobservable(false);
+		checkSystemDCoobservable(false);
+		checkSystemECoobservable(false);
+		checkSystemFinnCoobservable(false);
+		checkSystemLiuOneCoobservable(false);
+		checkSystemLiuTwoCoobservable(false);
+	}
+	
+	private static void runAllInfCoobsTests() {
+		checkSystemACoobservable(true);
+		checkSystemBCoobservable(true);
+		checkSystemCCoobservable(true);
+		checkSystemDCoobservable(true);
+		checkSystemECoobservable(true);
+		checkSystemFinnCoobservable(true);
+		checkSystemLiuOneCoobservable(true);
+		checkSystemLiuTwoCoobservable(true);
+	}
+	
+	private static void runAllSBTests() {
+		checkSystemASBCoobservable();
+		checkSystemBSBCoobservable();
+		checkSystemCSBCoobservable();
+		checkSystemDSBCoobservable();
+		checkSystemESBCoobservable();
+		checkSystemUrvashiSBCoobservable();
+		checkSystemLiuOneSBCoobservable();
+		checkSystemLiuTwoSBCoobservable();
+	}
+	
+	private static void runAllIncrementalCoobsTests() {
+		checkSystemLiuOneIncrementalCoobservable();
+		checkSystemLiuTwoIncrementalCoobservable();
 	}
 	
 	private static void generateSystems() {
@@ -105,6 +175,10 @@ public class TestFunctionality {
 		String SystemD = "Example 4";
 		SystemGeneration.generateSystemD(SystemD);
 		makeImageDisplay(SystemD, "Example 4");
+		
+		String SystemE = "Example 5";
+		SystemGeneration.generateSystemE(SystemE);
+		makeImageDisplay(SystemE, SystemE);
 	}
 	
 	private static void basicUStructCheck() {
@@ -151,75 +225,10 @@ public class TestFunctionality {
 		}
 	}
 	
-	//-- Coobservable  ------------------------------------------------------------------------
-	
-	private static void checkCoobservable(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		long t = System.currentTimeMillis();
-		long hold = getCurrentMemoryUsage();
-		boolean result = model.isCoobservableUStruct(name, eventAtt, agents);
-		printTimeTook(t);
-		printMemoryUsage(hold);
-		System.out.println("\t\t\t\tCoobservable: " + result);
-		garbageCollect();
-	}
-	
-	private static void checkCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		long t = System.currentTimeMillis();
-		long hold = getCurrentMemoryUsage();
-		boolean result = model.isCoobservableUStruct(plants, specs, eventAtt, agents);
-		printTimeTook(t);
-		printMemoryUsage(hold);
-		System.out.println("\t\t\t\tCoobservable: " + result);
-		garbageCollect();
-	}
-
-	private static void checkSystemACoobservable() {
-		String SystemA = "Example 1";
-		SystemGeneration.generateSystemA(SystemA);
-		checkCoobservable(SystemA, AgentChicanery.generateAgentsA());
-	}
-	
-	private static void checkSystemBCoobservable() {
-		String SystemB = "Example B 1";
-		SystemGeneration.generateSystemB(SystemB);
-		checkCoobservable(SystemB, AgentChicanery.generateAgentsB());
-	}
-	
-	private static void checkSystemBAltCoobservable() {
-		String SystemB = "Example B 1";
-		SystemGeneration.generateSystemBAlt(SystemB);
-		makeImageDisplay(SystemB, SystemB);
-		checkCoobservable(SystemB, AgentChicanery.generateAgentsB());
-		ArrayList<String> ustruct = model.buildUStructureCrush(SystemB, eventAtt, AgentChicanery.generateAgentsB());
-		for(String s : ustruct) {
-			makeImageDisplay(s, s);
-			model.exportFSM(s);
-		}
-	}
-	
-	private static void checkSystemCCoobservable() {
-		String SystemC = "Example C 1";
-		SystemGeneration.generateSystemC(SystemC);
-		checkCoobservable(SystemC, AgentChicanery.generateAgentsC());
-	}
-	
-	private static void checkSystemDCoobservable() {
-		String SystemD = "Example D 1";
-		SystemGeneration.generateSystemD(SystemD);
-		checkCoobservable(SystemD, AgentChicanery.generateAgentsD());
-	}	
-	
-	private static void checkSystemECoobservable() {
-		String SystemE = "Example E 1";
-		SystemGeneration.generateSystemE(SystemE);
-		checkCoobservable(SystemE, AgentChicanery.generateAgentsE());
-	}
-	
-	private static void checkSystemFinnCoobservable() {
+	private static void crushUStructCheckFinn() {
 		String SystemFinn = "Example Finn";
 		SystemGeneration.generateSystemFinn(SystemFinn);
 		makeImageDisplay(SystemFinn, SystemFinn);
-		checkCoobservable(SystemFinn, AgentChicanery.generateAgentsFinn5());
 		ArrayList<String> ustruct = model.buildUStructureCrush(SystemFinn, eventAtt, AgentChicanery.generateAgentsFinn5());
 		for(String s : ustruct) {
 			makeImageDisplay(s, s);
@@ -227,7 +236,114 @@ public class TestFunctionality {
 		}
 	}
 	
-	private static void checkSystemLiuOneCoobservable() {
+	private static void autoTestNewRandomSystem(String prefix, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate) throws Exception {
+		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(prefix, model, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate);
+		ArrayList<String> names = RandomGeneration.getComponentNames(prefix, numPlants, numSpecs);
+		
+		for(String s : names) {
+			makeImageDisplay(s, s);
+		}
+		
+		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, numAgents, numAgentVar, obsRate, ctrRate);
+		System.out.println(agents.toString().replace("},", "},\n"));
+		
+		autoTestSystemFull(prefix, RandomGeneration.getPlantNames(prefix, numPlants), RandomGeneration.getSpecNames(prefix, numSpecs), agents);
+
+	}
+	
+	private static void autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		printCoobsLabel(prefixNom, false);
+		checkCoobservable(plantNames, specNames, agents, false);
+		printSBCoobsLabel(prefixNom);
+		checkSBCoobservable(plantNames, specNames, agents);
+		printIncrementalLabel(prefixNom);
+		checkIncrementalCoobservable(plantNames, specNames, agents);
+		printCoobsLabel(prefixNom, true);
+		checkCoobservable(plantNames, specNames, agents, true);
+	}
+	
+	//-- Coobservable  ------------------------------------------------------------------------
+	
+	private static void checkCoobservable(String name, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf) {
+		long t = System.currentTimeMillis();
+		long hold = getCurrentMemoryUsage();
+		boolean result = inf ? model.isInferenceCoobservableUStruct(name, eventAtt, agents) : model.isCoobservableUStruct(name, eventAtt, agents);
+		printTimeTook(t);
+		printMemoryUsage(hold);
+		System.out.println("\t\t\t\t" + (inf ? "Inferencing " : "" ) + "Coobservable: " + result);
+		garbageCollect();
+	}
+	
+	private static void checkCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf) {
+		long t = System.currentTimeMillis();
+		long hold = getCurrentMemoryUsage();
+		boolean result = inf ? model.isInferenceCoobservableUStruct(plants, specs, eventAtt, agents) : model.isCoobservableUStruct(plants, specs, eventAtt, agents);
+		printTimeTook(t);
+		printMemoryUsage(hold);
+		System.out.println("\t\t\t\t" + (inf ? "Inferencing " : "" ) + "Coobservable: " + result);
+		garbageCollect();
+	}
+
+	private static void printCoobsLabel(String system, boolean type) {
+		System.out.println(system + " " + (type ? "Inference Coobservability:" : "Coobservability:") + " \t");
+	}
+	
+	private static void checkSystemACoobservable(boolean inf) {
+		String SystemA = "Example 1";
+		SystemGeneration.generateSystemA(SystemA);
+		printCoobsLabel(SystemA, inf);
+		checkCoobservable(SystemA, AgentChicanery.generateAgentsA(), inf);
+	}
+	
+	private static void checkSystemBCoobservable(boolean inf) {
+		String SystemB = "Example B 1";
+		SystemGeneration.generateSystemB(SystemB);
+		printCoobsLabel(SystemB, inf);
+		checkCoobservable(SystemB, AgentChicanery.generateAgentsB(), inf);
+	}
+	
+	private static void checkSystemBAltCoobservable(boolean inf) {
+		String SystemB = "Example B Alt";
+		SystemGeneration.generateSystemBAlt(SystemB);
+		makeImageDisplay(SystemB, SystemB);
+		printCoobsLabel(SystemB, inf);
+		checkCoobservable(SystemB, AgentChicanery.generateAgentsB(), inf);
+		ArrayList<String> ustruct = model.buildUStructureCrush(SystemB, eventAtt, AgentChicanery.generateAgentsB());
+		for(String s : ustruct) {
+			makeImageDisplay(s, s);
+			model.exportFSM(s);
+		}
+	}
+	
+	private static void checkSystemCCoobservable(boolean inf) {
+		String SystemC = "Example C";
+		SystemGeneration.generateSystemC(SystemC);
+		printCoobsLabel(SystemC, inf);
+		checkCoobservable(SystemC, AgentChicanery.generateAgentsC(), inf);
+	}
+	
+	private static void checkSystemDCoobservable(boolean inf) {
+		String SystemD = "Example D 1";
+		SystemGeneration.generateSystemD(SystemD);
+		printCoobsLabel(SystemD, inf);
+		checkCoobservable(SystemD, AgentChicanery.generateAgentsD(), inf);
+	}	
+	
+	private static void checkSystemECoobservable(boolean inf) {
+		String SystemE = "Example E";
+		SystemGeneration.generateSystemE(SystemE);
+		printCoobsLabel(SystemE, inf);
+		checkCoobservable(SystemE, AgentChicanery.generateAgentsE(), inf);
+	}
+	
+	private static void checkSystemFinnCoobservable(boolean inf) {
+		String SystemFinn = "System Example Finn";
+		SystemGeneration.generateSystemFinn(SystemFinn);
+		printCoobsLabel(SystemFinn, inf);
+		checkCoobservable(SystemFinn, AgentChicanery.generateAgentsFinn5(), inf);
+	}
+	
+	private static void checkSystemLiuOneCoobservable(boolean inf) {
 		ArrayList<String> names = new ArrayList<String>();
 		ArrayList<String> plant = new ArrayList<String>();
 		ArrayList<String> spec = new ArrayList<String>();
@@ -236,11 +352,11 @@ public class TestFunctionality {
 		names.add("H1");
 		spec.add("H1");
 		SystemGeneration.generateSystemSetA(names);
-		System.out.println("System Liu One Coobservability: \t");
-		checkCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
+		printCoobsLabel("System Liu One", inf);
+		checkCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne(), inf);
 	}
 	
-	private static void checkSystemLiuTwoCoobservable() {
+	private static void checkSystemLiuTwoCoobservable(boolean inf) {
 		ArrayList<String> names = new ArrayList<String>();
 		ArrayList<String> plant = new ArrayList<String>();
 		ArrayList<String> spec = new ArrayList<String>();
@@ -251,8 +367,8 @@ public class TestFunctionality {
 		names.add("H1");
 		spec.add("H1");
 		SystemGeneration.generateSystemSetB(names);
-		System.out.println("System Liu Two Coobservability: \t");
-		checkCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
+		printCoobsLabel("System Liu Two", inf);
+		checkCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne(), inf);
 	}
 	
 	//-- SBCoobservable  ----------------------------------------------------------------------
@@ -287,34 +403,81 @@ public class TestFunctionality {
 		return model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents);
 	}
 
+	private static void printSBCoobsLabel(String system) {
+		System.out.println(system + "SB Coobservability: \t");
+	}
+	
 	private static void checkSystemASBCoobservable() {
 		String a = "Ex1";
 		SystemGeneration.generateSystemA(a);
+		printSBCoobsLabel(a);
 		checkSBCoobservable(a, AgentChicanery.generateAgentsA());
 	}
 
 	private static void checkSystemBSBCoobservable() {
 		String ex1 = "Ex B 1";
 		SystemGeneration.generateSystemB(ex1);
+		printSBCoobsLabel(ex1);
 		checkSBCoobservable(ex1, AgentChicanery.generateAgentsB());
 	}
 
 	private static void checkSystemCSBCoobservable() {
 		String ex1 = "Ex C 1";
 		SystemGeneration.generateSystemC(ex1);
+		printSBCoobsLabel(ex1);
 		checkSBCoobservable(ex1, AgentChicanery.generateAgentsC());
 	}
 
 	private static void checkSystemDSBCoobservable() {
 		String ex1 = "Ex D 1";
 		SystemGeneration.generateSystemD(ex1);
+		printSBCoobsLabel(ex1);
 		checkSBCoobservable(ex1, AgentChicanery.generateAgentsD());
 	}
 	
 	private static void checkSystemESBCoobservable() {
 		String SystemE = "Example E 1";
 		SystemGeneration.generateSystemE(SystemE);
+		printSBCoobsLabel(SystemE);
 		checkSBCoobservable(SystemE, AgentChicanery.generateAgentsE());
+	}
+	
+	private static void checkSystemUrvashiSBCoobservable() {
+		ArrayList<String> plant = new ArrayList<String>();
+		plant.add("plant");
+		ArrayList<String> spec = new ArrayList<String>();
+		spec.add("spec");
+		SystemGeneration.generateSystemSetUrvashi(plant.get(0), spec.get(0));
+		printSBCoobsLabel("System Urvashi");
+		checkSBCoobservable(plant, spec, AgentChicanery.generateAgentsUrvashi());
+	}
+	
+	private static void checkSystemLiuOneSBCoobservable() {
+		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<String> plant = new ArrayList<String>();
+		ArrayList<String> spec = new ArrayList<String>();
+		names.add("G1");
+		plant.add("G1");
+		names.add("H1");
+		spec.add("H1");
+		SystemGeneration.generateSystemSetA(names);
+		printSBCoobsLabel("System Liu One");
+		checkSBCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
+	}
+	
+	private static void checkSystemLiuTwoSBCoobservable() {
+		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<String> plant = new ArrayList<String>();
+		ArrayList<String> spec = new ArrayList<String>();
+		names.add("G3");
+		plant.add("G3");
+		names.add("G4");
+		plant.add("G4");
+		names.add("H1");
+		spec.add("H1");
+		SystemGeneration.generateSystemSetB(names);
+		printSBCoobsLabel("System Liu Two");
+		checkSBCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
 	}
 	
 	//-- Incremental Coobservable  ------------------------------------------------------------
@@ -329,7 +492,11 @@ public class TestFunctionality {
 		garbageCollect();
 	}
 	
-	private static void checkIncrementalCoobservableLiuOne() {
+	private static void printIncrementalLabel(String system) {
+		System.out.println(system + " Incremental Coobservability: \t");
+	}
+	
+	private static void checkSystemLiuOneIncrementalCoobservable() {
 		ArrayList<String> names = new ArrayList<String>();
 		ArrayList<String> plant = new ArrayList<String>();
 		ArrayList<String> spec = new ArrayList<String>();
@@ -338,11 +505,11 @@ public class TestFunctionality {
 		names.add("H1");
 		spec.add("H1");
 		SystemGeneration.generateSystemSetA(names);
-		System.out.println("System Liu One Incremental Coobservability: \t");
+		printIncrementalLabel("System Liu One");
 		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
 	}
 	
-	private static void checkIncrementalCoobservableLiuTwo() {
+	private static void checkSystemLiuTwoIncrementalCoobservable() {
 		ArrayList<String> names = new ArrayList<String>();
 		ArrayList<String> plant = new ArrayList<String>();
 		ArrayList<String> spec = new ArrayList<String>();
@@ -353,7 +520,7 @@ public class TestFunctionality {
 		names.add("H1");
 		spec.add("H1");
 		SystemGeneration.generateSystemSetB(names);
-		System.out.println("System Liu Two Incremental Coobservability: \t");
+		printIncrementalLabel("System Liu Two");
 		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
 	}
 	

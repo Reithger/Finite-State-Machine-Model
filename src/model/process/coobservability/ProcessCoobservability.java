@@ -48,21 +48,44 @@ public class ProcessCoobservability {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	//-- Coobservable  ----------------------------------------
-		
+
 	public static boolean isCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		UStructure ustr = constructUStruct(plant, attr, agents);
-		return isCoobservableUStruct(ustr);
-	}
-	
-	private static boolean isCoobservableUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
-		UStructure ustr = constructUStructRaw(plant, attr, agents);
+		UStructure ustr = constructUStruct(plant, attr, agents, false);
 		return isCoobservableUStruct(ustr);
 	}
 
 	public static boolean isCoobservableUStruct(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		ArrayList<Agent> age = constructAgents(getAllEvents(plants, specs), attr, agents);
-		
 		return isCoobservableUStructRaw(deriveTruePlant(plants, specs, attr), attr, age);
+	}
+		
+	public static boolean isInferenceCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		UStructure ustr = constructUStruct(plant, attr, agents, true);
+		return isInferenceCoobservableUStruct(ustr);
+	}
+	
+	public static boolean isInferenceCoobservableUStruct(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		ArrayList<Agent> age = constructAgents(getAllEvents(plants, specs), attr, agents);
+		return isInferenceCoobservableUStructRaw(deriveTruePlant(plants, specs, attr), attr, age);
+	}
+
+	private static boolean isCoobservableUStruct(UStructure ustr) {
+		return ustr.getIllegalConfigOneStates().isEmpty() && ustr.getIllegalConfigTwoStates().isEmpty();
+	}
+	
+	private static boolean isCoobservableUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
+		UStructure ustr = constructUStructRaw(plant, attr, agents, false);
+		return ustr.getIllegalConfigOneStates().isEmpty() && ustr.getIllegalConfigTwoStates().isEmpty();
+	}
+
+	private static boolean isInferenceCoobservableUStruct(UStructure ustr) {
+		return ustr.getFilteredIllegalConfigStates().isEmpty();
+	}
+	
+	private static boolean isInferenceCoobservableUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
+		UStructure ustr = constructUStructRaw(plant, attr, agents, true);
+		return isCoobservableUStruct(ustr);
+		
 	}
 	
 	private static TransitionSystem deriveTruePlant(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr) {
@@ -72,7 +95,7 @@ public class ProcessCoobservability {
 		LinkedList<StateSet> queue = new LinkedList<StateSet>();
 		HashSet<StateSet> visited = new HashSet<StateSet>();
 		ArrayList<String> stAttr = ultPlant.getStateAttributes();
-		stAttr.add(badTransRef);
+		//stAttr.add(badTransRef);
 		ultPlant.setStateAttributes(stAttr);
 		
 		StateSet.assignSizes(1, 1);
@@ -105,10 +128,6 @@ public class ProcessCoobservability {
 		return ultPlant;
 	}
 
-	private static boolean isCoobservableUStruct(UStructure ustr) {
-		return ustr.getFilteredIllegalConfigStates().isEmpty();
-	}
-	
 	//-- SB Coobservable  -------------------------------------
 	
 	public static boolean isSBCoobservableUrvashi(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
@@ -134,6 +153,17 @@ public class ProcessCoobservability {
 
 	//-- Incremental  -----------------------------------------
 
+	/**
+	 * 
+	 * TODO: Technically would want an inferencing and non-inferencing version of this down the line
+	 * 
+	 * @param plants
+	 * @param specs
+	 * @param attr
+	 * @param agents
+	 * @return
+	 */
+	
 	public static boolean isCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		ConcreteMemoryMeasure cmm = new ConcreteMemoryMeasure();
 		
@@ -150,7 +180,7 @@ public class ProcessCoobservability {
 			copySpecs.remove(pick);
 			hold.add(pick);
 			pick = parallelComp(Incremental.generateSigmaStarion(plants), pick);			//Immediately merge our sigmaStarion plant with the spec we chose
-			UStructure uStruct = constructUStructQuiet(pick, attr, age);
+			UStructure uStruct = constructUStructQuiet(pick, attr, age, false);
 			cmm.logMemoryUsage();
 			while(!isCoobservableUStruct(uStruct)) {
 				if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
@@ -161,7 +191,7 @@ public class ProcessCoobservability {
 				IllegalConfig counterexample = Incremental.pickCounterExample(uStruct.getFilteredIllegalConfigStates());	//Get a single bad state, probably, maybe write something so UStruct can trace it
 				TransitionSystem use = Incremental.pickComponent(copyPlants, copySpecs, counterexample);	//Heuristics go here
 				pick = parallelComp(pick, use);
-				uStruct = constructUStructQuiet(pick, attr, age);
+				uStruct = constructUStructQuiet(pick, attr, age, false);
 				if(copySpecs.contains(use)) {
 					hold.add(use);
 					copySpecs.remove(use);
@@ -206,20 +236,20 @@ public class ProcessCoobservability {
 		return out;
 	}
 
-	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		UStructure u = new UStructure(plant, attr, constructAgents(plant.getEventNames(), attr, agents));
+	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean crush) {
+		UStructure u = new UStructure(plant, attr, constructAgents(plant.getEventNames(), attr, agents), crush);
 		presentAdditionalInfo(u);
 		return u;
 	}
 	
-	public static UStructure constructUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
-		UStructure u = new UStructure(plant, attr, agents);
+	public static UStructure constructUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents, boolean crush) {
+		UStructure u = new UStructure(plant, attr, agents, crush);
 		presentAdditionalInfo(u);
 		return u;
 	}
 	
-	private static UStructure constructUStructQuiet(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
-		return new UStructure(plant, attr, agents);
+	private static UStructure constructUStructQuiet(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents, boolean crush) {
+		return new UStructure(plant, attr, agents, crush);
 	}
 	
 	//-- Helper  ----------------------------------------------
@@ -237,13 +267,14 @@ public class ProcessCoobservability {
 		return out;
 	}
 
-	private static ArrayList<String> getAllEvents(ArrayList<TransitionSystem> ... in){
+	private static ArrayList<String> getAllEvents(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs){
 		ArrayList<String> out = new ArrayList<String>();
 		HashSet<String> hold = new HashSet<String>();
-		for(ArrayList<TransitionSystem> aT : in) {
-			for(TransitionSystem t : aT) {
-				hold.addAll(t.getEventNames());
-			}
+		for(TransitionSystem aT : plants) {
+			hold.addAll(aT.getEventNames());
+		}
+		for(TransitionSystem aT : specs) {
+			hold.addAll(aT.getEventNames());
 		}
 		out.addAll(hold);
 		return out;

@@ -313,6 +313,42 @@ public class SystemGeneration {
 		generateSystemDefault(name);
 	}
 
+	public static void generateSystemSetUrvashi(String plant, String spec) {
+		generateUrvashiPlant(plant);
+		generateUrvashiSpec(spec);
+	}
+	
+	private static void generateUrvashiPlant(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 7);
+		
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_D, "c");
+		
+		addTransitions(name, "a", "0", "1", "2", "4");
+		addTransitions(name, "b", "0", "2", "1", "3");
+		addTransitions(name, "c", "3", "5", "4", "6");
+	}
+	
+	private static void generateUrvashiSpec(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 7);
+
+		model.removeState(name, "5");
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_D, "c");
+		
+		addTransitions(name, "a", "0", "1", "2", "4");
+		addTransitions(name, "b", "0", "2", "1", "3");
+		addTransitions(name, "c", "4", "6");
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private static void generateSystemDefault(String name) {

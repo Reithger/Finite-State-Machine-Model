@@ -199,9 +199,24 @@ public class AgentChicanery {
 		return generateAgentSet(agentInfo, EventSets.EVENT_LIST_LIU_ONE);
 	}
 	
+	public static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsUrvashi(){
+		boolean[][][] agentInfo = new boolean[][][] { {
+				{true, false},
+				{false, false},
+				{true, true},
+			},
+			{
+				{false, false},
+				{true, false},
+				{true, false},
+			},
+		};
+		return generateAgentSet(agentInfo, EventSets.EVENT_LIST_D);
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
 	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentSet(boolean[][][] agentInfo, String[] eventList){
+	protected static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentSet(boolean[][][] agentInfo, String[] eventList){
 		ArrayList<HashMap<String, ArrayList<Boolean>>> use = new ArrayList<HashMap<String, ArrayList<Boolean>>>();
 		
 		for(int i = 0; i < agentInfo.length; i++) {

@@ -42,7 +42,7 @@ public class UStructure implements MemoryMeasure{
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
+	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents, boolean performCrush) {
 		startingMemory = getMemoryUsage();
 		spaceUsage = new ArrayList<Long>();
 		HashMap<String, HashSet<String>> badTransitions = initializeBadTransitions(thePlant);
@@ -53,7 +53,7 @@ public class UStructure implements MemoryMeasure{
 		badGoodStates = new HashSet<IllegalConfig>();
 		objectMap = new HashMap<String, AgentStates>();
 		eventNameMap = new HashMap<String, String[]>();
-		createUStructure(thePlant, badTransitions, agents);
+		createUStructure(thePlant, badTransitions, agents, performCrush);
 	}
 
 	private HashMap<String, HashSet<String>> initializeBadTransitions(TransitionSystem thePlant){
@@ -105,7 +105,7 @@ public class UStructure implements MemoryMeasure{
 	
 //---  Operations   ---------------------------------------------------------------------------
 
-	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) {
+	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents, boolean performCrush) {
 		uStructure = initializeUStructure(plant);
 		
 		LinkedList<AgentStates> queue = new LinkedList<AgentStates>();		//initialize queue
@@ -232,9 +232,8 @@ public class UStructure implements MemoryMeasure{
 			}
 		}
 		
-		calculateCrush(agents);
-		
-		//System.out.println(spaceUsage);
+		if(performCrush)
+			calculateCrush(agents);
 		
 		uStructure.overwriteEventAttributes(new ArrayList<String>());		//Not sure why, probably to avoid weird stuff on the output graph?
 	}

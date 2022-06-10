@@ -54,23 +54,25 @@ public class StateBased implements MemoryMeasure {
 	
 	private void operate(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agen) {
 		HashSet<String> eventNamesHold = new HashSet<String>();
-		HashSet<String> controllableHold = new HashSet<String>();
+		HashSet<String> controllable = new HashSet<String>();
+		
+		for(Agent a : agen) {
+			controllable.addAll(a.getEventsAttributeSet(attributeControllableRef, true));
+		}
 		
 		for(TransitionSystem t : plants) {
 			eventNamesHold.addAll(t.getEventNames());
-			controllableHold.addAll(t.getEventsWithAttribute(attributeControllableRef));
 		}
 		
 		ArrayList<String> eventNames = new ArrayList<String>();
 		eventNames.addAll(eventNamesHold);
 		
 		
-		initializeEnableDisable(disable, enable, plants, specs);
+		initializeEnableDisable(disable, enable, plants, specs, controllable);
+		
+		//System.out.println("\n" + enable + "\n" + disable + "\n");
 		
 		boolean pass = true;
-		
-		ArrayList<String> controllable = new ArrayList<String>();
-		controllable.addAll(controllableHold);
 		
 		for(String e : controllable) {
 			if(!disable.get(e).isEmpty()) {
@@ -98,10 +100,8 @@ public class StateBased implements MemoryMeasure {
 			
 			logMemoryUsage();
 			
-			ArrayList<String> observable = a.getEventsAttributeSet(attributeObservableRef, true);
-			controllable = a.getEventsAttributeSet(attributeControllableRef, true);
-			
-			HashMap<String, HashSet<StateSet>> tempDisable = subsetConstructHiding(plants, specs, enable, disable, observable, controllable);
+			//HashMap<String, HashSet<StateSet>> tempDisable = subsetConstructHiding(plants, specs, enable, disable, observable, controllable);
+			HashMap<String, HashSet<StateSet>> tempDisable = observerConstructHiding(plants, specs, enable, disable, a.getEventsAttributeSet(attributeObservableRef, true), a.getEventsAttributeSet(attributeControllableRef, true), controllable);
 			
 			pass = true;
 			
@@ -118,8 +118,7 @@ public class StateBased implements MemoryMeasure {
 		}
 	}
 	
-	private void initializeEnableDisable(HashMap<String, HashSet<StateSet>> disable, HashMap<String, HashSet<StateSet>> enable, ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs) {
-		ArrayList<String> controllable = getAllTypedEvents(plants, attributeControllableRef);
+	private void initializeEnableDisable(HashMap<String, HashSet<StateSet>> disable, HashMap<String, HashSet<StateSet>> enable, ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashSet<String> controllable) {
 		for(String c : controllable) {
 			disable.put(c, new HashSet<StateSet>());
 			enable.put(c, new HashSet<StateSet>());
@@ -152,6 +151,51 @@ public class StateBased implements MemoryMeasure {
 				
 			}
 		}
+	}
+	
+	private HashMap<String, HashSet<StateSet>> observerConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont, HashSet<String> controllable){
+		HashMap<String, HashSet<StateSet>> out = new HashMap<String, HashSet<StateSet>>();
+		
+		for(String c : controllable) {
+			out.put(c, agentCont.contains(c) ? new HashSet<StateSet>() : disable.get(c));
+		}
+		
+		LinkedList<HashSet<StateSet>> queue = new LinkedList<HashSet<StateSet>>();
+		HashSet<HashSet<StateSet>> visited = new HashSet<HashSet<StateSet>>();
+		
+		HashSet<StateSet> initial = new HashSet<StateSet>();
+		initial.add(initialStateSet(plants, specs));
+		
+		queue.add(reachableStateSets(plants, specs, initial, agentObs));
+		while(!queue.isEmpty()) {
+			HashSet<StateSet> curr = queue.poll();
+			if(visited.contains(curr)) {
+				continue;
+			}
+			visited.add(curr);
+			
+			for(String e : agentObs) {
+				HashSet<StateSet> reachable = new HashSet<StateSet>();
+				for(StateSet s : curr) {
+					if(canProceed(plants, specs, s, e)) {
+						reachable.add(stateSetStep(plants, specs, s, e));
+					}
+				}
+				queue.add(reachableStateSets(plants, specs, reachable, agentObs));
+			}
+		}
+		
+		for(HashSet<StateSet> group : visited) {
+			for(String e : agentCont) {
+				HashSet<StateSet> holdEna = intersection(group, enable.get(e));
+				if(!holdEna.isEmpty()) {
+					HashSet<StateSet> holdDis = intersection(group, disable.get(e));
+					out.get(e).addAll(holdDis);
+				}
+			}
+		}
+		
+		return out;
 	}
 	
 	private HashMap<String, HashSet<StateSet>> subsetConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont){
@@ -244,6 +288,9 @@ public class StateBased implements MemoryMeasure {
 		for(Long l : spaceUsage) {
 			add += l;
 		}
+		if(spaceUsage.size() == 0) {
+			return 0;
+		}
 		return threeSig(inMB(add / spaceUsage.size()));
 	}
 	
@@ -328,9 +375,43 @@ public class StateBased implements MemoryMeasure {
 		
 		for(int i = 0; i < specs.size(); i++) {
 			TransitionSystem t = specs.get(i);
-			out[i + plants.size()] = knowsEvent(t, event) ? t.getStateEventTransitionStates(curr.getSpecState(i), event).get(0) : curr.getSpecState(i);
+			out[i + plants.size()] = canPerformEvent(t, curr.getSpecState(i), event) ? t.getStateEventTransitionStates(curr.getSpecState(i), event).get(0) : curr.getSpecState(i);
 		}
 		return new StateSet(out);
+	}
+	
+	private HashSet<StateSet> reachableStateSets(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashSet<StateSet> initial, ArrayList<String> agentObs){
+		HashSet<StateSet> out = new HashSet<StateSet>();
+		for(StateSet i : initial) {
+			out.add(i);
+		}
+		ArrayList<String> unobs = new ArrayList<String>();
+		for(String s : getAllEvents(plants)) {
+			if(!agentObs.contains(s)) {
+				unobs.add(s);
+			}
+		}
+		
+		LinkedList<StateSet> queue = new LinkedList<StateSet>();
+		HashSet<StateSet> visited = new HashSet<StateSet>();
+		queue.addAll(initial);
+		
+		while(!queue.isEmpty()) {
+			StateSet curr = queue.poll();
+			
+			if(visited.contains(curr)) {
+				continue;
+			}
+			visited.add(curr);
+
+			for(String e : unobs) {
+				if(canProceed(plants, specs, curr, e)) {
+					queue.add(stateSetStep(plants, specs, curr, e));
+				}
+			}
+			
+		}
+		return visited;
 	}
 	
 	private boolean knowsEvent(TransitionSystem system, String event) {
@@ -354,7 +435,7 @@ public class StateBased implements MemoryMeasure {
 			for(int i = 0; i < specs.size(); i++) {
 				TransitionSystem t = specs.get(i);
 				if(knowsEvent(t, event) && !canPerformEvent(t, curr.getSpecState(i), event)){
-					return false;
+					return false;	//TODO: Need to have this denote bad transitions but allow exploration past this when confirming?
 				}
 			}
 		}

@@ -100,7 +100,8 @@ public class TransitionSystem {
 			boolean cond = AttributeList.getAON(s);
 			boolean use = cond;
 			for(int i = 0; i < in.size(); i++) {
-				boolean loc = context.get(i).getStateAttribute(in.get(i), s);
+				Boolean loc = context.get(i).getStateAttribute(in.get(i), s);
+				loc = (loc == null ? cond : loc);
 				use = cond ? (use && loc) : (use || loc);
 			}
 			states.setStateAttribute(nom, s, use);

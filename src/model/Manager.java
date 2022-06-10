@@ -85,9 +85,17 @@ public class Manager {
 	
 	//-- FSM Generation  --------------------------------------
 	
+	/**
+	 * 
+	 * //TODO: Review overwrite by default condition in there
+	 * 
+	 * @param nom
+	 * @return
+	 */
+	
 	public String generateEmptyFSM(String nom) {
 		TransitionSystem use = new TransitionSystem(nom);
-		appendFSM(use.getId(), use, false);
+		appendFSM(use.getId(), use, true);
 		return nom;
 	}
 	
@@ -282,6 +290,13 @@ public class Manager {
 		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents);
 	}
 	
+	public Boolean isInferenceCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		if(bail(ref)) {
+			return null;
+		}
+		return ProcessDES.isInferenceCoobservableUStruct(fsms.get(ref), attr, agents);
+	}
+	
 	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		if(bail(plants) || bail(specs)) {
 			return null;
@@ -295,6 +310,21 @@ public class Manager {
 			useSp.add(fsms.get(s));
 		}
 		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr, agents);
+	}
+	
+	public Boolean isInferenceCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		if(bail(plants) || bail(specs)) {
+			return null;
+		}
+		ArrayList<TransitionSystem> usePl = new ArrayList<TransitionSystem>();
+		for(String s : plants) {
+			usePl.add(fsms.get(s));
+		}
+		ArrayList<TransitionSystem> useSp = new ArrayList<TransitionSystem>();
+		for(String s : specs) {
+			useSp.add(fsms.get(s));
+		}
+		return ProcessDES.isInferenceCoobservableUStruct(usePl, useSp, attr, agents);
 	}
 
 	public Boolean isSBCoobservableUrvashi(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {

@@ -1,11 +1,21 @@
 package test.help;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Random;
 
 import model.AttributeList;
 import model.Manager;
 
 public class RandomGeneration {
+	
+//---  Constant Values   ----------------------------------------------------------------------
+	
+	private static final int TRANSITION_NUMBER_DEFAULT = 2;
+	private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+	
+//---  Static Preparation   -------------------------------------------------------------------
 	
 	public static void setupRandomFSMConditions(Manager model, int numObsEve, int numContrEve, int badTran) {
 		ArrayList<String> stateAtt = new ArrayList<String>();
@@ -38,6 +48,12 @@ public class RandomGeneration {
 		model.assignRandomFSMTransitionConfiguration(transAtt, tran);
 	}
 	
+	public static void setupRandomFSMDefaultEvents(Manager model, ArrayList<String> defaultEvents) {
+		model.assignRandomFSMDefaultEventSet(defaultEvents);
+	}
+	
+//---  Operations   ---------------------------------------------------------------------------
+
 	/**
 	 * 
 	 * @param nom
@@ -55,6 +71,7 @@ public class RandomGeneration {
 	public static String generateRandomFSM(String nom, Manager model, int numStates, int numEvents, int numTransition, boolean accessible) throws Exception {
 		String out;
 		do {
+			model.removeFSM(nom);
 			out = model.readInFSM(model.generateRandomFSM(nom, numStates, numEvents, numTransition, false));
 		}while(!accessible || !model.isAccessible(out));
 		return out;
@@ -72,7 +89,10 @@ public class RandomGeneration {
 	 * 
 	 * Given conditions, create the plants and specs
 	 *  - States and transitions are independent of other components, but need intentional overlap of events
-	 *  - Make Agents wrt the events previously generated
+	 *  - Specs should only use alphabet defined in plants; true random or share events with specific plant components?
+	 * Make Agents wrt the events previously generated
+	 * 
+	 * TODO: Output results and image whenever we run a test with this, don't want to lose it
 	 * 
 	 * @param prefixNom
 	 * @param model
@@ -83,14 +103,133 @@ public class RandomGeneration {
 	 * @param eventSizeAverage
 	 * @param eventVariance
 	 * @param eventShareRate
+	 * @throws Exception 
 	 */
 	
 
-	public static void generateRandomSystemSet(String prefixNom, Manager model, int numPlants, int numSpecs, int stateSizeAverage, int stateVariance, int eventSizeAverage, int eventVariance, double eventShareRate) {
+	public static ArrayList<String> generateRandomSystemSet(String prefixNom, Manager model, int numPlants, int numSpecs, int stateSizeAverage, int stateVariance, int eventSizeAverage, int eventVariance, double eventShareRate) throws Exception {
+		Random rand = new Random();
+		HashMap<String, ArrayList<String>> plantEvents = new HashMap<String, ArrayList<String>>();
 		
+		setupRandomFSMConditions(model, 0, 0, 0);
 		
+		ArrayList<String> out = new ArrayList<String>();
 		
+		for(int i = 0; i < numPlants; i++) {
+			int numStates = stateSizeAverage + (rand.nextInt(stateVariance) - (stateVariance/2));
+			int numEvents = eventSizeAverage + (rand.nextInt(eventVariance) - (eventVariance/2));
+			int numTransitions = TRANSITION_NUMBER_DEFAULT;
+			
+			int numBorrowed = 0;
+			for(int j = 0; j < numEvents; j++) {
+				if(plantEvents.keySet().size() != 0 && rand.nextDouble() < eventShareRate)
+					numBorrowed++;
+			}
+			
+			ArrayList<String> events = getPlantEvents(numEvents - numBorrowed, ALPHABET.charAt(i)+"", configureName(prefixNom, i, true));
+			plantEvents.put(configureName(prefixNom, i, true), copyArrayList(events));
+			out.addAll(events);
+			
+			for(int j = 0; j < numBorrowed; j++) {
+				int select = rand.nextInt(i);
+				ArrayList<String> choices = plantEvents.get(configureName(prefixNom, select, true));
+				String choice = choices.get(rand.nextInt(choices.size()));
+				if(!events.contains(choice)) {
+					events.add(choice);
+				}
+				else {
+					j--;
+				}
+			}
+			
+			setupRandomFSMConditions(model, events.size(), 0, 0);
+			setupRandomFSMDefaultEvents(model, events);
+			generateRandomFSM(configureName(prefixNom, i, true), model, numStates, numEvents, numTransitions, true);
+		}
 		
+		for(int i = 0; i < numSpecs; i++) {
+			int numStates = stateSizeAverage + (rand.nextInt(stateVariance) - (stateVariance/2));
+			int numEvents = eventSizeAverage + (rand.nextInt(eventVariance) - (eventVariance/2));
+			int numTransitions = TRANSITION_NUMBER_DEFAULT;
+			
+			ArrayList<String> events = new ArrayList<String>();
+			while(events.size() < numEvents) {
+				ArrayList<String> pull = plantEvents.get(configureName(prefixNom, rand.nextInt(numPlants), true));
+				String even = pull.get(rand.nextInt(pull.size()));
+				if(!events.contains(even))
+					events.add(even);
+			}
+			setupRandomFSMConditions(model, events.size(), 0, 0);
+			setupRandomFSMDefaultEvents(model, events);
+
+			generateRandomFSM(configureName(prefixNom, i, false), model, numStates, numEvents, numTransitions, true);
+		}
+		
+		return out;
+	}
+	
+	public static ArrayList<HashMap<String, ArrayList<Boolean>>> generateRandomAgents(ArrayList<String> events, int agentSizeAverage, int agentSizeVariance, double obsRate, double ctrRate){
+		Random rand = new Random();
+		int numAgents = agentSizeAverage + (agentSizeVariance == 0 ? 0 : (rand.nextInt(agentSizeVariance) - (agentSizeVariance / 2)));
+		boolean[][][] agentInfo = new boolean[numAgents][events.size()][2];
+		for(int i = 0; i < numAgents; i++) {
+			for(int j = 0; j < events.size(); j++) {
+				agentInfo[i][j][0] = rand.nextDouble() < obsRate;
+				agentInfo[i][j][1] = rand.nextDouble() < ctrRate;
+			}
+		}
+		String[] evens = new String[events.size()];
+		for(int i = 0; i < evens.length; i++) {
+			evens[i] = events.get(i);
+		}
+		return AgentChicanery.generateAgentSet(agentInfo, evens);
+	}
+	
+//---  Getter Functions   ---------------------------------------------------------------------
+	
+	public static ArrayList<String> getComponentNames(String prefixNom, int numPlants, int numSpecs){
+		ArrayList<String> out = new ArrayList<String>();
+		out.addAll(getPlantNames(prefixNom, numPlants));
+		out.addAll(getSpecNames(prefixNom, numSpecs));
+		return out;
+	}
+	
+	public static ArrayList<String> getPlantNames(String prefixNom, int numPlants){
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 0; i < numPlants; i++) {
+			out.add(configureName(prefixNom, i, true));
+		}
+		return out;
+	}
+	
+	public static ArrayList<String> getSpecNames(String prefixNom, int numSpecs){
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 0; i < numSpecs; i++) {
+			out.add(configureName(prefixNom, i, false));
+		}
+		return out;
+	}
+	
+//---  Helper Functions   ---------------------------------------------------------------------
+	
+	private static ArrayList<String> copyArrayList(ArrayList<String> in){
+		ArrayList<String> out = new ArrayList<String>();
+		for(String s : in) {
+			out.add(s);
+		}
+		return out;
+	}
+	
+	private static ArrayList<String> getPlantEvents(int numEvents, String eventChar, String plantName){
+		ArrayList<String> events = new ArrayList<String>();
+		for(int j = 0; j < numEvents; j++) {
+			events.add(eventChar + "_{" + j + "}");
+		}
+		return events;
+	}
+	
+	private static String configureName(String prefix, int num, boolean plant) {
+		return prefix + (plant ? "_p_" : "_s_") + num;
 	}
 	
 }
