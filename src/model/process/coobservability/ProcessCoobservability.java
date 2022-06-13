@@ -6,7 +6,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import model.fsm.TransitionSystem;
+import model.process.ConcreteMemoryMeasure;
+import model.process.MemoryMeasure;
 import model.process.ProcessDES;
+import model.process.ReceiveMemoryMeasure;
+import model.process.UStructMemoryMeasure;
 import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.IllegalConfig;
 import model.process.coobservability.support.StateSet;
@@ -19,26 +23,18 @@ public class ProcessCoobservability {
 	private static String observableRef;
 	private static String initialRef;
 	private static String badTransRef;
-	
-	private static boolean showCrushInfo;
-	private static boolean showImportantCrushInfo;
-	private static boolean showUStructureInfo;
+	private static ReceiveMemoryMeasure memoryRecipient;
 	
 //---  Meta   ---------------------------------------------------------------------------------
 	
-	public static void assignReferences(String cont, String obs, String init, String badTrans) {
+	public static void assignReferences(ReceiveMemoryMeasure rmm, String cont, String obs, String init, String badTrans) {
+		memoryRecipient = rmm;
 		controllableRef = cont;
 		observableRef = obs;
 		initialRef = init;
 		badTransRef = badTrans;
 		StateBased.assignAttributeReference(init, obs, cont);
 		Incremental.assignAttributeReference(obs, init);
-	}
-	
-	public static void assignAdditionalInfo(boolean in, boolean important, boolean ustru) {
-		showCrushInfo = in;
-		showImportantCrushInfo = important;
-		showUStructureInfo = ustru;
 	}
 	
 	public static void assignIncrementalOptions(int a, int b, int c) {
@@ -50,7 +46,8 @@ public class ProcessCoobservability {
 	//-- Coobservable  ----------------------------------------
 
 	public static boolean isCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		UStructure ustr = constructUStruct(plant, attr, agents, false);
+		UStructure ustr = constructUStruct(plant, attr, agents);
+		memoryRecipient.assignMemoryMeasure(ustr);
 		return isCoobservableUStruct(ustr);
 	}
 
@@ -60,7 +57,8 @@ public class ProcessCoobservability {
 	}
 		
 	public static boolean isInferenceCoobservableUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		UStructure ustr = constructUStruct(plant, attr, agents, true);
+		UStructure ustr = constructUStruct(plant, attr, agents);
+		memoryRecipient.assignMemoryMeasure(ustr);
 		return isInferenceCoobservableUStruct(ustr);
 	}
 	
@@ -74,7 +72,8 @@ public class ProcessCoobservability {
 	}
 	
 	private static boolean isCoobservableUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
-		UStructure ustr = constructUStructRaw(plant, attr, agents, false);
+		UStructure ustr = constructUStructRaw(plant, attr, agents);
+		memoryRecipient.assignMemoryMeasure(ustr);
 		return ustr.getIllegalConfigOneStates().isEmpty() && ustr.getIllegalConfigTwoStates().isEmpty();
 	}
 
@@ -83,8 +82,9 @@ public class ProcessCoobservability {
 	}
 	
 	private static boolean isInferenceCoobservableUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
-		UStructure ustr = constructUStructRaw(plant, attr, agents, true);
-		return isCoobservableUStruct(ustr);
+		UStructure ustr = constructUStructRaw(plant, attr, agents);
+		memoryRecipient.assignMemoryMeasure(ustr);
+		return isInferenceCoobservableUStruct(ustr);
 		
 	}
 	
@@ -146,7 +146,7 @@ public class ProcessCoobservability {
 		
 		StateBased use = new StateBased(plants, specs, attr, constructAgents(eventUse, attr, agents));
 
-		printMemoryUsage(use);
+		memoryRecipient.assignMemoryMeasure(use);
 		
 		return use.isSBCoobservable();
 	}
@@ -156,6 +156,8 @@ public class ProcessCoobservability {
 	/**
 	 * 
 	 * TODO: Technically would want an inferencing and non-inferencing version of this down the line
+	 * 
+	 * TODO: Also probably want the data output for this to include information about the final UStructures it came up with before resetting for general knowledge; new MemoryMeasure object
 	 * 
 	 * @param plants
 	 * @param specs
@@ -180,18 +182,18 @@ public class ProcessCoobservability {
 			copySpecs.remove(pick);
 			hold.add(pick);
 			pick = parallelComp(Incremental.generateSigmaStarion(plants), pick);			//Immediately merge our sigmaStarion plant with the spec we chose
-			UStructure uStruct = constructUStructQuiet(pick, attr, age, false);
+			UStructure uStruct = constructUStructQuiet(pick, attr, age);
 			cmm.logMemoryUsage();
 			while(!isCoobservableUStruct(uStruct)) {
 				if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
-					printMemoryUsage(cmm);
+					memoryRecipient.assignMemoryMeasure(cmm);
 					return false;
 				}
 				cmm.logMemoryUsage();
 				IllegalConfig counterexample = Incremental.pickCounterExample(uStruct.getFilteredIllegalConfigStates());	//Get a single bad state, probably, maybe write something so UStruct can trace it
 				TransitionSystem use = Incremental.pickComponent(copyPlants, copySpecs, counterexample);	//Heuristics go here
 				pick = parallelComp(pick, use);
-				uStruct = constructUStructQuiet(pick, attr, age, false);
+				uStruct = constructUStructQuiet(pick, attr, age);
 				if(copySpecs.contains(use)) {
 					hold.add(use);
 					copySpecs.remove(use);
@@ -209,12 +211,13 @@ public class ProcessCoobservability {
 			}
 			copyPlants.addAll(hold);
 		}
-		printMemoryUsage(cmm);
+		memoryRecipient.assignMemoryMeasure(cmm);
 		return true;
 	}
 	
 	public static boolean isSBCoobservableLiu(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 
+		//TODO:
 		
 		return false;
 	}
@@ -236,20 +239,20 @@ public class ProcessCoobservability {
 		return out;
 	}
 
-	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean crush) {
-		UStructure u = new UStructure(plant, attr, constructAgents(plant.getEventNames(), attr, agents), crush);
-		presentAdditionalInfo(u);
+	public static UStructure constructUStruct(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		UStructure u = new UStructure(plant, attr, constructAgents(plant.getEventNames(), attr, agents));
+		memoryRecipient.assignMemoryMeasure(u);
 		return u;
 	}
 	
-	public static UStructure constructUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents, boolean crush) {
-		UStructure u = new UStructure(plant, attr, agents, crush);
-		presentAdditionalInfo(u);
+	public static UStructure constructUStructRaw(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
+		UStructure u = new UStructure(plant, attr, agents);
+		memoryRecipient.assignMemoryMeasure(u);
 		return u;
 	}
 	
-	private static UStructure constructUStructQuiet(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents, boolean crush) {
-		return new UStructure(plant, attr, agents, crush);
+	private static UStructure constructUStructQuiet(TransitionSystem plant, ArrayList<String> attr, ArrayList<Agent> agents) {
+		return new UStructure(plant, attr, agents);
 	}
 	
 	//-- Helper  ----------------------------------------------
@@ -280,16 +283,6 @@ public class ProcessCoobservability {
 		return out;
 	}
 	
-	private static void presentAdditionalInfo(UStructure u) {
-		printMemoryUsage(u);
-		if(showCrushInfo) {
-			System.out.println(u.printOutCrushMaps(showImportantCrushInfo));
-		}
-		if(showUStructureInfo) {
-			System.out.println("\t\t\t\tState Size: " + u.getUStructure().getStateNames().size() + ", Transition Size: " + u.getUStructure().getNumberTransitions());
-		}
-	}
-	
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private static ArrayList<Agent> constructAgents(ArrayList<String> event, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents){
@@ -310,10 +303,6 @@ public class ProcessCoobservability {
 			agen.add(a);
 		}
 		return agen;
-	}
-	
-	private static void printMemoryUsage(MemoryMeasure m) {
-		System.out.println("\t\t\t\tAverage Memory: " + m.getAverageMemoryUsage() + " Mb, Max Memory: " + m.getMaximumMemoryUsage() + " Mb");
 	}
 	
 }

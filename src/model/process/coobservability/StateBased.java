@@ -6,10 +6,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import model.fsm.TransitionSystem;
+import model.process.ConcreteMemoryMeasure;
 import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.StateSet;
 
-public class StateBased implements MemoryMeasure {
+public class StateBased extends ConcreteMemoryMeasure {
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -20,15 +21,10 @@ public class StateBased implements MemoryMeasure {
 	private HashMap<String, HashSet<StateSet>> disable;
 	private HashMap<String, HashSet<StateSet>> enable;
 	
-	private long startingMemory;
-	
-	private ArrayList<Long> spaceUsage;
-	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public StateBased(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agents) {
-		startingMemory = getMemoryUsage();
-		spaceUsage = new ArrayList<Long>();
+		super();
 		disable = new HashMap<String, HashSet<StateSet>>();
 		enable = new HashMap<String, HashSet<StateSet>>();
 		operate(plants, specs, attr, agents);
@@ -69,6 +65,8 @@ public class StateBased implements MemoryMeasure {
 		
 		
 		initializeEnableDisable(disable, enable, plants, specs, controllable);
+
+		logMemoryUsage();
 		
 		//System.out.println("\n" + enable + "\n" + disable + "\n");
 		
@@ -97,11 +95,11 @@ public class StateBased implements MemoryMeasure {
 			if(skip) {
 				continue;
 			}
-			
-			logMemoryUsage();
-			
+
 			//HashMap<String, HashSet<StateSet>> tempDisable = subsetConstructHiding(plants, specs, enable, disable, observable, controllable);
 			HashMap<String, HashSet<StateSet>> tempDisable = observerConstructHiding(plants, specs, enable, disable, a.getEventsAttributeSet(attributeObservableRef, true), a.getEventsAttributeSet(attributeControllableRef, true), controllable);
+
+			logMemoryUsage();
 			
 			pass = true;
 			
@@ -182,8 +180,11 @@ public class StateBased implements MemoryMeasure {
 					}
 				}
 				queue.add(reachableStateSets(plants, specs, reachable, agentObs));
+				logMemoryUsage();
 			}
 		}
+
+		logMemoryUsage();
 		
 		for(HashSet<StateSet> group : visited) {
 			for(String e : agentCont) {
@@ -274,46 +275,7 @@ public class StateBased implements MemoryMeasure {
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
-	
-	private long getMemoryUsage() {
-		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-	}
-	
-	private void logMemoryUsage() {
-		spaceUsage.add(getMemoryUsage() - startingMemory);
-	}
-	
-	public double getAverageMemoryUsage() {
-		long add = 0;
-		for(Long l : spaceUsage) {
-			add += l;
-		}
-		if(spaceUsage.size() == 0) {
-			return 0;
-		}
-		return threeSig(inMB(add / spaceUsage.size()));
-	}
-	
-	public double getMaximumMemoryUsage() {
-		long max = 0;
-		for(Long l : spaceUsage) {
-			if(l > max) {
-				max = l;
-			}
-		}
-		return threeSig(inMB(max));
-	}
-	
-	private static double inMB(long in) {
-		return (double)in / 1000000;
-	}
-	
-	private static Double threeSig(double in) {
-		String use = in+"000000000";
-		int posit = use.indexOf(".") + 4;
-		return Double.parseDouble(use.substring(0, posit));
-	}
-	
+
 	private String getInitialState(TransitionSystem t) {
 		return t.getStatesWithAttribute(attributeInitialRef).get(0);
 	}

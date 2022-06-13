@@ -7,9 +7,11 @@ import model.convert.GenerateDot;
 import model.convert.GenerateFSM;
 import model.convert.ReadWrite;
 import model.fsm.TransitionSystem;
+import model.process.MemoryMeasure;
 import model.process.ProcessDES;
+import model.process.ReceiveMemoryMeasure;
 
-public class Manager {
+public class Manager implements ReceiveMemoryMeasure{
 
 //---  Constants   ----------------------------------------------------------------------------
 	
@@ -21,6 +23,8 @@ public class Manager {
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private HashMap<String, TransitionSystem> fsms;
+	
+	private MemoryMeasure lastProcessData;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -36,11 +40,7 @@ public class Manager {
 	//-- Assign Attribute Data  -------------------------------
 	
 	private void assignAttributeReferences() {
-		ProcessDES.assignAttributeReferences(AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE, AttributeList.ATTRIBUTE_BAD, AttributeList.ATTRIBUTE_GOOD);
-	}
-	
-	public void assignCoobservabilityPrintOutState(boolean print, boolean important, boolean ustru) {
-		ProcessDES.assignCoobservableCrushPrintOut(print, important, ustru);
+		ProcessDES.assignReferences(this, AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE, AttributeList.ATTRIBUTE_BAD, AttributeList.ATTRIBUTE_GOOD);
 	}
 	
 	//-- File Meta  -------------------------------------------
@@ -563,7 +563,15 @@ public class Manager {
 		fsms.get(ref).setTransitionAttributes(attri);
 	}
 	
+	public void assignMemoryMeasure(MemoryMeasure m) {
+		lastProcessData = m;
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	public MemoryMeasure getLastProcessData() {
+		return lastProcessData;
+	}
 	
 	//-- States  ----------------------------------------------
 
@@ -657,7 +665,7 @@ public class Manager {
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
-	
+
 	private String appendFSM(String nom, TransitionSystem fsm, boolean overwrite) {
 		if(!overwrite && fsms.get(nom) != null) {
 			int counter = 1;

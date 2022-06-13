@@ -88,25 +88,21 @@ public class ProcessDES {
 	//-- UStructure  ------------------------------------------
 	
 	public static TransitionSystem buildUStructure(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		return ProcessCoobservability.constructUStruct(plant, attr, agents, false).getUStructure();
+		return ProcessCoobservability.constructUStruct(plant, attr, agents).getUStructure();
 	}
 	
 	public static ArrayList<TransitionSystem> buildUStructureCrush(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		return ProcessCoobservability.constructUStruct(plant, attr, agents, true).getCrushUStructures();
+		return ProcessCoobservability.constructUStruct(plant, attr, agents).getCrushUStructures();
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
-	public static void assignAttributeReferences(String init, String mark, String priv, String obs, String cont, String bad, String good) {
+	public static void assignReferences(ReceiveMemoryMeasure rmm, String init, String mark, String priv, String obs, String cont, String bad, String good) {
 		ProcessAnalysis.assignAttributeReferences(priv, init);
 		ProcessOperation.assignAttributeReferences(init, obs);
 		ProcessClean.assignAttributeReferences(init, mark);
-		ProcessCoobservability.assignReferences(cont, obs, init, bad);
+		ProcessCoobservability.assignReferences(rmm, cont, obs, init, bad);
 		UStructure.assignAttributeReferences(init, obs, cont, bad, good);
-	}
-	
-	public static void assignCoobservableCrushPrintOut(boolean print, boolean important, boolean ustruct) {
-		ProcessCoobservability.assignAdditionalInfo(print, important, ustruct);
 	}
 	
 }

@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import model.fsm.TransitionSystem;
+import model.process.MemoryMeasure;
+import model.process.UStructMemoryMeasure;
 import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.AgentStates;
 import model.process.coobservability.support.CrushIdentityGroup;
@@ -13,7 +15,7 @@ import model.process.coobservability.support.IllegalConfig;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class UStructure implements MemoryMeasure{
+public class UStructure extends UStructMemoryMeasure{
 	
 //---  Constants   ----------------------------------------------------------------------------
 	
@@ -36,24 +38,21 @@ public class UStructure implements MemoryMeasure{
 	
 	private CrushMap[] crushMap;
 	
-	private ArrayList<Long> spaceUsage;
-	
-	private long startingMemory;
+	private Agent[] agents;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents, boolean performCrush) {
-		startingMemory = getMemoryUsage();
-		spaceUsage = new ArrayList<Long>();
+	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
+		super();
 		HashMap<String, HashSet<String>> badTransitions = initializeBadTransitions(thePlant);
-		Agent[] agents = initializeAgents(thePlant, attr, theAgents);
+		agents = initializeAgents(thePlant, attr, theAgents);
 		crushMap = new CrushMap[agents.length];
 
 		goodBadStates = new HashSet<IllegalConfig>();
 		badGoodStates = new HashSet<IllegalConfig>();
 		objectMap = new HashMap<String, AgentStates>();
 		eventNameMap = new HashMap<String, String[]>();
-		createUStructure(thePlant, badTransitions, agents, performCrush);
+		createUStructure(thePlant, badTransitions, agents);
 	}
 
 	private HashMap<String, HashSet<String>> initializeBadTransitions(TransitionSystem thePlant){
@@ -105,7 +104,7 @@ public class UStructure implements MemoryMeasure{
 	
 //---  Operations   ---------------------------------------------------------------------------
 
-	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents, boolean performCrush) {
+	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) {
 		uStructure = initializeUStructure(plant);
 		
 		LinkedList<AgentStates> queue = new LinkedList<AgentStates>();		//initialize queue
@@ -120,10 +119,6 @@ public class UStructure implements MemoryMeasure{
 		uStructure.addState(bas.getCompositeName());									//create first state, start queue
 		uStructure.setStateAttribute(bas.getCompositeName(), attributeInitialRef, true);
 		queue.add(bas);
-		
-		for(int i = 0; i < agents.length; i++) {
-			crushMap[i] = new CrushMap();
-		}
 		
 		while(!queue.isEmpty()) {
 			AgentStates stateSet = queue.poll();
@@ -232,8 +227,8 @@ public class UStructure implements MemoryMeasure{
 			}
 		}
 		
-		if(performCrush)
-			calculateCrush(agents);
+		assignStateSize(uStructure.getStateNames().size());
+		assignTransitionSize(uStructure.getNumberTransitions());
 		
 		uStructure.overwriteEventAttributes(new ArrayList<String>());		//Not sure why, probably to avoid weird stuff on the output graph?
 	}
@@ -247,10 +242,15 @@ public class UStructure implements MemoryMeasure{
 		return out;
 	}
 
-	private void calculateCrush(Agent[] agents) {
-		for(int i = 0; i < agents.length; i++) {
+	private void calculateCrush(boolean display) {
+		//TODO: For actual calculation, we ignore the plant crush map, so need a way to reduce work when wanting result but have it available when wanting the print out
+		for(int i = display ? 0 : 1; i < agents.length; i++) {
 			Agent age = agents[i];
 			HashSet<String> init = getReachableStates(uStructure.getStatesWithAttribute(attributeInitialRef).get(0), age, i);
+			if(crushMap[i] != null) {
+				continue;
+			}
+			crushMap[i] = new CrushMap();
 			
 			//TODO: Probably just need these HashSet<String> object to incorporate the event and state set that led to them
 			
@@ -282,8 +282,10 @@ public class UStructure implements MemoryMeasure{
 				for(String s : group.getGroup()) {
 					crushMap[i].assignStateGroup(s, count);
 				}
+				logStateGroupSize(group.getSize());
 				count++;
 			}
+			logAgentGroupSize(count);
 		}
 	}
 
@@ -292,6 +294,9 @@ public class UStructure implements MemoryMeasure{
 		for(int i = 0; i < crushMap.length; i++) {
 			CrushMap cm = crushMap[i];
 			sb.append("Agent " + i + " Crush Map Info\n");
+			if(cm == null) {
+				continue;
+			}
 			ArrayList<String> important = new ArrayList<String>();
 			
 			if(pointOut) {
@@ -311,6 +316,7 @@ public class UStructure implements MemoryMeasure{
 //---  Getter Methods   -----------------------------------------------------------------------
 
 	public HashSet<IllegalConfig> getFilteredIllegalConfigStates(){
+		calculateCrush(false);
 		HashSet<IllegalConfig> typeOne = new HashSet<IllegalConfig>();
 		typeOne.addAll(getIllegalConfigOneStates());
 		HashSet<IllegalConfig> typeTwo = new HashSet<IllegalConfig>();
@@ -327,48 +333,14 @@ public class UStructure implements MemoryMeasure{
 		
 	}
 	
-	private long getMemoryUsage() {
-		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-	}
-	
-	private void logMemoryUsage() {
-		spaceUsage.add(getMemoryUsage() - startingMemory);
-	}
-	
-	public double getAverageMemoryUsage() {
-		long add = 0;
-		for(Long l : spaceUsage) {
-			add += l;
-		}
-		return threeSig(inMB((add / spaceUsage.size())));
-	}
-	
-	public double getMaximumMemoryUsage() {
-		long max = 0;
-		for(Long l : spaceUsage) {
-			if(l > max) {
-				max = l;
-			}
-		}
-		return threeSig(inMB(max));
-	}
-	
-	private static double inMB(long in) {
-		return (double)in / 1000000;
-	}
-	
-	private static Double threeSig(double in) {
-		String use = in+"000000000";
-		int posit = use.indexOf(".") + 4;
-		return Double.parseDouble(use.substring(0, posit));
-	}
-	
 	public TransitionSystem getUStructure() {
 		return uStructure;
 	}
 	
 	public ArrayList<TransitionSystem> getCrushUStructures(){
 		ArrayList<TransitionSystem> out = new ArrayList<TransitionSystem>();
+
+		calculateCrush(true);
 		
 		for(int i = 0; i < crushMap.length; i++) {
 			TransitionSystem local = uStructure.copy();
@@ -393,6 +365,7 @@ public class UStructure implements MemoryMeasure{
 	}
 	
 	public CrushMap[] getCrushMappings() {
+		calculateCrush(true);
 		return crushMap;
 	}
 

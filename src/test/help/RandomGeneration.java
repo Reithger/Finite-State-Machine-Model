@@ -116,12 +116,12 @@ public class RandomGeneration {
 		ArrayList<String> out = new ArrayList<String>();
 		
 		for(int i = 0; i < numPlants; i++) {
-			int numStates = stateSizeAverage + (rand.nextInt(stateVariance) - (stateVariance/2));
-			int numEvents = eventSizeAverage + (rand.nextInt(eventVariance) - (eventVariance/2));
+			int numStates = stateSizeAverage + (rand.nextInt(stateVariance * 2 + 1) - (stateVariance));
+			int numEvents = eventSizeAverage + (rand.nextInt(eventVariance * 2 + 1) - (eventVariance));
 			int numTransitions = TRANSITION_NUMBER_DEFAULT;
 			
 			int numBorrowed = 0;
-			for(int j = 0; j < numEvents; j++) {
+			for(int j = 0; j < numEvents - 1; j++) {
 				if(plantEvents.keySet().size() != 0 && rand.nextDouble() < eventShareRate)
 					numBorrowed++;
 			}
@@ -148,8 +148,8 @@ public class RandomGeneration {
 		}
 		
 		for(int i = 0; i < numSpecs; i++) {
-			int numStates = stateSizeAverage + (rand.nextInt(stateVariance) - (stateVariance/2));
-			int numEvents = eventSizeAverage + (rand.nextInt(eventVariance) - (eventVariance/2));
+			int numStates = stateSizeAverage + (rand.nextInt(stateVariance * 2 + 1) - (stateVariance));
+			int numEvents = eventSizeAverage + (rand.nextInt(eventVariance * 2 + 1) - (eventVariance));
 			int numTransitions = TRANSITION_NUMBER_DEFAULT;
 			
 			ArrayList<String> events = new ArrayList<String>();
@@ -170,7 +170,7 @@ public class RandomGeneration {
 	
 	public static ArrayList<HashMap<String, ArrayList<Boolean>>> generateRandomAgents(ArrayList<String> events, int agentSizeAverage, int agentSizeVariance, double obsRate, double ctrRate){
 		Random rand = new Random();
-		int numAgents = agentSizeAverage + (agentSizeVariance == 0 ? 0 : (rand.nextInt(agentSizeVariance) - (agentSizeVariance / 2)));
+		int numAgents = agentSizeAverage + (agentSizeVariance == 0 ? 0 : (rand.nextInt(agentSizeVariance * 2 + 1) - (agentSizeVariance)));
 		boolean[][][] agentInfo = new boolean[numAgents][events.size()][2];
 		for(int i = 0; i < numAgents; i++) {
 			for(int j = 0; j < events.size(); j++) {

@@ -23,6 +23,10 @@ public class CrushIdentityGroup implements Comparator<CrushIdentityGroup>, Compa
 		return thisGroup;
 	}
 	
+	public int getSize() {
+		return thisGroup.size();
+	}
+	
 	private boolean search(HashSet<String> check) {
 		return thisGroup.equals(check) ? true : parentGroup != null ? parentGroup.search(check) : false;
 	}
