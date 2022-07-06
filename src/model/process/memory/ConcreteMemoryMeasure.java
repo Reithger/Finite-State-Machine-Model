@@ -1,6 +1,8 @@
-package model.process;
+package model.process.memory;
 
 import java.util.ArrayList;
+
+import model.fsm.TransitionSystem;
 
 public class ConcreteMemoryMeasure implements MemoryMeasure {
 
@@ -9,6 +11,8 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	private long startingMemory;
 	
 	private ArrayList<Long> spaceUsage;
+	
+	private TransitionSystem hold;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -28,7 +32,21 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 		return "\t\t\t\tAverage Memory: " + getAverageMemoryUsage() + " Mb, Max Memory: " + getMaximumMemoryUsage() + " Mb";
 	}
 
+	public static ConcreteMemoryMeasure produceBlank() {
+		return new ConcreteMemoryMeasure();
+	}
+	
+	@Override
+	public void reserveTransitionSystem(TransitionSystem in) {
+		hold = in;
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	@Override
+	public TransitionSystem getReserveSystem() {
+		return hold;
+	}
 	
 	private long getMemoryUsage() {
 		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -62,12 +80,11 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	}
 	
 	protected static Double threeSig(double in) {
-		String use = in+"000000000";
+		String use = in+"0000";
 		int posit = use.indexOf(".") + 4;
 		return Double.parseDouble(use.substring(0, posit));
 	}
 
-	
 	@Override
 	public ArrayList<String> getOutputGuide() {
 		ArrayList<String> out = new ArrayList<String>();
@@ -77,7 +94,6 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 		
 		return out;
 	}
-	
 
 	@Override
 	public ArrayList<Double> getStoredData() {

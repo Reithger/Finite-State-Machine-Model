@@ -116,19 +116,13 @@ public class GenerateFSM {
 		writeAttribute(out, transitionAttributes);
 		out.append(REGION_SEPARATOR + "\n");
 		
-		ArrayList<Integer> track = new ArrayList<Integer>();
-		for(int i = 0; i < stateNumbers.size() + eventNumbers.size() + transitionNumbers.size(); i++) {
-			track.add(0);
-		}
-		
 		Random rand = new Random();
-		
+
 		HashMap<Integer, String> stateNames = defaultStateSet == null ? writeComponentGenerative(out, rand, sizeStates, stateAttributes, stateNumbers, true) : writeComponentDefaultSet(out, rand, defaultStateSet, stateAttributes, stateNumbers);
-		
+
 		HashMap<Integer, String> eventNames = defaultEventSet == null ? writeComponentGenerative(out, rand, sizeEvents, eventAttributes, eventNumbers, false) : writeComponentDefaultSet(out, rand, defaultEventSet, eventAttributes, eventNumbers);
-		
+
 		writeTransitions(out, rand, stateNames, eventNames, sizeTrans, det);
-		
 		return out.toString();
 	}
 	
@@ -182,8 +176,10 @@ public class GenerateFSM {
 				int state1 = i;
 				int state2 = rand.nextInt(sizeStates);
 				int event = rand.nextInt(sizeEvents);
-				while(isDet && det.contains(event) && det.size() < sizeEvents) {
+				int count = 0;
+				while(isDet && det.contains(event) && det.size() < sizeEvents && count < (10 * sizeEvents)) {
 					event = rand.nextInt(sizeEvents);
+					count++;
 				}
 				if(isDet && det.contains(event)) {
 					continue;

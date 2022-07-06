@@ -125,6 +125,7 @@ public class RandomGeneration {
 				if(plantEvents.keySet().size() != 0 && rand.nextDouble() < eventShareRate)
 					numBorrowed++;
 			}
+			numBorrowed = numBorrowed > out.size() ? out.size() : numBorrowed;
 			
 			ArrayList<String> events = getPlantEvents(numEvents - numBorrowed, ALPHABET.charAt(i)+"", configureName(prefixNom, i, true));
 			plantEvents.put(configureName(prefixNom, i, true), copyArrayList(events));
@@ -153,7 +154,7 @@ public class RandomGeneration {
 			int numTransitions = TRANSITION_NUMBER_DEFAULT;
 			
 			ArrayList<String> events = new ArrayList<String>();
-			while(events.size() < numEvents) {
+			while(events.size() < numEvents && events.size() != out.size()) {
 				ArrayList<String> pull = plantEvents.get(configureName(prefixNom, rand.nextInt(numPlants), true));
 				String even = pull.get(rand.nextInt(pull.size()));
 				if(!events.contains(even))

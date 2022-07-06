@@ -7,9 +7,9 @@ import model.convert.GenerateDot;
 import model.convert.GenerateFSM;
 import model.convert.ReadWrite;
 import model.fsm.TransitionSystem;
-import model.process.MemoryMeasure;
 import model.process.ProcessDES;
-import model.process.ReceiveMemoryMeasure;
+import model.process.memory.MemoryMeasure;
+import model.process.memory.ReceiveMemoryMeasure;
 
 public class Manager implements ReceiveMemoryMeasure{
 
@@ -63,6 +63,14 @@ public class Manager implements ReceiveMemoryMeasure{
 			return null;
 		}
 		return ReadWrite.generateFile(fsms.get(ref));
+	}
+	
+	public ArrayList<HashMap<String, ArrayList<Boolean>>> readInAgents(String fileContents) {
+		return ReadWrite.readAgentFile(fileContents);
+	}
+	
+	public String exportAgents(String nom, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> attributes) {
+		return ReadWrite.generateAgentFile(nom, agents, attributes);
 	}
 	
 	public boolean hasFSM(String ref) {
@@ -121,6 +129,15 @@ public class Manager implements ReceiveMemoryMeasure{
 	
 	public String generateRandomFSM(String nom, int numStates, int numEvents, int numTrans, boolean det) throws Exception {
 		return GenerateFSM.createNewFSM(nom, numStates, numEvents, numTrans, det);
+	}
+	
+	public String storeProcessHoldSystem() {
+		if(lastProcessData == null || lastProcessData.getReserveSystem() == null) {
+			return null;
+		}
+		String nom = lastProcessData.getReserveSystem().getId();
+		appendFSM(nom, lastProcessData.getReserveSystem(), false);
+		return nom;
 	}
 	
 	//-- Processes  -------------------------------------------
@@ -266,6 +283,26 @@ public class Manager implements ReceiveMemoryMeasure{
 		return tS.getId();
 	}
 	
+	public String buildUStructure(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		if(bail(plants) || bail(specs)) {
+			return null;
+		}
+		ArrayList<TransitionSystem> usePl = new ArrayList<TransitionSystem>();
+		for(String s : plants) {
+			usePl.add(fsms.get(s));
+		}
+		ArrayList<TransitionSystem> useSp = new ArrayList<TransitionSystem>();
+		for(String s : specs) {
+			useSp.add(fsms.get(s));
+		}
+		TransitionSystem tS = ProcessDES.buildUStructure(usePl, useSp, attr, agents);
+		if(tS == null) {
+			return null;
+		}
+		appendFSM(tS.getId(), tS, false);
+		return tS.getId();
+	}
+	
 	public ArrayList<String> buildUStructureCrush(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents){
 		if(bail(ref)) {
 			return null;
@@ -290,13 +327,6 @@ public class Manager implements ReceiveMemoryMeasure{
 		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents);
 	}
 	
-	public Boolean isInferenceCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		if(bail(ref)) {
-			return null;
-		}
-		return ProcessDES.isInferenceCoobservableUStruct(fsms.get(ref), attr, agents);
-	}
-	
 	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		if(bail(plants) || bail(specs)) {
 			return null;
@@ -312,6 +342,13 @@ public class Manager implements ReceiveMemoryMeasure{
 		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr, agents);
 	}
 	
+	public Boolean isInferenceCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		if(bail(ref)) {
+			return null;
+		}
+		return ProcessDES.isInferenceCoobservableUStruct(fsms.get(ref), attr, agents);
+	}
+
 	public Boolean isInferenceCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		if(bail(plants) || bail(specs)) {
 			return null;
@@ -355,6 +392,36 @@ public class Manager implements ReceiveMemoryMeasure{
 			specs.add(fsms.get(s));
 		}
 		return ProcessDES.isIncrementalCoobservable(plants, specs, attr, agents);
+	}
+	
+	public Boolean isIncrementalInferenceCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		if(bail(refPlants) || bail(refSpecs)) {
+			return null;
+		}
+		ArrayList<TransitionSystem> plants = new ArrayList<TransitionSystem>();
+		ArrayList<TransitionSystem> specs = new ArrayList<TransitionSystem>();
+		for(String s : refPlants) {
+			plants.add(fsms.get(s));
+		}
+		for(String s : refSpecs) {
+			specs.add(fsms.get(s));
+		}
+		return ProcessDES.isIncrementalInferenceCoobservable(plants, specs, attr, agents);
+	}
+	
+	public Boolean isIncrementalSBCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		if(bail(refPlants) || bail(refSpecs)) {
+			return null;
+		}
+		ArrayList<TransitionSystem> plants = new ArrayList<TransitionSystem>();
+		ArrayList<TransitionSystem> specs = new ArrayList<TransitionSystem>();
+		for(String s : refPlants) {
+			plants.add(fsms.get(s));
+		}
+		for(String s : refSpecs) {
+			specs.add(fsms.get(s));
+		}
+		return ProcessDES.isIncrementalSBCoobservable(plants, specs, attr, agents);
 	}
 	
 	public String convertSoloPlantSpec(String ref, String newName) {

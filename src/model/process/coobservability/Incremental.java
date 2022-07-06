@@ -6,30 +6,41 @@ import java.util.Iterator;
 import java.util.Random;
 
 import model.fsm.TransitionSystem;
+import model.process.coobservability.deciding.DecideCondition;
+import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.IllegalConfig;
+import model.process.memory.IncrementalMemoryMeasure;
 
-public class Incremental {
+public class Incremental extends IncrementalMemoryMeasure {
 	
 //---  Constants   ----------------------------------------------------------------------------
-	
-	public final static int INCREMENTAL_A_PLANTS = 0;
-	public final static int INCREMENTAL_A_SPECS = 1;
-	public final static int INCREMENTAL_A_BOTH = 2;
-	
-	public final static int INCREMENTAL_B_SOONEST = 0;
-	public final static int INCREMENTAL_B_LATEST = 1;
-	public final static int INCREMENTAL_B_LOW_STATE = 2;
-	public final static int INCREMENTAL_B_LOW_TRANS = 3;
-	public final static int INCREMENTAL_B_LOW_EVENTS = 4;
-	public final static int INCREMENTAL_B_SHARE_EVENTS = 5;
-	public final static int INCREMENTAL_B_RANDOM = 6;
-	
-	public final static int COUNTEREXAMPLE_SHORT = 0;
-	public final static int COUNTEREXAMPLE_LONG = 1;
-	public final static int COUNTEREXAMPLE_FEWEST_EVENTS = 2;
-	public final static int COUNTEREXAMPLE_MOST_EVENTS = 3;
-	public final static int COUNTEREXAMPLE_RANDOM = 4;
 
+	public final static int INCREMENTAL_A_BOTH = 0;
+	public final static int INCREMENTAL_A_PLANTS = 1;
+	public final static int INCREMENTAL_A_SPECS = 2;
+
+	public final static int INCREMENTAL_B_RANDOM = 0;
+	public final static int INCREMENTAL_B_SOONEST = 1;
+	public final static int INCREMENTAL_B_LATEST = 2;
+	public final static int INCREMENTAL_B_LOW_STATE = 3;
+	public final static int INCREMENTAL_B_HIGH_STATE = 4;
+	public final static int INCREMENTAL_B_LOW_EVENTS = 5;
+	public final static int INCREMENTAL_B_HIGH_EVENTS = 6;
+	public final static int INCREMENTAL_B_LOW_TRANS = 7;
+	public final static int INCREMENTAL_B_HIGH_TRANS = 8;
+	public final static int INCREMENTAL_B_SHARE_EVENTS = 9;
+	public final static int INCREMENTAL_B_DIFF_EVENTS = 10;
+
+	public final static int COUNTEREXAMPLE_RANDOM = 0;
+	public final static int COUNTEREXAMPLE_SHORT = 1;
+	public final static int COUNTEREXAMPLE_LONG = 2;
+	public final static int COUNTEREXAMPLE_FEWEST_EVENTS = 3;
+	public final static int COUNTEREXAMPLE_MOST_EVENTS = 4;
+
+	public final static int NUM_A_HEURISTICS = 3;
+	public final static int NUM_B_HEURISTICS = 11;
+	public final static int NUM_C_HEURISTICS = 5;
+	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private static int incrementalOptionA;
@@ -38,6 +49,8 @@ public class Incremental {
 	
 	private static String observableRef;
 	private static String initialRef;
+	
+	private DecideCondition decider;
 	
 //---  Static Assignments   -------------------------------------------------------------------
 	
@@ -52,24 +65,69 @@ public class Incremental {
 		initialRef = init;
 	}
 	
+//---  Constructors   -------------------------------------------------------------------------
+	
+	public Incremental(DecideCondition dC) {
+		decider = dC;
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
 	
-	public static TransitionSystem generateSigmaStarion(ArrayList<TransitionSystem> plants) {
-		TransitionSystem sigmaStar = new TransitionSystem("sigmaStarion");
-		sigmaStar.copyAttributes(plants.get(0));
-		String init = "0";
-		sigmaStar.addState(init);
-		sigmaStar.setStateAttribute(init, initialRef, true);
-		for(String e : getAllEvents(plants)) {
-			for(TransitionSystem t : plants) {
-				if(t.eventExists(e)) {
-					sigmaStar.addEvent(e, t);
-					sigmaStar.addTransition(init, e, init);
-					break;
+	public boolean decideIncrementalCondition(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agents) {
+		ArrayList<TransitionSystem> copyPlants = new ArrayList<TransitionSystem>();
+		ArrayList<TransitionSystem> copySpecs = new ArrayList<TransitionSystem>();
+		copyPlants.addAll(plants);
+		copySpecs.addAll(specs);
+		
+		while(!copySpecs.isEmpty()) {
+			TransitionSystem pick = pickComponent(null, copySpecs, null);								//Get initial spec to use (heuristics choose here)
+			ArrayList<TransitionSystem> hold = new ArrayList<TransitionSystem>();		//List to hold all the plants/specs used in the current iteration
+			copySpecs.remove(pick);
+			hold.add(pick);
+			decider = decider.constructDeciderCoobs(getAllEvents(plants), pick, attr, agents);
+			logMemoryUsage();
+			while(!decider.decideCondition()) {
+				if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
+					logData(decider, hold);
+					reserveTransitionSystem(decider.produceMemoryMeasure().getReserveSystem());
+					System.out.println("False, Counterexamples: " + decider.getCounterExamples().iterator().next().toString());
+					return false;
+				}
+				logMemoryUsage();
+				IllegalConfig counterexample = pickCounterExample(decider.getCounterExamples());	//Get a single bad state, probably, maybe write something so UStruct can trace it
+				pick = pickComponent(copyPlants, copySpecs, counterexample);	//Heuristics go here
+				if(pick == null) {
+					System.out.println(counterexample.getEventPath() + ", " + counterexample.getEvent());
+					logData(decider, hold);
+					reserveTransitionSystem(decider.produceMemoryMeasure().getReserveSystem());
+					//TODO: Check counterexamples and see if there's something there, if any strings shouldn't be problematic?
+					System.out.println("False, Counterexamples: " + decider.getCounterExamples().iterator().next().toString());
+					return false;
+				}
+				System.out.println("Chose: " + pick.getId());
+				if(copySpecs.contains(pick)) {
+					hold.add(pick);
+					copySpecs.remove(pick);
+					decider.addComponent(pick, false);
+					//decider.replaceSigma(getAllEvents(plants));
+				}
+				else {
+					hold.add(pick);
+					copyPlants.remove(pick);
+					decider.addComponent(pick, true);
 				}
 			}
+			copyPlants.addAll(hold);
+			logData(decider, hold);
 		}
-		return sigmaStar;
+		reserveTransitionSystem(decider.produceMemoryMeasure().getReserveSystem());
+		return true;
+	}
+	
+	private void logData(DecideCondition dec, ArrayList<TransitionSystem> hold) {
+		logFinishedProcess(decider.produceMemoryMeasure());
+		logFinishedComponents(hold.size());
+		logComponentNames(getComponentNames(hold));
 	}
 	
 	/**
@@ -83,7 +141,7 @@ public class Incremental {
 	 * @return
 	 */
 	
-	public static IllegalConfig pickCounterExample(HashSet<IllegalConfig> counters) {
+	private IllegalConfig pickCounterExample(HashSet<IllegalConfig> counters) {
 		IllegalConfig out = null;
 		switch(counterexampleChoice) {
 			case COUNTEREXAMPLE_SHORT:
@@ -118,7 +176,7 @@ public class Incremental {
 				Random rand = new Random();
 				int pos = rand.nextInt(counters.size());
 				Iterator<IllegalConfig> i = counters.iterator();
-				while(pos != 0) {
+				while(--pos != -1) {
 					out = i.next();
 				}
 				return out;
@@ -151,7 +209,7 @@ public class Incremental {
 	 * @return
 	 */
 	
-	public static TransitionSystem pickComponent(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, IllegalConfig counterexample) {
+	private TransitionSystem pickComponent(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, IllegalConfig counterexample) {
 		ArrayList<TransitionSystem> selectionPool = new ArrayList<TransitionSystem>();
 		
 		int use = plants == null ? INCREMENTAL_A_SPECS : incrementalOptionA;
@@ -189,7 +247,7 @@ public class Incremental {
 			case INCREMENTAL_B_SOONEST:
 				for(TransitionSystem ts : selectionPool) {
 					if(canReject(ts, specs.contains(ts), counterexample)) {
-						if(out == null || observablePath(ts, counterexample.getEventPath()).length() < observablePath(out, counterexample.getEventPath()).length()){
+						if(out == null || observablePath(ts, counterexample.getEventPath()).size() < observablePath(out, counterexample.getEventPath()).size()){
 							out = ts;
 						}
 					}
@@ -198,7 +256,7 @@ public class Incremental {
 			case INCREMENTAL_B_LATEST:
 				for(TransitionSystem ts : selectionPool) {
 					if(canReject(ts, specs.contains(ts), counterexample)) {
-						if(out == null || observablePath(ts, counterexample.getEventPath()).length() > observablePath(out, counterexample.getEventPath()).length()){
+						if(out == null || observablePath(ts, counterexample.getEventPath()).size() > observablePath(out, counterexample.getEventPath()).size()){
 							out = ts;
 						}
 					}
@@ -213,10 +271,28 @@ public class Incremental {
 					}
 				}
 				break;
+			case INCREMENTAL_B_HIGH_STATE:
+				for(TransitionSystem ts : selectionPool) {
+					if(canReject(ts, specs.contains(ts), counterexample)) {
+						if(out == null || ts.getStateNames().size() > out.getStateNames().size()){
+							out = ts;
+						}
+					}
+				}
+				break;
 			case INCREMENTAL_B_LOW_TRANS:
 				for(TransitionSystem ts : selectionPool) {
 					if(canReject(ts, specs.contains(ts), counterexample)) {
 						if(out == null || countTransitions(ts) < countTransitions(out)){
+							out = ts;
+						}
+					}
+				}
+				break;
+			case INCREMENTAL_B_HIGH_TRANS:
+				for(TransitionSystem ts : selectionPool) {
+					if(canReject(ts, specs.contains(ts), counterexample)) {
+						if(out == null || countTransitions(ts) > countTransitions(out)){
 							out = ts;
 						}
 					}
@@ -231,10 +307,28 @@ public class Incremental {
 					}
 				}
 				break;
+			case INCREMENTAL_B_HIGH_EVENTS:
+				for(TransitionSystem ts : selectionPool) {
+					if(canReject(ts, specs.contains(ts), counterexample)) {
+						if(out == null || ts.getEventNames().size() > out.getEventNames().size()){
+							out = ts;
+						}
+					}
+				}
+				break;
 			case INCREMENTAL_B_SHARE_EVENTS:
 				for(TransitionSystem ts : selectionPool) {
 					if(canReject(ts, specs.contains(ts), counterexample)) {
 						if(out == null || sharedEvents(ts, counterexample.getEventPath()) < sharedEvents(out, counterexample.getEventPath())){
+							out = ts;
+						}
+					}
+				}
+				break;
+			case INCREMENTAL_B_DIFF_EVENTS:
+				for(TransitionSystem ts : selectionPool) {
+					if(canReject(ts, specs.contains(ts), counterexample)) {
+						if(out == null || sharedEvents(ts, counterexample.getEventPath()) > sharedEvents(out, counterexample.getEventPath())){
 							out = ts;
 						}
 					}
@@ -248,16 +342,43 @@ public class Incremental {
 					}
 				}
 				Random rand = new Random();
+				if(pool.size() == 0) {
+					return null;
+				}
 				out = pool.get(rand.nextInt(pool.size()));
 				break;
+		}
+		
+		if (out == null && incrementalOptionA != 0){
+			int[] hold = getIncrementalSettings();
+			assignIncrementalOptions(0, incrementalOptionB, counterexampleChoice);
+			out = pickComponent(plants, specs, counterexample);
+			assignIncrementalOptions(hold[0], hold[1], hold[2]);
+			return out;
 		}
 		
 		return out;
 	}
 
 //---  Support Methods   ----------------------------------------------------------------------
+
+	private int[] getIncrementalSettings() {
+		int[] out = new int[3];
+		out[0] = incrementalOptionA;
+		out[1] = incrementalOptionB;
+		out[2] = counterexampleChoice;
+		return out;
+	}
 	
-	private static ArrayList<String> getAllEvents(ArrayList<TransitionSystem> plants){
+	private ArrayList<String> getComponentNames(ArrayList<TransitionSystem> components){
+		ArrayList<String> out = new ArrayList<String>();
+		for(TransitionSystem t : components) {
+			out.add(t.getId());
+		}
+		return out;
+	}
+	
+	private ArrayList<String> getAllEvents(ArrayList<TransitionSystem> plants){
 		HashSet<String> hold = new HashSet<String>();
 		
 		for(TransitionSystem t : plants) {
@@ -269,7 +390,7 @@ public class Incremental {
 		return out;
 	}
 
-	private static int countTransitions(TransitionSystem plant) {
+	private int countTransitions(TransitionSystem plant) {
 		int out = 0;
 		for(String s : plant.getStateNames()) {
 			for(String e : plant.getStateTransitionEvents(s)) {
@@ -279,9 +400,9 @@ public class Incremental {
 		return out;
 	}
 	
-	private static int sharedEvents(TransitionSystem plant, String eventPath) {
+	private int sharedEvents(TransitionSystem plant, ArrayList<String> eventPath) {
 		HashSet<String> events = new HashSet<String>();
-		for(String s : eventPath.split("")) {
+		for(String s : eventPath) {
 			events.add(s);
 		}
 		int out = 0;
@@ -293,14 +414,20 @@ public class Incremental {
 		return out;
 	}
 	
-	private static boolean canReject(TransitionSystem plant, boolean spec, IllegalConfig ic) {
+	private boolean canReject(TransitionSystem plant, boolean spec, IllegalConfig ic) {
 		if(ic == null) {
 			return true;
 		}
-		String reachedState = navigateTransitionSystem(plant, observablePath(plant, ic.getEventPath() + (spec ? "" : ic.getEvent())));
+		ArrayList<String> use = ic.getEventPath();
+		use.add(spec ? "" : ic.getEvent());
+		String reachedState = navigateTransitionSystem(plant, observablePath(plant, use));
+		System.out.println("For: " + ic.getEventPath() + ic.getEvent() + ", " + plant.getId() + " reached: " + reachedState + " from start: " + plant.getStatesWithAttribute(initialRef).get(0) + ", knowing: " + plant.getEventNames());
 		if(reachedState != null) {
-			for(String s : ic.getObservedPaths()) {
-				if(navigateTransitionSystem(plant, observablePath(plant, s + ic.getEvent())) == null) {
+			for(ArrayList<String> s : ic.getObservedPaths()) {
+				use = s;
+				use.add(ic.getEvent());
+				System.out.println("Agent View: " + use);
+				if(navigateTransitionSystem(plant, observablePath(plant, use)) == null) {
 					return true;
 				}
 			}
@@ -328,9 +455,10 @@ public class Incremental {
 	 * @return
 	 */
 	
-	private static String navigateTransitionSystem(TransitionSystem plant, String eventPath) {
+	private String navigateTransitionSystem(TransitionSystem plant, ArrayList<String> eventPath) {
 		String curr = plant.getStatesWithAttribute(initialRef).get(0);
-		for(String s : eventPath.split("")) {
+		for(String s : eventPath) {
+			//System.out.println("Knows event " + s + "? " + plant.getEventNames().contains(s) + ", Sees it: " + plant.getEventsWithAttribute(observableRef).contains(s));
 			if(plant.getEventNames().contains(s) && plant.getEventsWithAttribute(observableRef).contains(s)) {
 				ArrayList<String> next = plant.getStateEventTransitionStates(curr, s);
 				if(next != null && next.size() > 0) {
@@ -353,11 +481,11 @@ public class Incremental {
 	 * @return
 	 */
 	
-	private static String observablePath(TransitionSystem plant, String eventPath) {
-		String out = "";
-		for(char s : eventPath.toCharArray()) {
-			if(plant.getEventNames().contains(s+"") && plant.getEventAttribute(s+"", observableRef)) {
-				out += s;
+	private ArrayList<String> observablePath(TransitionSystem plant, ArrayList<String> eventPath) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(String s : eventPath) {
+			if(plant.getEventNames().contains(s) && plant.getEventAttribute(s, observableRef)) {
+				out.add(s);
 			}
 		}
 		return out;

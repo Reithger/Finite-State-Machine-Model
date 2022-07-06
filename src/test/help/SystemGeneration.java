@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import model.AttributeList;
 import model.Manager;
+import model.fsm.TransitionSystem;
 
 public class SystemGeneration {
 	
@@ -217,6 +218,25 @@ public class SystemGeneration {
 		model.addTransition(name, "18", "s", "18");
 		
 		setBadTransitions(name, "8", "s", "10", "s","12", "s","14", "s","16", "s","17", "s");
+	}
+	
+	public static void generateSystemSigmaStarion(String name, ArrayList<String> events) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 1);
+
+		initialState(name, "0");
+		
+		String[] use = new String[events.size()];
+		for(int i = 0; i < events.size(); i++) {
+			use[i] = events.get(i);
+		}
+		
+		initiateEvents(name, use);
+		
+		for(String e : events) {
+			model.addTransition(name, "0", e, "0");
+		}
 	}
 	
 	//-- Poly System  -----------------------------------------

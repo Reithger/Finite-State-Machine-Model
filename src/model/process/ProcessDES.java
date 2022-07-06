@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import model.fsm.TransitionSystem;
-import model.process.coobservability.ProcessCoobservability;
-import model.process.coobservability.UStructure;
+import model.process.memory.ReceiveMemoryMeasure;
 
 public class ProcessDES {
 
@@ -78,11 +77,19 @@ public class ProcessDES {
 	}
 	
 	public static Boolean isSBCoobservableUrvashi(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		return ProcessCoobservability.isSBCoobservableUrvashi(plants, specs, attr, agents);
+		return ProcessCoobservability.isSBCoobservable(plants, specs, attr, agents);
 	}
 	
 	public static Boolean isIncrementalCoobservable(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
-		return ProcessCoobservability.isCoobservableLiu(plants, specs, attr, agents);
+		return ProcessCoobservability.isIncrementalCoobservable(plants, specs, attr, agents);
+	}
+	
+	public static Boolean isIncrementalInferenceCoobservable(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		return ProcessCoobservability.isIncrementalInferenceCoobservable(plants, specs, attr, agents);
+	}
+	
+	public static Boolean isIncrementalSBCoobservable(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		return ProcessCoobservability.isIncrementalSBCoobservable(plants, specs, attr, agents);
 	}
 	
 	//-- UStructure  ------------------------------------------
@@ -91,8 +98,16 @@ public class ProcessDES {
 		return ProcessCoobservability.constructUStruct(plant, attr, agents).getUStructure();
 	}
 	
+	public static TransitionSystem buildUStructure(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		return ProcessCoobservability.constructUStruct(plants, specs, attr, agents).getUStructure();
+	}
+	
 	public static ArrayList<TransitionSystem> buildUStructureCrush(TransitionSystem plant, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
 		return ProcessCoobservability.constructUStruct(plant, attr, agents).getCrushUStructures();
+	}
+	
+	public static ArrayList<TransitionSystem> buildUStructureCrush(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		return ProcessCoobservability.constructUStruct(plants, specs, attr, agents).getCrushUStructures();
 	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
@@ -101,8 +116,7 @@ public class ProcessDES {
 		ProcessAnalysis.assignAttributeReferences(priv, init);
 		ProcessOperation.assignAttributeReferences(init, obs);
 		ProcessClean.assignAttributeReferences(init, mark);
-		ProcessCoobservability.assignReferences(rmm, cont, obs, init, bad);
-		UStructure.assignAttributeReferences(init, obs, cont, bad, good);
+		ProcessCoobservability.assignReferences(rmm, cont, obs, init, bad, good);
 	}
 	
 }

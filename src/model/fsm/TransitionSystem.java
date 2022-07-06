@@ -445,7 +445,7 @@ public class TransitionSystem {
 	}
 	
 	public ArrayList<String> getStateAttributes(){
-		return states.getAttributes();
+		return copy(states.getAttributes());
 	}
 	
 	public ArrayList<String> getStateNames(){
@@ -507,7 +507,7 @@ public class TransitionSystem {
 	}
 	
 	public ArrayList<String> getEventAttributes(){
-		return events.getAttributes();
+		return copy(events.getAttributes());
 	}
 	
 	public ArrayList<String> getEventNames(){
@@ -533,7 +533,7 @@ public class TransitionSystem {
 	}
 	
 	public ArrayList<String> getTransitionAttributes(){
-		return transitions.getAttributes();
+		return copy(transitions.getAttributes());
 	}
 	
 	public ArrayList<String> getStateTransitionEvents(String state){
@@ -607,12 +607,25 @@ public class TransitionSystem {
 
 //---  Mechanics   ----------------------------------------------------------------------------
 
+	private ArrayList<String> copy(ArrayList<String> in){
+		ArrayList<String> out = new ArrayList<String>();
+		for(String s : in) {
+			out.add(s);
+		}
+		return out;
+	}
+	
 	public TransitionSystem copy() {
 		TransitionSystem out = new TransitionSystem(getId(), getStateAttributes(), getEventAttributes(), getTransitionAttributes());
 		out.mergeEvents(this);
 		out.mergeStates(this);
 		out.mergeTransitions(this);
 		return out;
+	}
+	
+	@Override
+	public String toString() {
+		return getId();
 	}
 	
 }

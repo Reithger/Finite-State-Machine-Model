@@ -2,7 +2,7 @@ package model.process.coobservability.support;
 
 import java.util.Arrays;
 
-public class StateSet{
+public class StateSet {
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -57,6 +57,17 @@ public class StateSet{
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
+	
+	public String[] getStates() {
+		String[] out = new String[sizePlants + sizeSpecs];
+		for(int i = 0; i < sizePlants; i++) {
+			out[i] = plant[i];
+		}
+		for(int i = 0; i < sizeSpecs; i++) {
+			out[sizePlants + i] = spec[i];
+		}
+		return out;
+	}
 	
 	public String[] getPlantStates() {
 		return plant;

@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import model.fsm.TransitionSystem;
-import model.process.ConcreteMemoryMeasure;
 import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.StateSet;
+import model.process.memory.ConcreteMemoryMeasure;
 
 public class StateBased extends ConcreteMemoryMeasure {
 	
@@ -21,12 +21,17 @@ public class StateBased extends ConcreteMemoryMeasure {
 	private HashMap<String, HashSet<StateSet>> disable;
 	private HashMap<String, HashSet<StateSet>> enable;
 	
+	private HashMap<StateSet, ArrayList<ArrayList<String>>> pathTracing;
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public StateBased(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agents) {
+	public StateBased(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agents, boolean pathTrack) {
 		super();
 		disable = new HashMap<String, HashSet<StateSet>>();
 		enable = new HashMap<String, HashSet<StateSet>>();
+		if(pathTrack) {
+			pathTracing = new HashMap<StateSet, ArrayList<ArrayList<String>>>();
+		}
 		operate(plants, specs, attr, agents);
 	}
 	
@@ -96,7 +101,6 @@ public class StateBased extends ConcreteMemoryMeasure {
 				continue;
 			}
 
-			//HashMap<String, HashSet<StateSet>> tempDisable = subsetConstructHiding(plants, specs, enable, disable, observable, controllable);
 			HashMap<String, HashSet<StateSet>> tempDisable = observerConstructHiding(plants, specs, enable, disable, a.getEventsAttributeSet(attributeObservableRef, true), a.getEventsAttributeSet(attributeControllableRef, true), controllable);
 
 			logMemoryUsage();
@@ -122,33 +126,65 @@ public class StateBased extends ConcreteMemoryMeasure {
 			enable.put(c, new HashSet<StateSet>());
 		}
 		StateSet.assignSizes(plants.size(), specs.size());
+		
 		LinkedList<StateSet> queue = new LinkedList<StateSet>();
 		HashSet<StateSet> visited = new HashSet<StateSet>();
-		queue.add(initialStateSet(plants, specs));
+		StateSet first = initialStateSet(plants, specs);
+		
+		if(pathTracing != null) {
+			logBasePath(first, new ArrayList<String>());
+		}
+		
+		queue.add(first);
 		while(!queue.isEmpty()) {
 			StateSet curr = queue.poll();
 			if(visited.contains(curr)) {
 				continue;
 			}
 			visited.add(curr);
+			boolean bail = true;
 			for(String s : getAllEvents(plants)) {
 				if(canProceed(plants, null, curr, s)) {
 					boolean cont = controllable.contains(s);
 					if(!canProceed(null, specs, curr, s)) {
 						if(cont) {
 							disable.get(s).add(curr);
+							logNewPath(curr, s);
+							bail = false;
 						}
 					}
 					else {
 						if(cont) {
 							enable.get(s).add(curr);
+							logNewPath(curr, s);
+							bail = false;
 						}
-						queue.add(stateSetStep(plants, specs, curr, s));
+						StateSet next = stateSetStep(plants, specs, curr, s);
+						if(pathTracing != null) {
+							logBasePath(next, copy(pathTracing.get(curr).get(0), s));
+						}
+						queue.add(next);
 					}
 				}
 				
 			}
+			if(pathTracing != null && bail) {
+				pathTracing.remove(curr);
+			}
 		}
+	}
+	
+	private void logNewPath(StateSet curr, String cont) {
+		if(pathTracing != null) {
+			pathTracing.get(curr).add(copy(pathTracing.get(curr).get(0), cont));
+		}
+	}
+	
+	private void logBasePath(StateSet in, ArrayList<String> path) {
+		if(!pathTracing.containsKey(in)) {
+			pathTracing.put(in, new ArrayList<ArrayList<String>>());
+		}
+		pathTracing.get(in).add(path);
 	}
 	
 	private HashMap<String, HashSet<StateSet>> observerConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont, HashSet<String> controllable){
@@ -198,82 +234,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 		
 		return out;
 	}
-	
-	private HashMap<String, HashSet<StateSet>> subsetConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont){
-		HashMap<String, HashSet<StateSet>> out = new HashMap<String, HashSet<StateSet>>();
-		
-		ArrayList<String> controllable = getAllTypedEvents(plants, attributeControllableRef);
-		
-		for(String c : controllable) {
-			out.put(c, agentCont.contains(c) ? new HashSet<StateSet>() : disable.get(c));
-		}
-		
-		ArrayList<String> agentUnobs = getAllEvents(plants);
-		agentUnobs.removeAll(agentObs);
-		
-		HashSet<StateSet> actualInit = new HashSet<StateSet>();
-		actualInit.add(initialStateSet(plants, specs));
-		
-		LinkedList<HashSet<StateSet>> queue = new LinkedList<HashSet<StateSet>>();
-		queue.add(actualInit);
-		HashSet<HashSet<StateSet>> visited = new HashSet<HashSet<StateSet>>();
-		
-		//This is in case two distinct states to the visited HashSet generate the same observer view set of states
-		HashSet<HashSet<StateSet>> handled = new HashSet<HashSet<StateSet>>();
-		
-		HashSet<HashSet<StateSet>> alreadyGenerated = new HashSet<HashSet<StateSet>>();
-		
-		while(!queue.isEmpty()) {
-			HashSet<StateSet> curr = queue.poll();
-			if(visited.contains(curr)) {
-				continue;
-			}
-			visited.add(curr);
-			
-			logMemoryUsage();
-			
-			HashSet<StateSet> totalGrouping = new HashSet<StateSet>();
-			LinkedList<StateSet> diminishGroup = new LinkedList<StateSet>();
-			diminishGroup.addAll(curr);
-			while(!diminishGroup.isEmpty()) {
-				StateSet currSet = diminishGroup.poll();
-				if(totalGrouping.contains(currSet)) {
-					continue;
-				}
-				totalGrouping.add(currSet);
-				
-				for(String u : agentUnobs) {
-					if(canProceed(plants, specs, currSet, u)) {
-						diminishGroup.add(stateSetStep(plants, specs, currSet, u));
-					}
-				}
-				
-			}
-			if(!handled.contains(totalGrouping)) {
-				handled.add(totalGrouping);
-				for(String s : controllable) {
-					if(agentCont.contains(s) && intersectionCheck(totalGrouping, enable.get(s)) && intersectionCheck(totalGrouping, disable.get(s))) {
-						out.get(s).addAll(intersection(totalGrouping, disable.get(s)));
-					}
-				}
-				for(String o : agentObs) {
-					HashSet<StateSet> next = new HashSet<StateSet>();
-					for(StateSet s : totalGrouping) {
-						if(canProceed(plants, specs, s, o)) {
-							next.add(stateSetStep(plants, specs, s, o));
-						}
-					}
-					if(!alreadyGenerated.contains(next)) {
-						alreadyGenerated.add(next);
-						queue.add(next);
-					}
-				}
-			}
-		}
-		
-		return out;
-	}
-	
+
 //---  Getter Methods   -----------------------------------------------------------------------
 
 	private String getInitialState(TransitionSystem t) {
@@ -292,18 +253,6 @@ public class StateBased extends ConcreteMemoryMeasure {
 		return out;
 	}
 	
-	private ArrayList<String> getAllTypedEvents(ArrayList<TransitionSystem> plants, String type){
-		HashSet<String> hold = new HashSet<String>();
-		
-		for(TransitionSystem t : plants) {
-			hold.addAll(t.getEventsWithAttribute(type));
-		}
-		
-		ArrayList<String> out = new ArrayList<String>();
-		out.addAll(hold);
-		return out;
-	}
-
 	public ArrayList<StateSet> getRemainingDisableStates(){
 		ArrayList<StateSet> out = new ArrayList<StateSet>();
 		HashSet<StateSet> use = new HashSet<StateSet>();
@@ -314,7 +263,46 @@ public class StateBased extends ConcreteMemoryMeasure {
 		return out;
 	}
 	
+	public ArrayList<StateSet> getRemainingEnableStates(){
+		ArrayList<StateSet> out = new ArrayList<StateSet>();
+		HashSet<StateSet> use = new HashSet<StateSet>();
+		for(String c : enable.keySet()) {
+			use.addAll(enable.get(c));
+		}
+		out.addAll(use);
+		return out;
+	}
+	
+	public ArrayList<String> getStateSetPathMinusEvent(StateSet in){
+		if(pathTracing == null) {
+			return null;
+		}
+		return copy(pathTracing.get(in).get(0), null);
+	}
+
+	public ArrayList<String> getStateSetPathEvent(StateSet in) {
+		if(pathTracing == null) {
+			return null;
+		}
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < pathTracing.get(in).size(); i++) {
+			ArrayList<String> use = pathTracing.get(in).get(i);
+			out.add(use.get(use.size() - 1));
+		}
+		return out;
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
+	
+ 	private ArrayList<String> copy(ArrayList<String> start, String next){
+		ArrayList<String> out = new ArrayList<String>();
+		for(String s : start) {
+			out.add(s);
+		}
+		if(next != null)
+			out.add(next);
+		return out;
+	}
 	
 	private StateSet initialStateSet(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs) {
 		String[] use = new String[plants.size() + specs.size()];
@@ -397,7 +385,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 			for(int i = 0; i < specs.size(); i++) {
 				TransitionSystem t = specs.get(i);
 				if(knowsEvent(t, event) && !canPerformEvent(t, curr.getSpecState(i), event)){
-					return false;	//TODO: Need to have this denote bad transitions but allow exploration past this when confirming?
+					return false;
 				}
 			}
 		}
@@ -414,15 +402,6 @@ public class StateBased extends ConcreteMemoryMeasure {
 			}
 		}
 		return out;
-	}
-	
-	private boolean intersectionCheck(HashSet<StateSet> conglom, HashSet<StateSet> check) {
-		for(StateSet s : check) {
-			if(conglom.contains(s)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 }

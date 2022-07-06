@@ -1,20 +1,23 @@
 package test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Scanner;
 
 import controller.FiniteStateMachine;
 import controller.convert.FormatConversion;
+import model.AttributeList;
 import model.Manager;
-import model.process.UStructMemoryMeasure;
+import model.fsm.TransitionSystem;
+import model.process.coobservability.Incremental;
 import test.help.AgentChicanery;
 import test.help.EventSets;
 import test.help.RandomGeneration;
@@ -37,6 +40,8 @@ public class TestFunctionality {
 	
 	private static ArrayList<String> eventAtt;
 	
+	private static String defaultWritePath;
+	
 	private static String writePath;
 	
 	private static boolean terminalPrint;
@@ -51,8 +56,8 @@ public class TestFunctionality {
 		
 		File f = new File(FiniteStateMachine.ADDRESS_IMAGES);
 		f = f.getParentFile();
-		writePath = f.getAbsolutePath() + "/autogenerate";
-		f = new File(writePath);
+		defaultWritePath = f.getAbsolutePath() + "/autogenerate";
+		f = new File(defaultWritePath);
 		f.mkdir();
 		
 		SystemGeneration.assignManager(model);
@@ -82,19 +87,41 @@ public class TestFunctionality {
 		
 		//checkSystemDSBCoobservable();
 		
-		String testName = "test_";
-		int count = -1;
-		do {
-			f = new File(writePath + "/" + testName + ++count);
-		}while(f.exists());
+		//runAllTests();
 		
-		f.mkdir();
-		testName += count+"";
-		writePath += "/" + testName;
-		System.out.println("This test: " + testName);
-		printOut(testName + ", " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()) + "\n---------------------------------------------\n");
-		autoTestNewRandomSystem(testName, 2, 2, 5, 2, 6, 2, .35, 2, 0, .6, .3);
-
+		/*
+		SystemGeneration.generateSystemA("A");
+		SystemGeneration.generateSystemB("B");
+		ArrayList<String> use = new ArrayList<String>();
+		use.add("A"); use.add("B");
+		String nom = model.performParallelComposition(use);
+		makeImageDisplay("A", "A");
+		makeImageDisplay("B", "B");
+		makeImageDisplay(nom, nom);
+		*/
+		
+		//autoTestHeuristicsIncremental(4, 4, 5, 2, 4, 2, .35, 2, 0, .4, .3);
+		//autoTestNewRandomSystem(3, 3, 6, 2, 4, 2, .5, 2, 0, .4, .3);
+		//while(true)
+		//	autoTestHeuristicsIncremental(2, 2, 5, 2, 4, 2, .4, 2, 0, .4, .3);
+		
+		Incremental.assignIncrementalOptions(1, 1, 1);
+		
+		Integer testCase = 774;
+		
+		if(testCase != null) {
+			String prefix = "test_full_suite_";
+			autoTestOldSystem(prefix + testCase);
+		} else {
+			Scanner sc = new Scanner(System.in);
+			while(true) {
+				autoTestNewRandomSystem(2, 2, 5, 2, 4, 2, .4, 2, 0, .4, .3);
+				sc.nextLine();
+			}
+		}
+		
+		//basicUStructCheck();
+		
 		//generateSystems();
 		
 		//checkSystemUrvashiSBCoobservable();
@@ -123,37 +150,45 @@ public class TestFunctionality {
 		writePath = null;
 		printOut("\n\t\t\t\t~~~ Testing System A ~~~\n");
 		checkSystemACoobservable(false);
+		checkSystemACoobservable(true);
 		checkSystemASBCoobservable();
 
 		printOut("\n\t\t\t\t~~~ Testing System B ~~~\n");
 		checkSystemBCoobservable(false);
+		checkSystemBCoobservable(true);
 		checkSystemBSBCoobservable();
 
 		printOut("\n\t\t\t\t~~~ Testing System C ~~~\n");
 		checkSystemCCoobservable(false);
+		checkSystemCCoobservable(true);
 		checkSystemCSBCoobservable();
 
 		printOut("\n\t\t\t\t~~~ Testing System D ~~~\n");
 		checkSystemDCoobservable(false);
+		checkSystemDCoobservable(true);
 		checkSystemDSBCoobservable();
 
 		printOut("\n\t\t\t\t~~~ Testing System E ~~~\n");
 		checkSystemECoobservable(false);
+		checkSystemECoobservable(true);
 		checkSystemESBCoobservable();
 
 		printOut("\n\t\t\t\t~~~ Testing System Finn ~~~\n");
 		checkSystemFinnCoobservable(false);
+		checkSystemFinnCoobservable(true);
 		
 		printOut("\n\t\t\t\t~~~ Testing System Urvashi ~~~\n");
 		checkSystemUrvashiSBCoobservable();
 
 		printOut("\n\t\t\t\t~~~ Testing System Liu One ~~~\n");
 		checkSystemLiuOneCoobservable(false);
+		checkSystemLiuOneCoobservable(true);
 		checkSystemLiuOneSBCoobservable();
 		checkSystemLiuOneIncrementalCoobservable();
 
 		printOut("\n\t\t\t\t~~~ Testing System Liu Two ~~~\n");
 		checkSystemLiuTwoCoobservable(false);
+		checkSystemLiuTwoCoobservable(true);
 		checkSystemLiuTwoSBCoobservable();
 		checkSystemLiuTwoIncrementalCoobservable();
 		writePath = hold;
@@ -225,7 +260,16 @@ public class TestFunctionality {
 		makeImageDisplay(SystemA, "Example 1");
 
 		String ustruct = model.buildUStructure(SystemA, eventAtt, AgentChicanery.generateAgentsA());
-		
+		System.out.println(model.getLastProcessData().produceOutputLog());
+		for(String s : model.getFSMStateList(ustruct)) {
+			System.out.println(s);
+		}
+		for(String s : model.getFSMEventList(ustruct)) {
+			System.out.println(s);
+		}
+		for(String s : model.getFSMTransitionList(ustruct)) {
+			System.out.println(s);
+		}
 		makeImageDisplay(ustruct, "Example 1 UStruct");
 	}
 	
@@ -274,23 +318,49 @@ public class TestFunctionality {
 		}
 	}
 	
-	private static void autoTestNewRandomSystem(String prefix, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate) throws Exception {
+	private static void autoTestNewRandomSystem(int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate) throws Exception {
+		String testName = "test_full_suite_";
+		int count = -1;
+		File f;
+		do {
+			f = new File(defaultWritePath + "/" + testName + ++count);
+		}while(f.exists());
+		
+		f.mkdir();
+		testName += count+"";
+		writePath = defaultWritePath + "/" + testName;
+		//System.out.println("This test: " + testName);
+		printOut(testName + ", " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()) + "\n---------------------------------------------\n");
+		
+		
+		printOut("Test Configuration: Full Suite");
 		printOut("Randomizer Parameters:");
 		printOut(" Plants: " + numPlants + ", Specs: " + numSpecs + ", # States Average: " + numStates + ", State Variance: " + numStateVar + ", # Events Average: " + numEve + ", Event Variance: " + numEveVar + 
 				", Event Share Rate: " + shareRate + ", # Agents: " + numAgents + ", Agent Variance: " + numAgentVar + ", Agent Obs. Event Rate: " + obsRate + ", Agent Ctr. Event Rate: " + ctrRate);
 		printOut(" " + numPlants + ", " + numSpecs + ", " + numStates + ", " + numStateVar + ", " + numEve + ", " + numEveVar + ", " + shareRate + ", " + numAgents + ", " + numAgentVar + ", " + obsRate + ", " + ctrRate + "\n");
 		printOut("---------------------------------------------\n");
 		
-		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(prefix, model, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate);
-		ArrayList<String> names = RandomGeneration.getComponentNames(prefix, numPlants, numSpecs);
-		
+		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(testName, model, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate);
+		ArrayList<String> names = RandomGeneration.getComponentNames(testName, numPlants, numSpecs);
+
 		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, numAgents, numAgentVar, obsRate, ctrRate);
+		
+		f = new File(writePath + "/" + (testName + "_agents.txt"));
+		try {
+			RandomAccessFile raf = new RandomAccessFile(f, "rw");
+			raf.writeBytes(model.exportAgents(testName + "_agents", agents, eventAtt));
+			raf.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 		printOut("Agent Information: \n" + agents.toString().replace("},", "},\n").replaceAll("[\\[\\]]", " "));
 		printOut("\n---------------------------------------------\n");
-		
+
 		for(String s : names) {
 			//makeImageDisplay(s, s);
-			File f = new File(writePath + "/" + s + ".txt");
+			f = new File(writePath + "/" + s + ".txt");
 			try {
 				RandomAccessFile raf = new RandomAccessFile(f, "rw");
 				raf.writeBytes(model.exportFSM(s));
@@ -302,33 +372,171 @@ public class TestFunctionality {
 			Files.move(new File(FormatConversion.createImgFromFSM(model.generateFSMDot(s), s)).toPath(), new File(writePath + "/" + s + ".png").toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
 		
+		autoTestSystemFull(testName, RandomGeneration.getPlantNames(testName, numPlants), RandomGeneration.getSpecNames(testName, numSpecs), agents, false);
+	}
 
+	private static void autoTestOldSystem(String prefixNom) throws FileNotFoundException {
+		String path = defaultWritePath + "/" + prefixNom;
+		ArrayList<String> plants = new ArrayList<String>();
+		int counter = 0;
+		File f = new File(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
+		while(f.exists()) {
+			StringBuilder sb = new StringBuilder();
+			Scanner sc = new Scanner(f);
+			while(sc.hasNextLine()) {
+				sb.append(sc.nextLine() + "\n");
+			}
+			sc.close();
+			plants.add(model.readInFSM(sb.toString()));
+			f = new File(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
+		}
+
+		ArrayList<String> specs = new ArrayList<String>();
+		counter = 0;
+		f = new File(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
+		while(f.exists()) {
+			StringBuilder sb = new StringBuilder();
+			Scanner sc = new Scanner(f);
+			while(sc.hasNextLine()) {
+				sb.append(sc.nextLine() + "\n");
+			}
+			sc.close();
+			specs.add(model.readInFSM(sb.toString()));
+			f = new File(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
+		}
 		
-		autoTestSystemFull(prefix, RandomGeneration.getPlantNames(prefix, numPlants), RandomGeneration.getSpecNames(prefix, numSpecs), agents);
+		f = new File(path + "/" + prefixNom + "_agents.txt");
+		StringBuilder sb = new StringBuilder();
+		Scanner sc = new Scanner(f);
+		while(sc.hasNextLine()) {
+			sb.append(sc.nextLine() + "\n");
+		}
+		sc.close();
+		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = model.readInAgents(sb.toString());
+		
+		printOut("Agent Information: \n" + agents.toString().replace("},", "},\n").replaceAll("[\\[\\]]", " "));
+		printOut("\n---------------------------------------------\n");
 
+		String hold = writePath;
+		writePath = null;
+		
+		autoTestSystemFull(prefixNom, plants, specs, agents, true);
+		writePath = hold;
 	}
 	
-	private static void autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	private static void pullReserveDisplay() {
+		String nom = model.storeProcessHoldSystem();
+		if(nom != null) {
+			makeImageDisplay(nom, nom + "_coobs");
+		}
+	}
+	
+	private static void autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean displays) {
 		printCoobsLabel(prefixNom, false);
 		boolean coobs = checkCoobservable(plantNames, specNames, agents, false);
-		printIncrementalLabel(prefixNom);
-		boolean icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents);
+
+		if(displays)
+			pullReserveDisplay();
+		
+		printIncrementalLabel(prefixNom, false);
+		boolean icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
+		
+		if(displays)
+			pullReserveDisplay();
+		
 		printSBCoobsLabel(prefixNom);
 		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
-		printCoobsLabel(prefixNom, true);
+		printIncrementalSBLabel(prefixNom);
+		boolean icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
+	/*	printCoobsLabel(prefixNom, true);
 		boolean infCoobs = checkCoobservable(plantNames, specNames, agents, true);
-
+		printIncrementalLabel(prefixNom, true);
+		boolean icIfCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, true);
+*/
 		if(coobs && !sbCoobs) {
 			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
 		}
+		
 		if(coobs != icCoobs) {
 			printOut("~~~\nError!!! : Incremental Algo. did not return same as Coobs. Algo.\n~~~");
 		}
+		if(sbCoobs != icSbCoobs) {
+			printOut("~~~\nError!!! : Incremental SB Algo. did not return same as SB Algo.\n~~~");
+		}
+/*		if(infCoobs != icIfCoobs) {
+			printOut("~~~\nError!!! : Incremental Inferencing Algo. did not return same as Inferencing Algo.\n~~~");
+		}*/
 		if(sbCoobs && !coobs) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
 		}
-		if(coobs && !infCoobs) {
+/*		if(coobs && !infCoobs) {
 			printOut("~~~\nError!!! : Coobs. Algo. claimed True while Infer. Coobs. Algo. claimed False\n~~~");
+		}*/
+		resetModel();
+	}
+	
+	private static void autoTestHeuristicsIncremental(int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate) throws Exception{
+		String testName = "test_heu_inc_";
+		int count = -1;
+		File f;
+		do {
+			f = new File(defaultWritePath + "/" + testName + ++count);
+		}while(f.exists());
+		
+		f.mkdir();
+		testName += count+"";
+		writePath = defaultWritePath + "/" + testName;
+		System.out.println("This test: " + testName);
+		printOut(testName + ", " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()) + "\n---------------------------------------------\n");
+		
+		
+		printOut("Test Configuration: Incremental Heuristics");
+		printOut("Randomizer Parameters:");
+		printOut(" Plants: " + numPlants + ", Specs: " + numSpecs + ", # States Average: " + numStates + ", State Variance: " + numStateVar + ", # Events Average: " + numEve + ", Event Variance: " + numEveVar + 
+				", Event Share Rate: " + shareRate + ", # Agents: " + numAgents + ", Agent Variance: " + numAgentVar + ", Agent Obs. Event Rate: " + obsRate + ", Agent Ctr. Event Rate: " + ctrRate);
+		printOut(" " + numPlants + ", " + numSpecs + ", " + numStates + ", " + numStateVar + ", " + numEve + ", " + numEveVar + ", " + shareRate + ", " + numAgents + ", " + numAgentVar + ", " + obsRate + ", " + ctrRate + "\n");
+		printOut("---------------------------------------------\n");
+		
+		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(testName, model, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate);
+		ArrayList<String> names = RandomGeneration.getComponentNames(testName, numPlants, numSpecs);
+		
+		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, numAgents, numAgentVar, obsRate, ctrRate);
+		
+		printOut("Agent Information: \n" + agents.toString().replace("},", "},\n").replaceAll("[\\[\\]]", " "));
+		printOut("\n---------------------------------------------\n");
+		
+		for(String s : names) {
+			//makeImageDisplay(s, s);
+			f = new File(writePath + "/" + s + ".txt");
+			try {
+				RandomAccessFile raf = new RandomAccessFile(f, "rw");
+				raf.writeBytes(model.exportFSM(s));
+				raf.close();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+			Files.move(new File(FormatConversion.createImgFromFSM(model.generateFSMDot(s), s)).toPath(), new File(writePath + "/" + s + ".png").toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+
+		printIncrementalLabel(testName, false);
+		Boolean result = null;
+		for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
+			for(int j = 0; j < Incremental.NUM_B_HEURISTICS; j++) {
+				for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
+					Incremental.assignIncrementalOptions(i, j, k);
+					printOut("\nTest Config: " + i + ", " + j + ", " + k);
+					garbageCollect();
+					boolean hold = checkIncrementalCoobservable(RandomGeneration.getPlantNames(testName, numPlants), RandomGeneration.getSpecNames(testName, numSpecs), agents, false);
+					garbageCollect();
+					if(result == null) {
+						result = hold;
+					}
+					if(hold != result) {
+						printOut("~~~ERROR!!!~~~\n - This heuristic configuration caused an improper result.");
+					}
+				}
+			}
 		}
 		resetModel();
 	}
@@ -553,18 +761,32 @@ public class TestFunctionality {
 	
 	//-- Incremental Coobservable  ------------------------------------------------------------
 	
-	private static boolean checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	private static boolean checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf) {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
-		boolean result = model.isIncrementalCoobservable(plants, specs, eventAtt, agents);
+		boolean result = inf ? model.isIncrementalInferenceCoobservable(plants, specs, eventAtt, agents) : model.isIncrementalCoobservable(plants, specs, eventAtt, agents);
 		handleOutData(t, hold);
-		printOut("\t\t\t\tIncremental Coobservable: " + result);
+		printOut("\t\t\t\tIncremental" + (inf ? " Inference" : "") + " Coobservable: " + result);
+		garbageCollect();
+		return result;
+	}
+
+	private static boolean checkIncrementalSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+		long t = System.currentTimeMillis();
+		long hold = getCurrentMemoryUsage();
+		boolean result = model.isIncrementalSBCoobservable(plants, specs, eventAtt, agents);
+		handleOutData(t, hold);
+		printOut("\t\t\t\tIncremental SB Coobservable: " + result);
 		garbageCollect();
 		return result;
 	}
 	
-	private static void printIncrementalLabel(String system) {
-		printOut(system + " Incremental Coobservability: \t");
+	private static void printIncrementalLabel(String system, boolean inf) {
+		printOut(system + " Incremental" + (inf ? " Inference" : "") + " Coobservability: \t");
+	}
+
+	private static void printIncrementalSBLabel(String system) {
+		printOut(system + " Incremental SB Coobservability: \t");
 	}
 	
 	private static void checkSystemLiuOneIncrementalCoobservable() {
@@ -576,8 +798,8 @@ public class TestFunctionality {
 		names.add("H1");
 		spec.add("H1");
 		SystemGeneration.generateSystemSetA(names);
-		printIncrementalLabel("System Liu One");
-		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
+		printIncrementalLabel("System Liu One", false);
+		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne(), false);
 	}
 	
 	private static void checkSystemLiuTwoIncrementalCoobservable() {
@@ -591,8 +813,8 @@ public class TestFunctionality {
 		names.add("H1");
 		spec.add("H1");
 		SystemGeneration.generateSystemSetB(names);
-		printIncrementalLabel("System Liu Two");
-		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne());
+		printIncrementalLabel("System Liu Two", false);
+		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsLiuOne(), false);
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
@@ -701,6 +923,9 @@ public class TestFunctionality {
 			public void reactToResize() {
 				
 			}
+			
+			
+			
 		};
 		fram.reserveWindow("Main");
 		fram.setName("Test Functionality: " + nom);

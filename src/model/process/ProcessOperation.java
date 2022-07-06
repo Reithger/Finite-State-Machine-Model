@@ -116,9 +116,9 @@ public class ProcessOperation {
  		if(!work) {
  			return null;
  		}
-		TransitionSystem out = fsms.get(0);
+		TransitionSystem out = fsms.get(0).copy();
 		for(int i = 1; i < fsms.size(); i++) {
-			out = productHelper(out, fsms.get(i));
+			out = productHelper(out, fsms.get(i).copy());
 		}
 		out.setId(out.getId() + "_product");
 		return out;
@@ -142,9 +142,9 @@ public class ProcessOperation {
  		if(!work) {
  			return null;
  		}
-		TransitionSystem out = fsms.get(0);
+		TransitionSystem out = fsms.get(0).copy();
 		for(int i = 1; i < fsms.size(); i++) {
-			out = parallelCompositionHelper(out, fsms.get(i));
+			out = parallelCompositionHelper(out, fsms.get(i).copy());
 		}
 		out.setId(out.getId() + "_parallel");
 		return out;
@@ -321,14 +321,15 @@ public class ProcessOperation {
 			out.addState(newString);
 			out.setStateComposition(newString, nom);
 			
-			nom.clear();
+			nom = new ArrayList<String>();
 			nom.add(stateA);
 			nom.add(stateB);
 			
 			out.compileStateAttributes(newString, nom, use);
 			
 			
-			ArrayList<String> events = in.getStateTransitionEvents(stateA);
+			HashSet<String> events = new HashSet<String>();
+			events.addAll(in.getStateTransitionEvents(stateA));
 			events.addAll(other.getStateTransitionEvents(stateB));
 			
 			for(String s : events) {
@@ -343,14 +344,14 @@ public class ProcessOperation {
 						}
 					}
 				}
-				else if(inStates == null || inStates.size() == 0) {
+				else if((inStates == null || inStates.size() == 0) && !in.eventExists(s)) {
 					for(String t : otherStates) {
 						compileDestination(stateA, t, in.getStateComposition(stateA), other.getStateComposition(t), newString, s, out, use);
 						thisNextString.add(stateA);
 						otherNextString.add(t);
 					}
 				}
-				else {
+				else if(!other.eventExists(s)){
 					for(String t : inStates) {
 						compileDestination(t, stateB, in.getStateComposition(t), other.getStateComposition(stateB), newString, s, out, use);
 						thisNextString.add(t);
@@ -369,7 +370,7 @@ public class ProcessOperation {
 		bun.addAll(compB);
 		String target = out.compileStateName(bun);
 		out.addStateComposition(target, bun);
-		bun.clear();
+		bun = new ArrayList<String>();
 		bun.add(stateA);
 		bun.add(stateB);
 		out.addState(target);

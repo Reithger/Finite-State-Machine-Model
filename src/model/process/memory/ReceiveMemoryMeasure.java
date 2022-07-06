@@ -1,4 +1,4 @@
-package model.process;
+package model.process.memory;
 
 public interface ReceiveMemoryMeasure {
 

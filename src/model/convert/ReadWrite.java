@@ -1,6 +1,7 @@
 package model.convert;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import model.fsm.TransitionSystem;
 
@@ -131,6 +132,50 @@ public class ReadWrite {
 		//TODO: Finish this converter
 		
 		
+		return out;
+	}
+	
+	public static String generateAgentFile(String nom, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> attributes) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(nom + "\n");
+		sb.append(REGION_SEPARATOR + "\n");
+		attribute(attributes, sb);
+		sb.append(REGION_SEPARATOR + "\n");
+		sb.append(agents.get(0).keySet().size() + "\n");
+		sb.append(REGION_SEPARATOR + "\n");
+		
+		for(HashMap<String, ArrayList<Boolean>> s : agents) {
+			for(String t : s.keySet()) {
+				sb.append(t);
+				for(Boolean u : s.get(t)) {
+					sb.append(SEPARATOR + (u ? TRUE_SYMBOL : FALSE_SYMBOL));
+				}
+				sb.append("\n");
+			}
+			sb.append(REGION_SEPARATOR + "\n");
+		}
+		return sb.toString();
+	}
+	
+	public static ArrayList<HashMap<String, ArrayList<Boolean>>> readAgentFile(String in) {
+		ArrayList<HashMap<String, ArrayList<Boolean>>> out = new ArrayList<HashMap<String, ArrayList<Boolean>>>();
+		String[] lines = in.split("\n");
+		int index = 4;
+		int size = Integer.parseInt(lines[index]);
+		index += 2;
+		while(index < lines.length) {
+			HashMap<String, ArrayList<Boolean>> use = new HashMap<String, ArrayList<Boolean>>();
+			for(int i = 0; i < size; i++) {
+				String[] data = lines[index + i].split(SEPARATOR);
+				ArrayList<Boolean> need = new ArrayList<Boolean>();
+				for(int j = 1; j < data.length; j++) {
+					need.add(data[j].equals(TRUE_SYMBOL));
+				}
+				use.put(data[0], need);
+			}
+			out.add(use);
+			index += size + 1;
+		}
 		return out;
 	}
 	

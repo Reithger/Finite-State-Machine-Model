@@ -151,12 +151,21 @@ public class GenerateDot {
 		return trans;
 	}
 	
+	/**
+	 * 
+	 * TODO: Needs to recursively search these out in case of nested occurences
+	 * 
+	 * @param in
+	 * @return
+	 */
+	
 	private static String processObjectNameScripts(String in) {
 		String out = new String(in.toCharArray());
+		out = out.replace("<", "&lt;");
+		out = out.replace(">", "&gt;");
 		while(out.contains(SUB_START)) {
 			out = out.substring(0, out.indexOf(SUB_START)) + out.substring(out.indexOf(SUB_START)).replaceFirst(SCRIPT_END, SUB_CONVERT_END);
 			out = out.replaceFirst(Pattern.quote(SUB_START), SUB_CONVERT_START);
-			break;
 		}
 		while(out.contains(SUP_START)) {
 			out = out.substring(0, out.indexOf(SUP_START)) + out.substring(out.indexOf(SUP_START)).replaceFirst(SCRIPT_END, SUP_CONVERT_END);

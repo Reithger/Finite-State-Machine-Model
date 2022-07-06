@@ -188,7 +188,7 @@ public class StateMap {
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	protected Entity getState(String stateName) {
-		return states.get(stateName);
+		return states.get(stateName).copy();
 	}
 	
 	public ArrayList<String> getStatesWithAttribute(String attrib){

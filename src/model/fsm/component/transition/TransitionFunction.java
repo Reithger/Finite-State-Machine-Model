@@ -2,6 +2,7 @@ package model.fsm.component.transition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -228,7 +229,7 @@ public class TransitionFunction {
 //---  Getter Methods   -----------------------------------------------------------------------
 
 	public ArrayList<String> getTransitionsWithAttribute(String attrib){
-		ArrayList<String> out = new ArrayList<String>();
+		HashSet<String> out = new HashSet<String>();
 		for(String s : getStateNames()) {
 			for(String e : getStateEvents(s)) {
 				if(getTransitionAttribute(s, e, attrib)) {
@@ -236,7 +237,9 @@ public class TransitionFunction {
 				}
 			}
 		}
-		return out;
+		ArrayList<String> use = new ArrayList<String>();
+		use.addAll(out);
+		return use;
 	}
 	
 	public ArrayList<String> getAttributes(){

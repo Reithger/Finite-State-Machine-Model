@@ -1,5 +1,6 @@
 package model.process.coobservability.support;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class AgentStates implements Comparable<AgentStates>{
@@ -8,13 +9,16 @@ public class AgentStates implements Comparable<AgentStates>{
 	
 	private String[] currentStates;
 	
-	private String eventPath;
+	private ArrayList<String> eventPath;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public AgentStates(String[] states, String inPath) {
+	public AgentStates(String[] states, ArrayList<String> inPath) {
 		currentStates = states;
-		eventPath = inPath;
+		eventPath = new ArrayList<String>();
+		for(String s : inPath) {
+			eventPath.add(s);
+		}
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -23,7 +27,7 @@ public class AgentStates implements Comparable<AgentStates>{
 		return currentStates;
 	}
 	
-	public String getEventPath() {
+	public ArrayList<String> getEventPath() {
 		return eventPath;
 	}
 

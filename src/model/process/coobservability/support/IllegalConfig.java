@@ -1,16 +1,17 @@
 package model.process.coobservability.support;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class IllegalConfig {
 
 	private AgentStates stateSet;
-	
-	private String[] observedPaths;
+	/** For each agent, it is their visible version of the true event sequence from the AgentStates object*/
+	private ArrayList<ArrayList<String>> observedPaths;
 	
 	private String event;
 	
-	public IllegalConfig(AgentStates inStates, String[] inPaths, String inEvent) {
+	public IllegalConfig(AgentStates inStates, ArrayList<ArrayList<String>> inPaths, String inEvent) {
 		stateSet = inStates;
 		observedPaths = inPaths;
 		event = inEvent;
@@ -20,21 +21,25 @@ public class IllegalConfig {
 		return stateSet;
 	}
 	
-	public String getEventPath() {
-		return stateSet.getEventPath();
+	public ArrayList<String> getEventPath() {
+		return copy(stateSet.getEventPath());
 	}
 	
-	public String[] getObservedPaths() {
-		return observedPaths;
+	public ArrayList<ArrayList<String>> getObservedPaths() {
+		ArrayList<ArrayList<String>> out = new ArrayList<ArrayList<String>>();
+		for(ArrayList<String> s : observedPaths) {
+			out.add(copy(s));
+		}
+		return out;
 	}
 	
 	public int getEventPathLength() {
-		return getEventPath().length();
+		return getEventPath().size();
 	}
 	
 	public int getNumberDistinctEvents() {
-		HashSet<Character> chars = new HashSet<Character>();
-		for(char c : getEventPath().toCharArray()) {
+		HashSet<String> chars = new HashSet<String>();
+		for(String c : getEventPath()) {
 			chars.add(c);
 		}
 		return chars.size();
@@ -46,7 +51,15 @@ public class IllegalConfig {
 	
 	@Override
 	public String toString() {
-		return stateSet.toString();
+		return stateSet.toString() + ", " + stateSet.getEventPath() + ", " + event;
+	}
+	
+	private ArrayList<String> copy(ArrayList<String> in){
+		ArrayList<String> out = new ArrayList<String>();
+		for(String s : in) {
+			out.add(s);
+		}
+		return out;
 	}
 	
 }
