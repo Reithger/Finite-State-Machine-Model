@@ -72,7 +72,7 @@ public class RandomGeneration {
 		String out;
 		do {
 			model.removeFSM(nom);
-			out = model.readInFSM(model.generateRandomFSM(nom, numStates, numEvents, numTransition, false));
+			out = model.readInFSM(model.generateRandomFSM(nom, numStates, numEvents, numTransition, true));
 		}while(!accessible || !model.isAccessible(out));
 		return out;
 	}

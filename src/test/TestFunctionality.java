@@ -107,16 +107,16 @@ public class TestFunctionality {
 		
 		Incremental.assignIncrementalOptions(1, 1, 1);
 		
-		Integer testCase = 774;
+		Integer testCase = 33;
 		
 		if(testCase != null) {
 			String prefix = "test_full_suite_";
 			autoTestOldSystem(prefix + testCase);
 		} else {
-			Scanner sc = new Scanner(System.in);
+			//Scanner sc = new Scanner(System.in);
 			while(true) {
 				autoTestNewRandomSystem(2, 2, 5, 2, 4, 2, .4, 2, 0, .4, .3);
-				sc.nextLine();
+				//sc.nextLine();
 			}
 		}
 		
@@ -457,21 +457,30 @@ public class TestFunctionality {
 			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
 		}
 		
+		boolean error = false;
+		
 		if(coobs != icCoobs) {
 			printOut("~~~\nError!!! : Incremental Algo. did not return same as Coobs. Algo.\n~~~");
+			error = true;
 		}
 		if(sbCoobs != icSbCoobs) {
 			printOut("~~~\nError!!! : Incremental SB Algo. did not return same as SB Algo.\n~~~");
+			error = true;
 		}
 /*		if(infCoobs != icIfCoobs) {
 			printOut("~~~\nError!!! : Incremental Inferencing Algo. did not return same as Inferencing Algo.\n~~~");
 		}*/
 		if(sbCoobs && !coobs) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
+			error = true;
 		}
 /*		if(coobs && !infCoobs) {
 			printOut("~~~\nError!!! : Coobs. Algo. claimed True while Infer. Coobs. Algo. claimed False\n~~~");
 		}*/
+		if(error) {
+			Scanner sc = new Scanner(System.in);
+			sc.nextLine();
+		}
 		resetModel();
 	}
 	

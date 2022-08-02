@@ -25,8 +25,6 @@ public class DecideCoobs implements DecideCondition{
 	private ArrayList<String> attr;
 	private ArrayList<Agent> agents;
 	
-	private ArrayList<String> events;
-	
 	protected UStructure ustruct;
 	
 //---  Constructors   -------------------------------------------------------------------------
@@ -39,7 +37,6 @@ public class DecideCoobs implements DecideCondition{
 	}
 
 	public DecideCoobs(ArrayList<String> eventsIn, TransitionSystem specStart, ArrayList<String> attrIn, ArrayList<Agent> agentsIn) {
-		events = eventsIn;
 		specs = new ArrayList<TransitionSystem>();
 		specs.add(specStart);
 		attr = attrIn;
@@ -72,10 +69,10 @@ public class DecideCoobs implements DecideCondition{
 		System.out.println("--- Deciding Coobservability ---");
 		System.out.println("--- Using: " + plants + ", " + specs + " ---");
 		TransitionSystem use = specs == null ? plants.get(0) : deriveTruePlant();
-		if(use.getTransitionsWithAttribute(badTransRef).size() == 0) {
+		/*if(use.getTransitionsWithAttribute(badTransRef).size() == 0) {
 			System.out.println("Immediate bail");
 			return true;
-		}
+		}*/
 		ustruct = new UStructure(use, attr, agents);
 		ustruct.reserveTransitionSystem(use);
 		boolean out = ustruct.getIllegalConfigOneStates().isEmpty() && ustruct.getIllegalConfigTwoStates().isEmpty();
@@ -102,8 +99,6 @@ public class DecideCoobs implements DecideCondition{
 		if(plant) {
 			if(plants == null) {
 				plants = new ArrayList<TransitionSystem>();
-				//TODO: This fixes some cases and breaks others. Figure out how this needs to be configured?
-				plants.add(generatePlantSigmaStarion(next));
 			}
 			plants.add(next);
 		}
@@ -115,7 +110,7 @@ public class DecideCoobs implements DecideCondition{
 	@Override
 	public void replaceSigma(ArrayList<String> events) {
 		plants.remove(0);
-		plants.add(0, generateSigmaStarion(parallelComp(specs)));
+		plants.add(0, generateSigmaStarion(parallelCompSpecs()));
 	}
 	
 	@Override
@@ -136,7 +131,7 @@ public class DecideCoobs implements DecideCondition{
 		out.addState(st);
 		out.setStateAttribute(st, initialRef, true);
 		
-		for(String t : events) {
+		for(String t : getRelevantEvents()) {
 			out.addTransition(st, t, st);
 		}
 		
@@ -148,7 +143,7 @@ public class DecideCoobs implements DecideCondition{
 		sigmaStar.setId("sigma_starion_" + spec.getId());
 		
 		for(String s : sigmaStar.getStateNames()) {
-			for(String t : events) {
+			for(String t : getRelevantEvents()) {
 				if(!sigmaStar.getStateTransitionEvents(s).contains(t)) {
 					sigmaStar.addTransition(s, t, s);
 				}
@@ -162,9 +157,9 @@ public class DecideCoobs implements DecideCondition{
 	
 	private TransitionSystem deriveTruePlant() {
 		//System.out.println("Deriving with: " + plants + ", " + specs);
-		TransitionSystem ultPlant = plants == null ? generateSigmaStarion(parallelComp(specs)) : parallelComp(plants);
-		TransitionSystem ultSpec = parallelComp(specs);
-		
+		TransitionSystem ultPlant = plants == null ? generateSigmaStarion(parallelCompSpecs()) : parallelCompPlants();
+		TransitionSystem ultSpec = parallelCompSpecs();
+
 		LinkedList<StateSet> queue = new LinkedList<StateSet>();
 		HashSet<StateSet> visited = new HashSet<StateSet>();
 		
@@ -183,16 +178,24 @@ public class DecideCoobs implements DecideCondition{
 			String plantState = curr.getPlantState(0);
 			String specState = curr.getSpecState(0);
 			
+			//TODO: Problem really seems to be that this way of doing bad transitions is over-zealous and trivializes the sub-problems in Incremental
+			//TODO: But trying to correct by marking transitions as definitely good for the T_L/T_K interpretation trivializes it the other way. Ugh.
+			
 			for(String e : ultPlant.getStateTransitionEvents(plantState)) {
 				//if(e.equals("b_{0}"))
 				  //System.out.println(plantState + ", " + specState + " -> " + e + " " + ultPlant.getStateEventTransitionStates(plantState, e) + " " + ultSpec.getStateEventTransitionStates(specState, e));
 				if(specState == null || (ultSpec.eventExists(e) && (ultSpec.getStateEventTransitionStates(specState, e) == null || ultSpec.getStateEventTransitionStates(specState, e).size() == 0))) {	//Do we need to check for bad transitions behind this?
+					boolean grab = ultPlant.getTransitionAttribute(plantState, e, badTransRef);
 					ultPlant.setTransitionAttribute(plantState, e, badTransRef, true);
 					//if(e.equals("b_{0}"))
-					 // System.out.println("Bad: " + plantState + " " + e);
+					  //System.out.println("Bad: " + plantState + " " + e);
 					//TODO: Anything behind a bad transition here *has* to also be bad
 					use = new String[] {ultPlant.getStateEventTransitionStates(plantState, e).get(0), null};
-					queue.add(new StateSet(use));
+					StateSet next = new StateSet(use);
+					queue.add(next);
+					if(!grab) {
+						visited.remove(next);
+					}
 				}
 				else {
 					use = new String[] {ultPlant.getStateEventTransitionStates(plantState, e).get(0), ultSpec.eventExists(e) ? ultSpec.getStateEventTransitionStates(specState, e).get(0) : specState};
@@ -202,9 +205,36 @@ public class DecideCoobs implements DecideCondition{
 		}
 		return ultPlant;
 	}
+	
+	private String configureConfirmed(String state, String event) {
+		return state + ",;," + event;
+	}
+	
+	private HashSet<String> getRelevantEvents(){
+		HashSet<String> out = new HashSet<String>();
+		
+		if(plants != null)
+			for(TransitionSystem t : plants) {
+				out.addAll(t.getEventNames());
+			}
+		
+		if(specs != null)
+			for(TransitionSystem t : specs) {
+				out.addAll(t.getEventNames());
+			}
+		
+		return out;
+	}
 
-	private TransitionSystem parallelComp(ArrayList<TransitionSystem> in) {
-		return ProcessDES.parallelComposition(in);
+	private TransitionSystem parallelCompSpecs() {
+		return ProcessDES.parallelComposition(specs);
+	}
+	
+	private TransitionSystem parallelCompPlants() {
+		plants.add(generatePlantSigmaStarion(plants.get(0)));
+		TransitionSystem hold = ProcessDES.parallelComposition(plants);
+		plants.remove(plants.size() - 1);
+		return hold;
 	}
 
 }
