@@ -283,11 +283,14 @@ public class TransitionFunction {
 	 */
 	
 	public ArrayList<String> getTransitionStates(String state, String event) {
-		ArrayList<Transition> thisTransitions = transitions.get(state);
-		if(thisTransitions != null)
-			for(Transition transition : thisTransitions)
-				if(transition.getEvent().equals(event))
-					return transition.getStates();
+		ArrayList<Transition> trans = transitions.get(state);
+		if(trans != null)
+			for(Transition transition : trans)
+				if(transition.getEvent().equals(event)) {
+					ArrayList<String> out = new ArrayList<String>();
+					out.addAll(transition.getStates());
+					return out;
+				}
 		return null;
 	}
 

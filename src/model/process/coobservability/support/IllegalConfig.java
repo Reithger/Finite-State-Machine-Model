@@ -11,10 +11,17 @@ public class IllegalConfig {
 	
 	private String event;
 	
-	public IllegalConfig(AgentStates inStates, ArrayList<ArrayList<String>> inPaths, String inEvent) {
+	private boolean plantChoice;
+	
+	public IllegalConfig(AgentStates inStates, ArrayList<ArrayList<String>> inPaths, String inEvent, boolean rootChoice) {
 		stateSet = inStates;
 		observedPaths = inPaths;
 		event = inEvent;
+		plantChoice = rootChoice;
+	}
+	
+	public boolean getPlantDisableChoice() {
+		return plantChoice;
 	}
 	
 	public AgentStates getStateSet() {

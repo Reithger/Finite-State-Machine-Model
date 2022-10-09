@@ -24,6 +24,10 @@ public class ProcessDES {
 		return ProcessOperation.parallelComposition(fsms);
 	}
 	
+	public static TransitionSystem permissiveUnion(ArrayList<TransitionSystem> fsms) {
+		return ProcessOperation.permissiveUnion(fsms);
+	}
+	
 	public static TransitionSystem convertSoloPlantSpec(TransitionSystem in) {
 		return ProcessCoobservability.convertSoloPlantSpec(in);
 	}

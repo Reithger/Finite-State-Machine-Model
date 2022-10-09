@@ -149,6 +149,24 @@ public class ProcessOperation {
 		out.setId(out.getId() + "_parallel");
 		return out;
 	}
+	
+	public static TransitionSystem permissiveUnion(ArrayList<TransitionSystem> fsms) {
+ 		boolean work = true;
+ 		for(TransitionSystem t : fsms) {
+ 			if(!t.hasStateAttribute(attributeInitialRef)) {
+ 				work = false;
+ 			}
+ 		}
+ 		if(!work) {
+ 			return null;
+ 		}
+		TransitionSystem out = fsms.get(0).copy();
+		for(int i = 1; i < fsms.size(); i++) {
+			out = permissiveUnionHelper(out, fsms.get(i).copy());
+		}
+		out.setId(out.getId() + "_permissive");
+		return out;
+	}
 
 //---  Support Methods   ----------------------------------------------------------------------
 	
@@ -199,7 +217,7 @@ public class ProcessOperation {
 	 */
 	
 	private static TransitionSystem productHelper(TransitionSystem in, TransitionSystem other) {
-		TransitionSystem out = new TransitionSystem(in.getId() + "_product");
+		TransitionSystem out = new TransitionSystem(in.getId());
 		out.copyAttributes(in);
 		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
 		use.add(in);
@@ -273,7 +291,7 @@ public class ProcessOperation {
 	 */
 	
 	private static TransitionSystem parallelCompositionHelper(TransitionSystem in, TransitionSystem other) {
-		TransitionSystem out = new TransitionSystem(in.getId() + "_product");
+		TransitionSystem out = new TransitionSystem(in.getId());
 		out.copyAttributes(in);
 		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
 		use.add(in);
@@ -363,6 +381,89 @@ public class ProcessOperation {
 		return out;
 	} // parallelCompositionHelper(TransitionSystem)
 
+	private static TransitionSystem permissiveUnionHelper(TransitionSystem in, TransitionSystem other) {
+		TransitionSystem out = new TransitionSystem(in.getId());
+		out.copyAttributes(in);
+		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
+		use.add(in);
+		use.add(other);
+		// Get all the events the two have in common
+		for(String thisEvent : in.getEventNames()) {
+			if(other.getEventNames().contains(thisEvent)) {
+				out.addEvent(thisEvent);
+				out.compileEventAttributes(thisEvent, use);
+			}
+		}
+
+		// Add all the events unique to each TransitionSystem
+		for(String e : in.getEventNames())
+			if(!out.eventExists(e))
+				out.addEvent(e, in);
+
+		for(String e : other.getEventNames())
+			if(!out.eventExists(e))
+				out.addEvent(e, other);
+
+		LinkedList<String> thisNextString = new LinkedList<String>();
+		LinkedList<String> otherNextString = new LinkedList<String>();
+
+		for(String stateA : in.getStatesWithAttribute(attributeInitialRef)) {
+			for(String stateB : other.getStatesWithAttribute(attributeInitialRef)) {
+				thisNextString.add(stateA);
+				otherNextString.add(stateB);
+			}
+		}
+		HashSet<String> visited = new HashSet<String>();
+		while(!thisNextString.isEmpty() && !otherNextString.isEmpty()) { // Go through all the states connected
+			String stateA = thisNextString.poll();
+			String stateB = otherNextString.poll();
+			ArrayList<String> nom = new ArrayList<String>();
+			nom.addAll(in.getStateComposition(stateA));
+			nom.addAll(other.getStateComposition(stateB));
+			String newString = out.compileStateName(nom); // Add the new state
+			if(visited.contains(newString)) {
+				continue;
+			}
+			
+			visited.add(newString);
+			
+			out.addState(newString);
+			out.setStateComposition(newString, nom);
+			
+			nom = new ArrayList<String>();
+			nom.add(stateA);
+			nom.add(stateB);
+			
+			out.compileStateAttributes(newString, nom, use);
+			
+			
+			HashSet<String> events = new HashSet<String>();
+			events.addAll(in.getStateTransitionEvents(stateA));
+			events.addAll(other.getStateTransitionEvents(stateB));
+			
+			for(String s : events) {
+				ArrayList<String> inStates = in.getStateEventTransitionStates(stateA, s);
+				ArrayList<String> otherStates = other.getStateEventTransitionStates(stateB, s);
+				if(inStates != null && inStates.size() != 0 && otherStates != null && otherStates.size() != 0) {
+					for(String t : inStates) {
+						for(String u : otherStates) {
+							compileDestination(t, u, in.getStateComposition(t), other.getStateComposition(u), newString, s, out, use);
+							thisNextString.add(t);
+							otherNextString.add(u);
+						}
+					}
+				}
+				else if(inStates != null && inStates.size() > 0) {
+					for(String t : inStates) {
+						compileDestination(t, stateB, in.getStateComposition(t), other.getStateComposition(stateB), newString, s, out, use);
+						thisNextString.add(t);
+						otherNextString.add(stateB);
+					}
+				}
+			}
+		} // while there are more states connected to the 2-tuple of initial states
+		return out;
+	}
 	
 	private static void compileDestination(String stateA, String stateB, ArrayList<String> compA, ArrayList<String> compB, String source, String event, TransitionSystem out, ArrayList<TransitionSystem> use) {
 		ArrayList<String> bun = new ArrayList<String>();

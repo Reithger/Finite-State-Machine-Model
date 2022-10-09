@@ -105,6 +105,9 @@ public class UStructure extends UStructMemoryMeasure{
 
 	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) {
 		uStructure = initializeUStructure(plant);
+		uStructure.setId("U-Struct - " + plant.getId());
+		
+		//System.out.println("---" + uStructure.getId());
 		
 		LinkedList<AgentStates> queue = new LinkedList<AgentStates>();		//initialize queue
 		HashSet<String> visited = new HashSet<String>();
@@ -147,8 +150,10 @@ public class UStructure extends UStructMemoryMeasure{
 				}
 			}
 			
+			//System.out.println("------" + currState);
+			
 			for(String s : viableEvents) {
-				
+				//System.out.println("---------" + s);
 				boolean bail = false;								//If not every agent who can see it can act on this event, skip the actual transition
 				for(int i = 0; i < stateSetStates.length; i++) {	//Still have to guess about it though
 					String t = stateSetStates[i];
@@ -159,7 +164,9 @@ public class UStructure extends UStructMemoryMeasure{
 				
 				boolean[] canAct = new boolean[stateSetSize];     //Find out what each individual agent is able to do for the given event at their given state
 				for(int i = 0; i < stateSetSize; i++) {
+					//System.out.println("------------" + i + " " + agents[i].getEventAttribute(s, attributeObservableRef));
 					if(agents[i].getEventAttribute(s, attributeObservableRef)) {
+					//if(getNextState(plant, stateSetStates[i], s) != null) {
 						canAct[i] = true;					
 					}
 					else if(getNextState(plant, stateSetStates[i], s) != null){		//if the agent cannot see the event, it guesses that it happened
@@ -177,6 +184,7 @@ public class UStructure extends UStructMemoryMeasure{
 						}
 						
 						if(!isMeaninglessTransition(eventName)) {
+							//TODO: Doesn't including the guess sequence here that is counted as the plant's event sequence cause impossible paths that aren't handled properly?
 							AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath(), s);
 							queue.add(aS);	//adds the guess transition to our queue
 						}
@@ -205,8 +213,8 @@ public class UStructure extends UStructMemoryMeasure{
 					queue.add(aS);		//adds the real event occurring transition to our queue
 				}
 				
-				if(controllable.contains(s)) {
-				//if(plant.getEventAttribute(s, attributeControllableRef)) {			//If the event is controllable, does it violate co-observabilty?
+				if(controllable.contains(s) || badTransitions.get(stateSetStates[0]).contains(s)) {
+				//if() {						//If the event is controllable, does it violate co-observabilty?
 					Boolean result = badTransitions.get(stateSetStates[0]).contains(s);
 					for(int i = 1; i < stateSetStates.length; i++) {
 						if(agents[i].getEventAttribute(s, attributeControllableRef)) {
@@ -222,11 +230,13 @@ public class UStructure extends UStructMemoryMeasure{
 					  for(int i = 0; i < agents.length-1; i++) {
 						  observed.add(filterEventPath(stateSet.getEventPath(), s, agents[i+1]));
 					  }
+					  //System.out.println(stateSet.getEventPath() + " " + currState);
+					  boolean choice = false; //plant.getTransitionAttribute(getState(plant, stateSet.getEventPath()), s, attributeBadRef);
 					  if(result) {
-						  goodBadStates.add(new IllegalConfig(stateSet, observed, s));	//result == true means it was a bad transition (don't enable)
+						  goodBadStates.add(new IllegalConfig(stateSet, observed, s, choice));	//result == true means it was a bad transition (don't enable)
 					  }
 					  else {
-						  badGoodStates.add(new IllegalConfig(stateSet, observed, s));
+						  badGoodStates.add(new IllegalConfig(stateSet, observed, s, choice));
 					  }
 					}
 				}
@@ -384,6 +394,20 @@ public class UStructure extends UStructMemoryMeasure{
 		return null;
 	}
 	
+	private String getState(TransitionSystem plant, ArrayList<String> eventPath) {
+		String curr = plant.getStatesWithAttribute(attributeInitialRef).get(0);
+		for(String s : eventPath) {
+			ArrayList<String> next = plant.getStateEventTransitionStates(curr, s);
+			if(next != null && next.size() > 0) {
+				curr = next.get(0);
+			}
+			else {
+				return null;
+			}
+		}
+		return curr;
+	}
+	
 	//-- Crush  -----------------------------------------------
 	
 	private HashSet<String> getTargetStates(HashSet<String> states, String event, Agent age, int index){
@@ -470,7 +494,8 @@ public class UStructure extends UStructMemoryMeasure{
 
 	private AgentStates handleNewTransition(String[] newSet, String[] eventName, String currState, ArrayList<String> oldPath, String newEvent) {
 		ArrayList<String> use = copy(oldPath);
-		use.add(newEvent);
+		if(newEvent != null)
+			use.add(newEvent);
 		AgentStates next = new AgentStates(newSet, use);
 		String eventNom = constructEventName(eventName);
 		uStructure.addEvent(eventNom);

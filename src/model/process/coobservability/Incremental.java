@@ -49,6 +49,7 @@ public class Incremental extends IncrementalMemoryMeasure {
 	
 	private static String observableRef;
 	private static String initialRef;
+	private static String badRef;
 	
 	private DecideCondition decider;
 	
@@ -60,9 +61,10 @@ public class Incremental extends IncrementalMemoryMeasure {
 		counterexampleChoice = c;
 	}
 	
-	public static void assignAttributeReference(String obs, String init) {
+	public static void assignAttributeReference(String obs, String init, String bad) {
 		observableRef = obs;
 		initialRef = init;
+		badRef = bad;
 	}
 	
 //---  Constructors   -------------------------------------------------------------------------
@@ -90,21 +92,21 @@ public class Incremental extends IncrementalMemoryMeasure {
 				if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
 					logData(decider, hold);
 					reserveTransitionSystem(decider.produceMemoryMeasure().getReserveSystem());
-					System.out.println("False, Counterexamples: " + decider.getCounterExamples().iterator().next().toString());
+					//System.out.println("False, Counterexamples: " + decider.getCounterExamples().iterator().next().toString());
 					return false;
 				}
 				logMemoryUsage();
 				IllegalConfig counterexample = pickCounterExample(decider.getCounterExamples());	//Get a single bad state, probably, maybe write something so UStruct can trace it
 				pick = pickComponent(copyPlants, copySpecs, counterexample);	//Heuristics go here
 				if(pick == null) {
-					System.out.println(counterexample.getEventPath() + ", " + counterexample.getEvent());
+					//System.out.println(counterexample.getEventPath() + ", " + counterexample.getEvent());
 					logData(decider, hold);
 					reserveTransitionSystem(decider.produceMemoryMeasure().getReserveSystem());
 					//TODO: Check counterexamples and see if there's something there, if any strings shouldn't be problematic?
-					System.out.println("False, Counterexamples: " + decider.getCounterExamples().iterator().next().toString());
+					//System.out.println("False, Counterexamples: " + decider.getCounterExamples().iterator().next().toString());
 					return false;
 				}
-				System.out.println("Chose: " + pick.getId());
+				//System.out.println("Chose: " + pick.getId());
 				if(copySpecs.contains(pick)) {
 					hold.add(pick);
 					copySpecs.remove(pick);
@@ -143,6 +145,7 @@ public class Incremental extends IncrementalMemoryMeasure {
 	
 	private IllegalConfig pickCounterExample(HashSet<IllegalConfig> counters) {
 		IllegalConfig out = null;
+		//System.out.println("---COUNTEREXAMPLES: " + counters);
 		switch(counterexampleChoice) {
 			case COUNTEREXAMPLE_SHORT:
 				for(IllegalConfig c : counters) {
@@ -419,15 +422,19 @@ public class Incremental extends IncrementalMemoryMeasure {
 			return true;
 		}
 		ArrayList<String> use = ic.getEventPath();
-		use.add(spec ? "" : ic.getEvent());
+		if(!spec) {
+			use.add(ic.getEvent());
+		}
 		String reachedState = navigateTransitionSystem(plant, observablePath(plant, use));
-		System.out.println("For: " + ic.getEventPath() + ic.getEvent() + ", " + plant.getId() + " reached: " + reachedState + " from start: " + plant.getStatesWithAttribute(initialRef).get(0) + ", knowing: " + plant.getEventNames());
+		//System.out.println("States: " + ic.getStateSet());
+		//System.out.println("For: " + ic.getEventPath() + " " +  ic.getEvent() + ", " + plant.getId() + " reached: " + reachedState + " from start: " + plant.getStatesWithAttribute(initialRef).get(0) + ", knowing: " + plant.getEventNames());
 		if(reachedState != null) {
 			for(ArrayList<String> s : ic.getObservedPaths()) {
 				use = s;
 				use.add(ic.getEvent());
-				System.out.println("Agent View: " + use);
-				if(navigateTransitionSystem(plant, observablePath(plant, use)) == null) {
+				//System.out.println("Agent View: " + use);
+				reachedState = navigateTransitionSystem(plant, observablePath(plant, use));
+				if(reachedState == null) {
 					return true;
 				}
 			}
@@ -457,10 +464,12 @@ public class Incremental extends IncrementalMemoryMeasure {
 	
 	private String navigateTransitionSystem(TransitionSystem plant, ArrayList<String> eventPath) {
 		String curr = plant.getStatesWithAttribute(initialRef).get(0);
+		//System.out.println("Path: " + eventPath);
 		for(String s : eventPath) {
 			//System.out.println("Knows event " + s + "? " + plant.getEventNames().contains(s) + ", Sees it: " + plant.getEventsWithAttribute(observableRef).contains(s));
-			if(plant.getEventNames().contains(s) && plant.getEventsWithAttribute(observableRef).contains(s)) {
+			if(plant.getEventNames().contains(s)) {
 				ArrayList<String> next = plant.getStateEventTransitionStates(curr, s);
+				//System.out.println("H: " + curr + ", " + s + ", " + next);
 				if(next != null && next.size() > 0) {
 					curr = next.get(0);
 				}

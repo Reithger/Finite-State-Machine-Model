@@ -105,9 +105,11 @@ public class TestFunctionality {
 		//while(true)
 		//	autoTestHeuristicsIncremental(2, 2, 5, 2, 4, 2, .4, 2, 0, .4, .3);
 		
-		Incremental.assignIncrementalOptions(1, 1, 1);
 		
-		Integer testCase = 33;
+		
+		Incremental.assignIncrementalOptions(0, 0, 0);
+		
+		Integer testCase = null;	//786, 809, 812, 927, *1135, 1142, 1190, 1195, 1926, 2779, 2904, 2994, 4560
 		
 		if(testCase != null) {
 			String prefix = "test_full_suite_";
@@ -119,6 +121,22 @@ public class TestFunctionality {
 				//sc.nextLine();
 			}
 		}
+		
+		/*
+		String prefix = "C:\\Users\\SirBo\\Documents\\GitHub\\Finite-State-Machine-Model\\Finite State Machine Model\\sources\\";
+
+		String hold = "observer_example_0";
+		
+		makeImage(prefix, hold);
+
+		makeImage(prefix, "spec_example_0");
+		makeImage(prefix, "spec_example_1");
+		makeImage(prefix, "spec_example_2");
+		makeImage(prefix, "plant_example_0");
+		makeImage(prefix, "plant_example_1");
+		makeImage(prefix, "plant_example_2");
+		makeImage(prefix, "marked_example_1");
+		makeImage(prefix, "observer_example_0");
 		
 		//basicUStructCheck();
 		
@@ -378,52 +396,35 @@ public class TestFunctionality {
 	private static void autoTestOldSystem(String prefixNom) throws FileNotFoundException {
 		String path = defaultWritePath + "/" + prefixNom;
 		ArrayList<String> plants = new ArrayList<String>();
-		int counter = 0;
-		File f = new File(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
-		while(f.exists()) {
-			StringBuilder sb = new StringBuilder();
-			Scanner sc = new Scanner(f);
-			while(sc.hasNextLine()) {
-				sb.append(sc.nextLine() + "\n");
-			}
-			sc.close();
-			plants.add(model.readInFSM(sb.toString()));
-			f = new File(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
+		int counter = 0;	
+		String hold = pullSourceData(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
+		while(hold != null) {
+			plants.add(model.readInFSM(hold));
+			hold = pullSourceData(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
 		}
 
 		ArrayList<String> specs = new ArrayList<String>();
 		counter = 0;
-		f = new File(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
-		while(f.exists()) {
-			StringBuilder sb = new StringBuilder();
-			Scanner sc = new Scanner(f);
-			while(sc.hasNextLine()) {
-				sb.append(sc.nextLine() + "\n");
-			}
-			sc.close();
-			specs.add(model.readInFSM(sb.toString()));
-			f = new File(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
+		hold = pullSourceData(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
+		while(hold != null) {
+			specs.add(model.readInFSM(hold));
+			hold = pullSourceData(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
 		}
-		
-		f = new File(path + "/" + prefixNom + "_agents.txt");
-		StringBuilder sb = new StringBuilder();
-		Scanner sc = new Scanner(f);
-		while(sc.hasNextLine()) {
-			sb.append(sc.nextLine() + "\n");
-		}
-		sc.close();
-		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = model.readInAgents(sb.toString());
+
+		hold = pullSourceData(path + "/" + prefixNom + "_agents.txt");
+
+		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = model.readInAgents(hold);
 		
 		printOut("Agent Information: \n" + agents.toString().replace("},", "},\n").replaceAll("[\\[\\]]", " "));
 		printOut("\n---------------------------------------------\n");
 
-		String hold = writePath;
+		hold = writePath;
 		writePath = null;
 		
 		autoTestSystemFull(prefixNom, plants, specs, agents, true);
 		writePath = hold;
 	}
-	
+
 	private static void pullReserveDisplay() {
 		String nom = model.storeProcessHoldSystem();
 		if(nom != null) {
@@ -444,7 +445,7 @@ public class TestFunctionality {
 		if(displays)
 			pullReserveDisplay();
 		
-		printSBCoobsLabel(prefixNom);
+	/*	printSBCoobsLabel(prefixNom);
 		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
 		printIncrementalSBLabel(prefixNom);
 		boolean icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
@@ -453,9 +454,9 @@ public class TestFunctionality {
 		printIncrementalLabel(prefixNom, true);
 		boolean icIfCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, true);
 */
-		if(coobs && !sbCoobs) {
+	/*	if(coobs && !sbCoobs) {
 			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
-		}
+		}*/
 		
 		boolean error = false;
 		
@@ -463,17 +464,17 @@ public class TestFunctionality {
 			printOut("~~~\nError!!! : Incremental Algo. did not return same as Coobs. Algo.\n~~~");
 			error = true;
 		}
-		if(sbCoobs != icSbCoobs) {
+	/*	if(sbCoobs != icSbCoobs) {
 			printOut("~~~\nError!!! : Incremental SB Algo. did not return same as SB Algo.\n~~~");
 			error = true;
 		}
 /*		if(infCoobs != icIfCoobs) {
 			printOut("~~~\nError!!! : Incremental Inferencing Algo. did not return same as Inferencing Algo.\n~~~");
 		}*/
-		if(sbCoobs && !coobs) {
+	/*	if(sbCoobs && !coobs) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
 			error = true;
-		}
+		}*/
 /*		if(coobs && !infCoobs) {
 			printOut("~~~\nError!!! : Coobs. Algo. claimed True while Infer. Coobs. Algo. claimed False\n~~~");
 		}*/
@@ -827,6 +828,28 @@ public class TestFunctionality {
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
+	
+	private static String pullSourceData(String path) throws FileNotFoundException {
+		File f = new File(path);
+		if(f.exists()) {
+			StringBuilder sb = new StringBuilder();
+			Scanner sc = new Scanner(f);
+			while(sc.hasNextLine()) {
+				sb.append(sc.nextLine() + "\n");
+			}
+			sc.close();
+			return sb.toString();
+		}
+		return null;
+	}
+	
+	private static void makeImage(String path, String name) throws FileNotFoundException {
+		String look = pullSourceData(path + name + ".txt");
+		
+		model.readInFSM(look);
+		
+		makeImageDisplay(name, name);
+	}
 	
 	private static void handleOutData(long t, long hold) {
 		printOut(model.getLastProcessData().produceOutputLog());

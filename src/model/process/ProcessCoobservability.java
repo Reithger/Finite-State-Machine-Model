@@ -28,8 +28,8 @@ public class ProcessCoobservability {
 		badTransRef = badTrans;
 		UStructure.assignAttributeReferences(init, obs, cont, badTrans, goodThing);
 		StateBased.assignAttributeReference(init, obs, cont);
-		Incremental.assignAttributeReference(obs, init);
-		DecideCoobs.assignAttributeReferences(init, cont, badTrans);
+		Incremental.assignAttributeReference(obs, init, badTrans);
+		DecideCoobs.assignAttributeReferences(init, cont, obs, badTrans);
 		DecideSBCoobs.assignAttributeReferences(obs);
 	}
 	

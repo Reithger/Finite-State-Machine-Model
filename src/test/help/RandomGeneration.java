@@ -174,9 +174,16 @@ public class RandomGeneration {
 		int numAgents = agentSizeAverage + (agentSizeVariance == 0 ? 0 : (rand.nextInt(agentSizeVariance * 2 + 1) - (agentSizeVariance)));
 		boolean[][][] agentInfo = new boolean[numAgents][events.size()][2];
 		for(int i = 0; i < numAgents; i++) {
+			boolean hasControl = false;
 			for(int j = 0; j < events.size(); j++) {
 				agentInfo[i][j][0] = rand.nextDouble() < obsRate;
 				agentInfo[i][j][1] = rand.nextDouble() < ctrRate;
+				if(agentInfo[i][j][1]) {
+					hasControl = true;
+				}
+			}
+			if(!hasControl) {
+				agentInfo[i][rand.nextInt(events.size())][1] = true;
 			}
 		}
 		String[] evens = new String[events.size()];

@@ -135,7 +135,7 @@ public class DecideSBCoobs implements DecideCondition{
 				for(int i = 1; i < agents.size(); i++) {
 					agentViews.add(filterEventPath(aS.getEventPath(), t, agents.get(i)));
 				}
-				out.add(new IllegalConfig(aS, agentViews, t));
+				out.add(new IllegalConfig(aS, agentViews, t, false));		//TODO: the false here is PLACEHOLDER need to assign correct plant choice for behaviour
 			}
 		}
 		return out;

@@ -66,6 +66,14 @@ public class Entity {
 			wrap.setValue(attr, set);
 		}
 	}
+
+	public void addAttributes(LinkedList<String> refs) {
+		if(refs != null && refs.size() != 0) {
+			for(String s : refs) {
+				addAttribute(s, false);
+			}
+		}
+	}
 	
 //---  Setter Methods   -----------------------------------------------------------------------
 	
@@ -86,14 +94,6 @@ public class Entity {
 		wrap.setValue(ref, val);
 	}
 
-	public void addAttributes(LinkedList<String> refs) {
-		if(refs != null && refs.size() != 0) {
-			for(String s : refs) {
-				addAttribute(s, false);
-			}
-		}
-	}
-	
 	public void setAttributes(LinkedList<String> refs) {
 		Attribute hold = wrap;
 		wipeAttributes();

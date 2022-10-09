@@ -82,7 +82,12 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	protected static Double threeSig(double in) {
 		String use = in+"0000";
 		int posit = use.indexOf(".") + 4;
-		return Double.parseDouble(use.substring(0, posit));
+		try {
+			return Double.parseDouble(use.substring(0, posit));
+		}
+		catch(NumberFormatException e) {
+			return 0.0;
+		}
 	}
 
 	@Override
