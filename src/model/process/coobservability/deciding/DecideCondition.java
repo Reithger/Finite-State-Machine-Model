@@ -20,6 +20,4 @@ public interface DecideCondition {
 	
 	public abstract MemoryMeasure produceMemoryMeasure();
 	
-	public abstract void replaceSigma(ArrayList<String> in);
-	
 }

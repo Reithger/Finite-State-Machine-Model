@@ -10,6 +10,7 @@ import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.AgentStates;
 import model.process.coobservability.support.IllegalConfig;
 import model.process.coobservability.support.StateSet;
+import model.process.coobservability.support.StateSetPath;
 import model.process.memory.MemoryMeasure;
 
 public class DecideSBCoobs implements DecideCondition{
@@ -17,7 +18,7 @@ public class DecideSBCoobs implements DecideCondition{
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private static String attributeObservableRef;
-
+	
 	private ArrayList<TransitionSystem> plants;
 	
 	private ArrayList<TransitionSystem> specs;
@@ -25,6 +26,8 @@ public class DecideSBCoobs implements DecideCondition{
 	private ArrayList<String> attributes;
 	
 	private ArrayList<Agent> agents;
+	
+	private HashSet<String> events;
 	
 	private StateBased sbStructure;
 	
@@ -36,14 +39,15 @@ public class DecideSBCoobs implements DecideCondition{
 		assignPathKnowledge(pathIn);
 	}
 	
-	public DecideSBCoobs(ArrayList<String> events, TransitionSystem specStart, ArrayList<String> attr, ArrayList<Agent> agentsIn) {
+	public DecideSBCoobs(ArrayList<String> eventsIn, TransitionSystem specStart, ArrayList<String> attr, ArrayList<Agent> agentsIn) {
+		events = new HashSet<String>();
+		events.addAll(eventsIn);
 		plants = new ArrayList<TransitionSystem>();
-		plants.add(generateSigmaStarion(events, specStart));
+		plants.add(generateSigmaStarion(specStart));
 		specs = new ArrayList<TransitionSystem>();
 		specs.add(specStart);
 		attributes = attr;
 		agents = agentsIn;
-		pathKnowledge = true;
 	}
 	
 	public DecideSBCoobs(ArrayList<TransitionSystem> inPlants, ArrayList<TransitionSystem> inSpecs, ArrayList<String> attrIn, ArrayList<Agent> agentsIn) {
@@ -70,7 +74,7 @@ public class DecideSBCoobs implements DecideCondition{
 	@Override
 	public DecideCondition constructDeciderCoobs(ArrayList<String> events, TransitionSystem specStart, ArrayList<String> attr, ArrayList<Agent> agentsIn) {
 		DecideSBCoobs out = new DecideSBCoobs(events, specStart, attr, agentsIn);
-		assignPathKnowledge(getPathKnowledge());
+		out.assignPathKnowledge(getPathKnowledge());
 		return out;
 	}
 
@@ -89,24 +93,19 @@ public class DecideSBCoobs implements DecideCondition{
 		return sbStructure == null ? StateBased.produceBlank() : sbStructure;
 	}
 
-	@Override
-	public void replaceSigma(ArrayList<String> events) {
-		plants.remove(0);
-		plants.add(0, generateSigmaStarion(events, parallelComp(specs)));
-	}
-	
-	private TransitionSystem generateSigmaStarion(ArrayList<String> events, TransitionSystem spec) {
+	private TransitionSystem generateSigmaStarion(TransitionSystem spec) {
 		TransitionSystem sigmaStar = spec.copy();
 		sigmaStar.setId("sigma_starion_" + spec.getId());
 		
 		for(String s : sigmaStar.getStateNames()) {
 			for(String t : events) {
+				sigmaStar.setEventAttribute(t, attributeObservableRef, true);
 				if(!sigmaStar.getStateTransitionEvents(s).contains(t)) {
 					sigmaStar.addTransition(s, t, s);
 				}
 			}
 		}
-		
+
 		return sigmaStar;
 	}
 	
@@ -128,36 +127,41 @@ public class DecideSBCoobs implements DecideCondition{
 		if(sbStructure == null) {
 			return out;
 		}
-		for(StateSet s : sbStructure.getRemainingDisableStates()) {
-			AgentStates aS = new AgentStates(s.getStates(), sbStructure.getStateSetPathMinusEvent(s));
-			for(String t : sbStructure.getStateSetPathEvent(s)) {
-				ArrayList<ArrayList<String>> agentViews = new ArrayList<ArrayList<String>>();
-				for(int i = 1; i < agents.size(); i++) {
-					agentViews.add(filterEventPath(aS.getEventPath(), t, agents.get(i)));
-				}
-				out.add(new IllegalConfig(aS, agentViews, t, false));		//TODO: the false here is PLACEHOLDER need to assign correct plant choice for behaviour
+		for(StateSetPath s : sbStructure.getRemainingDisableStates()) {
+			AgentStates aS = new AgentStates(s.getStates(), sbStructure.getStateSetPath(s));
+			for(String t : sbStructure.getStateSetPathEvents(s)) {
+				getSequences(0, aS, sbStructure.getEquivalentPaths(s), new ArrayList<ArrayList<String>>(), t, out);
 			}
 		}
-		return out;
-	}
-	
-//---  Support Methods   ----------------------------------------------------------------------
-	
-	private ArrayList<String> filterEventPath(ArrayList<String> events, String contr, Agent age) {
-		ArrayList<String> out = new ArrayList<String>();
-		for(String s : events) {
-			if(age.contains(s) && age.getEventAttribute(s, attributeObservableRef)) {
-				out.add(s);
-			}
-		}
-		if(age.contains(contr) && age.getEventAttribute(contr, attributeObservableRef)) {
-			out.add(contr);
-		}
+		System.out.println("~~~\n~~~\n" + out);
 		return out;
 	}
 
-	private TransitionSystem parallelComp(ArrayList<TransitionSystem> in) {
-		return ProcessDES.parallelComposition(in);
+//---  Support Methods   ----------------------------------------------------------------------
+	
+	private void getSequences(int index, AgentStates aS, ArrayList<ArrayList<StateSetPath>> paths, ArrayList<ArrayList<String>> use, String s, HashSet<IllegalConfig> out){
+		if(index >= paths.size()) {
+			out.add(new IllegalConfig(aS, copy(use), s));
+		}
+		else {
+			for(StateSetPath st : paths.get(index)) {
+				use.add(st.getEventPath());
+				getSequences(index + 1, aS, paths, use, s, out);
+				use.remove(use.size() - 1);
+			}
+		}
+	}
+	
+	private ArrayList<ArrayList<String>> copy(ArrayList<ArrayList<String>> in){
+		ArrayList<ArrayList<String>> out = new ArrayList<ArrayList<String>>();
+		for(ArrayList<String> t : in) {
+			ArrayList<String> use = new ArrayList<String>();
+			for(String s : t) {
+				use.add(s);
+			}
+			out.add(use);
+		}
+		return out;
 	}
 
 }

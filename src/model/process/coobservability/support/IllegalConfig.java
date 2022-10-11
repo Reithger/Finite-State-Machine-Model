@@ -6,22 +6,15 @@ import java.util.HashSet;
 public class IllegalConfig {
 
 	private AgentStates stateSet;
-	/** For each agent, it is their visible version of the true event sequence from the AgentStates object*/
+	/** For each agent, it is their visible version of the true event sequence from the AgentStates object. Does NOT include the plant view, that is in the AgentStates stateSet object*/
 	private ArrayList<ArrayList<String>> observedPaths;
 	
 	private String event;
 	
-	private boolean plantChoice;
-	
-	public IllegalConfig(AgentStates inStates, ArrayList<ArrayList<String>> inPaths, String inEvent, boolean rootChoice) {
+	public IllegalConfig(AgentStates inStates, ArrayList<ArrayList<String>> inPaths, String inEvent) {
 		stateSet = inStates;
 		observedPaths = inPaths;
 		event = inEvent;
-		plantChoice = rootChoice;
-	}
-	
-	public boolean getPlantDisableChoice() {
-		return plantChoice;
 	}
 	
 	public AgentStates getStateSet() {

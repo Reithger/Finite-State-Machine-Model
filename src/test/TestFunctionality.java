@@ -109,7 +109,7 @@ public class TestFunctionality {
 		
 		Incremental.assignIncrementalOptions(0, 0, 0);
 		
-		Integer testCase = null;	//786, 809, 812, 927, *1135, 1142, 1190, 1195, 1926, 2779, 2904, 2994, 4560
+		Integer testCase = null;	//786, 809, 812, 927, *1135, 1142, 1190, 1195, 1926, 2779, 2904, 2994, 4560, 4835
 		
 		if(testCase != null) {
 			String prefix = "test_full_suite_";
@@ -117,7 +117,7 @@ public class TestFunctionality {
 		} else {
 			//Scanner sc = new Scanner(System.in);
 			while(true) {
-				autoTestNewRandomSystem(2, 2, 5, 2, 4, 2, .4, 2, 0, .4, .3);
+				autoTestNewRandomSystem(1, 1, 5, 2, 4, 2, .4, 2, 0, .4, .3);
 				//sc.nextLine();
 			}
 		}
@@ -445,18 +445,20 @@ public class TestFunctionality {
 		if(displays)
 			pullReserveDisplay();
 		
-	/*	printSBCoobsLabel(prefixNom);
+		printSBCoobsLabel(prefixNom);
 		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
 		printIncrementalSBLabel(prefixNom);
 		boolean icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
-	/*	printCoobsLabel(prefixNom, true);
+		/*
+		printCoobsLabel(prefixNom, true);
 		boolean infCoobs = checkCoobservable(plantNames, specNames, agents, true);
 		printIncrementalLabel(prefixNom, true);
 		boolean icIfCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, true);
-*/
-	/*	if(coobs && !sbCoobs) {
+		*/
+		
+		if(coobs && !sbCoobs) {
 			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
-		}*/
+		}
 		
 		boolean error = false;
 		
@@ -464,17 +466,17 @@ public class TestFunctionality {
 			printOut("~~~\nError!!! : Incremental Algo. did not return same as Coobs. Algo.\n~~~");
 			error = true;
 		}
-	/*	if(sbCoobs != icSbCoobs) {
+		if(sbCoobs != icSbCoobs) {
 			printOut("~~~\nError!!! : Incremental SB Algo. did not return same as SB Algo.\n~~~");
 			error = true;
 		}
 /*		if(infCoobs != icIfCoobs) {
 			printOut("~~~\nError!!! : Incremental Inferencing Algo. did not return same as Inferencing Algo.\n~~~");
 		}*/
-	/*	if(sbCoobs && !coobs) {
+		if(sbCoobs && !coobs) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
 			error = true;
-		}*/
+		}
 /*		if(coobs && !infCoobs) {
 			printOut("~~~\nError!!! : Coobs. Algo. claimed True while Infer. Coobs. Algo. claimed False\n~~~");
 		}*/

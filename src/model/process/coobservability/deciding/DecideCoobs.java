@@ -12,7 +12,22 @@ import model.process.coobservability.support.IllegalConfig;
 import model.process.coobservability.support.StateSet;
 import model.process.memory.MemoryMeasure;
 
+/**
+ * 
+ * Also needs enable-by-default and disable-by-default options
+ * 
+ * 
+ * 
+ * @author SirBo
+ *
+ */
+
 public class DecideCoobs implements DecideCondition{
+	
+//---  Constants   ----------------------------------------------------------------------------
+	
+	public static final int DECISION_MODE_ENABLE = 0;
+	public static final int DECISION_MODE_DISABLE = 1;
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
@@ -30,13 +45,20 @@ public class DecideCoobs implements DecideCondition{
 	
 	protected UStructure ustruct;
 	
+	private int enableDisableMode;
+	
 //---  Constructors   -------------------------------------------------------------------------
+	
+	public DecideCoobs() {
+		enableDisableMode = DECISION_MODE_ENABLE;
+	}
 	
 	public DecideCoobs(ArrayList<TransitionSystem> inPlan, ArrayList<TransitionSystem> inSpe, ArrayList<String> attrIn, ArrayList<Agent> agentsIn) {
 		plants = inPlan;
 		specs = inSpe;
 		attr = attrIn;
 		agents = agentsIn;
+		enableDisableMode = DECISION_MODE_ENABLE;
 	}
 
 	public DecideCoobs(ArrayList<String> eventsIn, TransitionSystem specStart, ArrayList<String> attrIn, ArrayList<Agent> agentsIn) {
@@ -46,6 +68,7 @@ public class DecideCoobs implements DecideCondition{
 		agents = agentsIn;
 		events = new HashSet<String>();
 		events.addAll(eventsIn);
+		enableDisableMode = DECISION_MODE_ENABLE;
 	}
 	
 	public DecideCoobs(TransitionSystem root, ArrayList<String> attrIn, ArrayList<Agent> agentsIn) {
@@ -53,12 +76,9 @@ public class DecideCoobs implements DecideCondition{
 		plants.add(root);
 		attr = attrIn;
 		agents = agentsIn;
+		enableDisableMode = DECISION_MODE_ENABLE;
 	}
-	
-	public DecideCoobs() {
 
-	}
-	
 //---  Static Assignments   -------------------------------------------------------------------
 	
 	public static void assignAttributeReferences(String init, String cont, String obs, String bad) {
@@ -82,10 +102,21 @@ public class DecideCoobs implements DecideCondition{
 		ustruct = new UStructure(use, attr, agents);
 		ustruct.reserveTransitionSystem(use);
 		//ustruct.reserveTransitionSystem(ustruct.getUStructure());
-		boolean out = ustruct.getIllegalConfigOneStates().isEmpty() && ustruct.getIllegalConfigTwoStates().isEmpty();
+		boolean out = decideResult();
 		if(!out)
 			System.out.println("--- " + use.getId() + " - Counterexamples: " + getCounterExamples().iterator().next());
 		return out;
+	}
+	
+	private boolean decideResult() {
+		switch(enableDisableMode) {
+			case 0: 
+				return ustruct.getIllegalConfigOneStates().isEmpty();
+			case 1: 
+				return ustruct.getIllegalConfigTwoStates().isEmpty();
+			default: 
+				return ustruct.getIllegalConfigOneStates().isEmpty() && ustruct.getIllegalConfigTwoStates().isEmpty();
+		}
 	}
 
 	@Override
@@ -95,10 +126,21 @@ public class DecideCoobs implements DecideCondition{
 
 	@Override
 	public HashSet<IllegalConfig> getCounterExamples() {
-		HashSet<IllegalConfig> out = new HashSet<IllegalConfig>();
-		out.addAll(ustruct.getIllegalConfigOneStates());
-		out.addAll(ustruct.getIllegalConfigTwoStates());
-		return out;
+		return getEnableDisableModeCounterExamples();
+	}
+	
+	private HashSet<IllegalConfig> getEnableDisableModeCounterExamples(){
+		switch(enableDisableMode) {
+		case 0:
+			return ustruct.getIllegalConfigOneStates();
+		case 1: 
+			return ustruct.getIllegalConfigTwoStates();
+		default: 
+			HashSet<IllegalConfig> out = new HashSet<IllegalConfig>();
+			out.addAll(ustruct.getIllegalConfigOneStates());
+			out.addAll(ustruct.getIllegalConfigTwoStates());
+			return out;
+		}
 	}
 
 	@Override
@@ -114,12 +156,6 @@ public class DecideCoobs implements DecideCondition{
 		}
 	}
 
-	@Override
-	public void replaceSigma(ArrayList<String> events) {
-		plants.remove(0);
-		plants.add(0, generateSigmaStarion(parallelCompSpecs()));
-	}
-	
 	@Override
 	public MemoryMeasure produceMemoryMeasure() {
 		return ustruct != null ? ustruct : UStructure.produceBlank();

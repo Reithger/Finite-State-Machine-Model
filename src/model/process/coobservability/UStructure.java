@@ -184,8 +184,8 @@ public class UStructure extends UStructMemoryMeasure{
 						}
 						
 						if(!isMeaninglessTransition(eventName)) {
-							//TODO: Doesn't including the guess sequence here that is counted as the plant's event sequence cause impossible paths that aren't handled properly?
-							AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath(), s);
+							AgentStates aS = stateSet.deriveChild(newSet, i, s);
+							handleNewTransition(aS, eventName, currState);
 							queue.add(aS);	//adds the guess transition to our queue
 						}
 					}
@@ -209,7 +209,8 @@ public class UStructure extends UStructMemoryMeasure{
 				}
 				
 				if(!isMeaninglessTransition(eventName)) {
-					AgentStates aS = handleNewTransition(newSet, eventName, currState, stateSet.getEventPath(), s);
+					AgentStates aS = stateSet.deriveChild(newSet, canAct, s);
+					handleNewTransition(aS, eventName, currState);
 					queue.add(aS);		//adds the real event occurring transition to our queue
 				}
 				
@@ -228,15 +229,13 @@ public class UStructure extends UStructMemoryMeasure{
 					  uStructure.setStateAttribute(currState, !result ? attributeGoodRef : attributeBadRef, true);
 					  ArrayList<ArrayList<String>> observed = new  ArrayList<ArrayList<String>>();
 					  for(int i = 0; i < agents.length-1; i++) {
-						  observed.add(filterEventPath(stateSet.getEventPath(), s, agents[i+1]));
+						  observed.add(stateSet.getObservedPath(i+1));
 					  }
-					  //System.out.println(stateSet.getEventPath() + " " + currState);
-					  boolean choice = false; //plant.getTransitionAttribute(getState(plant, stateSet.getEventPath()), s, attributeBadRef);
 					  if(result) {
-						  goodBadStates.add(new IllegalConfig(stateSet, observed, s, choice));	//result == true means it was a bad transition (don't enable)
+						  goodBadStates.add(new IllegalConfig(stateSet, observed, s));	//result == true means it was a bad transition (don't enable)
 					  }
 					  else {
-						  badGoodStates.add(new IllegalConfig(stateSet, observed, s, choice));
+						  badGoodStates.add(new IllegalConfig(stateSet, observed, s));
 					  }
 					}
 				}
@@ -492,18 +491,13 @@ public class UStructure extends UStructMemoryMeasure{
 		return out;
 	}
 
-	private AgentStates handleNewTransition(String[] newSet, String[] eventName, String currState, ArrayList<String> oldPath, String newEvent) {
-		ArrayList<String> use = copy(oldPath);
-		if(newEvent != null)
-			use.add(newEvent);
-		AgentStates next = new AgentStates(newSet, use);
+	private void handleNewTransition(AgentStates next, String[] eventName, String currState) {
 		String eventNom = constructEventName(eventName);
 		uStructure.addEvent(eventNom);
 		uStructure.addState(next.getCompositeName());
 		uStructure.addTransition(currState, eventNom, next.getCompositeName());
 		objectMap.put(next.getCompositeName(), next);
 		eventNameMap.put(eventNom, eventName);
-		return next;
 	}
 	
 	private String constructEventName(String[] es) {

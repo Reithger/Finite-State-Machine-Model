@@ -9,16 +9,73 @@ public class AgentStates implements Comparable<AgentStates>{
 	
 	private String[] currentStates;
 	
-	private ArrayList<String> eventPath;
+	private ArrayList<ArrayList<String>> eventPath;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public AgentStates(String[] states, ArrayList<String> inPath) {
 		currentStates = states;
-		eventPath = new ArrayList<String>();
-		for(String s : inPath) {
-			eventPath.add(s);
+		eventPath = new ArrayList<ArrayList<String>>();
+		for(int i = 0; i < states.length; i++) {
+			ArrayList<String> use = new ArrayList<String>();
+			for(String s : inPath) {
+				use.add(s);
+			}
+			eventPath.add(use);
 		}
+	}
+	
+	public AgentStates(String[] states) {
+		currentStates = states;
+		eventPath = new ArrayList<ArrayList<String>>();
+		for(int i = 0; i < states.length; i++) {
+			ArrayList<String> use = new ArrayList<String>();
+			eventPath.add(use);
+		}
+	}
+	
+//---  Operations   ---------------------------------------------------------------------------
+	
+	/**
+	 * 
+	 * Where index = 0 is the true plant and the first controller view is index = 1
+	 * 
+	 * @param index
+	 * @param s
+	 */
+	
+	public void addGuess(int index, String s) {
+		eventPath.get(index).add(s);
+	}
+	
+	public AgentStates deriveChild(String[] newStates, boolean[] canAct, String s) {
+		AgentStates out = new AgentStates(newStates);
+		for(int i = 0; i < newStates.length; i++) {
+			ArrayList<String> use = new ArrayList<String>();
+			for(String t : eventPath.get(i)) {
+				use.add(t);
+			}
+			if(canAct[i] && s != null) {
+				use.add(s);
+			}
+			out.setObservedPath(i, use);
+		}
+		return out;
+	}
+	
+	public AgentStates deriveChild(String[] newStates, int index, String s) {
+		AgentStates out = new AgentStates(newStates);
+		for(int i = 0; i < newStates.length; i++) {
+			ArrayList<String> use = new ArrayList<String>();
+			for(String t : eventPath.get(i)) {
+				use.add(t);
+			}
+			if(i == index) {
+				use.add(s);
+			}
+			out.setObservedPath(i, use);
+		}
+		return out;
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -28,7 +85,21 @@ public class AgentStates implements Comparable<AgentStates>{
 	}
 	
 	public ArrayList<String> getEventPath() {
-		return eventPath;
+		ArrayList<String> out = new ArrayList<String>();
+		out.addAll(eventPath.get(0));
+		return out;
+	}
+	
+	/**
+	 * 
+	 * Where index = 0 is the true plant and the first controller view is index = 1
+	 * 
+	 * @param index
+	 * @return
+	 */
+	
+	public ArrayList<String> getObservedPath(int index){
+		return eventPath.get(index);
 	}
 
 	public String getCompositeName() {
@@ -38,6 +109,12 @@ public class AgentStates implements Comparable<AgentStates>{
 			out.append(currentStates[i] + (i + 1 < currentStates.length ? ", " : ")"));
 		}
 		return out.toString();
+	}
+	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
+	protected void setObservedPath(int index, ArrayList<String> inPath) {
+		eventPath.set(index, inPath);
 	}
 	
 //---  Mechanics   ----------------------------------------------------------------------------

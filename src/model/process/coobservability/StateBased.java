@@ -1,13 +1,14 @@
 package model.process.coobservability;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 import model.fsm.TransitionSystem;
 import model.process.coobservability.support.Agent;
-import model.process.coobservability.support.StateSet;
+import model.process.coobservability.support.StateSetPath;
 import model.process.memory.ConcreteMemoryMeasure;
 
 public class StateBased extends ConcreteMemoryMeasure {
@@ -18,19 +19,19 @@ public class StateBased extends ConcreteMemoryMeasure {
 	private static String attributeObservableRef;
 	private static String attributeControllableRef;
 	
-	private HashMap<String, HashSet<StateSet>> disable;
-	private HashMap<String, HashSet<StateSet>> enable;
+	private HashMap<String, HashSet<StateSetPath>> disable;
+	private HashMap<String, HashSet<StateSetPath>> enable;
 	
-	private HashMap<StateSet, ArrayList<ArrayList<String>>> pathTracing;
+	private HashMap<StateSetPath, ArrayList<ArrayList<StateSetPath>>> pathTracing;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public StateBased(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agents, boolean pathTrack) {
 		super();
-		disable = new HashMap<String, HashSet<StateSet>>();
-		enable = new HashMap<String, HashSet<StateSet>>();
+		disable = new HashMap<String, HashSet<StateSetPath>>();
+		enable = new HashMap<String, HashSet<StateSetPath>>();
 		if(pathTrack) {
-			pathTracing = new HashMap<StateSet, ArrayList<ArrayList<String>>>();
+			pathTracing = new HashMap<StateSetPath, ArrayList<ArrayList<StateSetPath>>>();
 		}
 		operate(plants, specs, attr, agents);
 	}
@@ -44,7 +45,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public boolean isSBCoobservable() {
-		//System.out.println("\n" + enable + "\n" + disable + "\n");
+		printEnableDisableSets();
 		for(String c : disable.keySet()) {
 			if(!disable.get(c).isEmpty()) {
 				return false;
@@ -73,7 +74,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 
 		logMemoryUsage();
 		
-		//System.out.println("\n" + enable + "\n" + disable + "\n");
+		printEnableDisableSets();
 		
 		boolean pass = true;
 		
@@ -91,8 +92,8 @@ public class StateBased extends ConcreteMemoryMeasure {
 			boolean skip = true;
 			
 			for(String e : controllable) {
-				Boolean res = a.getEventAttribute(e, attributeControllableRef);
-				if(res && !disable.get(e).isEmpty()) {
+				Boolean canControl = a.getEventAttribute(e, attributeControllableRef);
+				if(canControl && !disable.get(e).isEmpty()) {
 					skip = false;
 				}
 			}
@@ -101,7 +102,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 				continue;
 			}
 
-			HashMap<String, HashSet<StateSet>> tempDisable = observerConstructHiding(plants, specs, enable, disable, a.getEventsAttributeSet(attributeObservableRef, true), a.getEventsAttributeSet(attributeControllableRef, true), controllable);
+			HashMap<String, HashSet<StateSetPath>> tempDisable = observerConstructHiding(plants, specs, enable, disable, a.getEventsAttributeSet(attributeObservableRef, true), a.getEventsAttributeSet(attributeControllableRef, true), controllable);
 
 			logMemoryUsage();
 			
@@ -120,24 +121,20 @@ public class StateBased extends ConcreteMemoryMeasure {
 		}
 	}
 	
-	private void initializeEnableDisable(HashMap<String, HashSet<StateSet>> disable, HashMap<String, HashSet<StateSet>> enable, ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashSet<String> controllable) {
+	private void initializeEnableDisable(HashMap<String, HashSet<StateSetPath>> disable, HashMap<String, HashSet<StateSetPath>> enable, ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashSet<String> controllable) {
 		for(String c : controllable) {
-			disable.put(c, new HashSet<StateSet>());
-			enable.put(c, new HashSet<StateSet>());
+			disable.put(c, new HashSet<StateSetPath>());
+			enable.put(c, new HashSet<StateSetPath>());
 		}
-		StateSet.assignSizes(plants.size(), specs.size());
+		StateSetPath.assignSizes(plants.size(), specs.size());
 		
-		LinkedList<StateSet> queue = new LinkedList<StateSet>();
-		HashSet<StateSet> visited = new HashSet<StateSet>();
-		StateSet first = initialStateSet(plants, specs);
-		
-		if(pathTracing != null) {
-			logBasePath(first, new ArrayList<String>());
-		}
+		LinkedList<StateSetPath> queue = new LinkedList<StateSetPath>();
+		HashSet<StateSetPath> visited = new HashSet<StateSetPath>();
+		StateSetPath first = initialStateSetPath(plants, specs);
 		
 		queue.add(first);
 		while(!queue.isEmpty()) {
-			StateSet curr = queue.poll();
+			StateSetPath curr = queue.poll();
 			if(visited.contains(curr)) {
 				continue;
 			}
@@ -145,25 +142,21 @@ public class StateBased extends ConcreteMemoryMeasure {
 			boolean bail = true;
 			for(String s : getAllEvents(plants)) {
 				if(canProceed(plants, null, curr, s)) {
-					boolean cont = controllable.contains(s);
-					if(!canProceed(null, specs, curr, s)) {
-						if(cont) {
-							disable.get(s).add(curr);
-							logNewPath(curr, s);
-							bail = false;
-						}
-					}
-					else {
-						if(cont) {
-							enable.get(s).add(curr);
-							logNewPath(curr, s);
-							bail = false;
-						}
-						StateSet next = stateSetStep(plants, specs, curr, s);
-						if(pathTracing != null) {
-							logBasePath(next, copy(pathTracing.get(curr).get(0), s));
-						}
+					boolean specCan = canProceed(null, specs, curr, s);
+					if(specCan) {
+						StateSetPath next = stateSetStep(plants, specs, curr, s);
 						queue.add(next);
+					}
+					if(controllable.contains(s)) {
+						bail = false;
+						curr.setProblemEvent(s);
+						if(specCan) {
+							enable.get(s).add(curr);
+						}
+						else {
+							disable.get(s).add(curr);
+							initializePathTracingDisablement(curr);
+						}
 					}
 				}
 				
@@ -173,61 +166,64 @@ public class StateBased extends ConcreteMemoryMeasure {
 			}
 		}
 	}
-	
-	private void logNewPath(StateSet curr, String cont) {
-		if(pathTracing != null) {
-			pathTracing.get(curr).add(copy(pathTracing.get(curr).get(0), cont));
-		}
-	}
-	
-	private void logBasePath(StateSet in, ArrayList<String> path) {
-		if(!pathTracing.containsKey(in)) {
-			pathTracing.put(in, new ArrayList<ArrayList<String>>());
-		}
-		pathTracing.get(in).add(path);
-	}
-	
-	private HashMap<String, HashSet<StateSet>> observerConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont, HashSet<String> controllable){
-		HashMap<String, HashSet<StateSet>> out = new HashMap<String, HashSet<StateSet>>();
+
+	/*
+	 * Need a structure that maps each <state, event path> tuple consisting of a disablement decision state to a sequence of sets of states consisting of the enablement decision states that that controller confuses for
+	 * the original disablement decision state.
+	 * 
+	 * <state, event path> -> {{<state, event path>, <state, event path>}, {<state, event path>, <state, event path>}}
+	 * 
+	 * So anytime we see confusion between a disablement state and any enablement states, all versions of the disablement state need to map to all enablement states that controller also reached.
+	 * 
+	 * 
+	 * 
+	 */
+
+	private HashMap<String, HashSet<StateSetPath>> observerConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSetPath>> enable, HashMap<String, HashSet<StateSetPath>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont, HashSet<String> controllable){
+		HashMap<String, HashSet<StateSetPath>> out = new HashMap<String, HashSet<StateSetPath>>();
 		
 		for(String c : controllable) {
-			out.put(c, agentCont.contains(c) ? new HashSet<StateSet>() : disable.get(c));
+			out.put(c, agentCont.contains(c) ? new HashSet<StateSetPath>() : disable.get(c));
 		}
 		
-		LinkedList<HashSet<StateSet>> queue = new LinkedList<HashSet<StateSet>>();
-		HashSet<HashSet<StateSet>> visited = new HashSet<HashSet<StateSet>>();
+		int index = instantiatePathTracingController();
+				
+		LinkedList<HashSet<StateSetPath>> queue = new LinkedList<HashSet<StateSetPath>>();
+		HashSet<HashSet<StateSetPath>> visited = new HashSet<HashSet<StateSetPath>>();
 		
-		HashSet<StateSet> initial = new HashSet<StateSet>();
-		initial.add(initialStateSet(plants, specs));
+		HashSet<StateSetPath> initial = new HashSet<StateSetPath>();
+		initial.add(initialStateSetPath(plants, specs));
 		
-		queue.add(reachableStateSets(plants, specs, initial, agentObs));
+		queue.add(reachableStateSetPaths(plants, specs, initial, agentObs));
 		while(!queue.isEmpty()) {
-			HashSet<StateSet> curr = queue.poll();
+			HashSet<StateSetPath> curr = queue.poll();
 			if(visited.contains(curr)) {
 				continue;
 			}
 			visited.add(curr);
 			
 			for(String e : agentObs) {
-				HashSet<StateSet> reachable = new HashSet<StateSet>();
-				for(StateSet s : curr) {
+				HashSet<StateSetPath> reachable = new HashSet<StateSetPath>();
+				for(StateSetPath s : curr) {
 					if(canProceed(plants, specs, s, e)) {
 						reachable.add(stateSetStep(plants, specs, s, e));
 					}
 				}
-				queue.add(reachableStateSets(plants, specs, reachable, agentObs));
+				queue.add(reachableStateSetPaths(plants, specs, reachable, agentObs));
 				logMemoryUsage();
 			}
 		}
 
 		logMemoryUsage();
 		
-		for(HashSet<StateSet> group : visited) {
+		for(HashSet<StateSetPath> group : visited) {
 			for(String e : agentCont) {
-				HashSet<StateSet> holdEna = intersection(group, enable.get(e));
+				HashSet<StateSetPath> holdEna = intersection(group, enable.get(e));
 				if(!holdEna.isEmpty()) {
-					HashSet<StateSet> holdDis = intersection(group, disable.get(e));
+					HashSet<StateSetPath> holdDis = intersection(group, disable.get(e));
 					out.get(e).addAll(holdDis);
+					
+					trackPathTracingEquivalence(holdDis, holdEna, index);
 				}
 			}
 		}
@@ -237,6 +233,10 @@ public class StateBased extends ConcreteMemoryMeasure {
 
 //---  Getter Methods   -----------------------------------------------------------------------
 
+	public ArrayList<ArrayList<StateSetPath>> getEquivalentPaths(StateSetPath in){
+		return pathTracing == null ? null : pathTracing.get(in);
+	}
+	
 	private String getInitialState(TransitionSystem t) {
 		return t.getStatesWithAttribute(attributeInitialRef).get(0);
 	}
@@ -253,9 +253,9 @@ public class StateBased extends ConcreteMemoryMeasure {
 		return out;
 	}
 	
-	public ArrayList<StateSet> getRemainingDisableStates(){
-		ArrayList<StateSet> out = new ArrayList<StateSet>();
-		HashSet<StateSet> use = new HashSet<StateSet>();
+	public ArrayList<StateSetPath> getRemainingDisableStates(){
+		ArrayList<StateSetPath> out = new ArrayList<StateSetPath>();
+		HashSet<StateSetPath> use = new HashSet<StateSetPath>();
 		for(String c : disable.keySet()) {
 			use.addAll(disable.get(c));
 		}
@@ -263,9 +263,9 @@ public class StateBased extends ConcreteMemoryMeasure {
 		return out;
 	}
 	
-	public ArrayList<StateSet> getRemainingEnableStates(){
-		ArrayList<StateSet> out = new ArrayList<StateSet>();
-		HashSet<StateSet> use = new HashSet<StateSet>();
+	public ArrayList<StateSetPath> getRemainingEnableStates(){
+		ArrayList<StateSetPath> out = new ArrayList<StateSetPath>();
+		HashSet<StateSetPath> use = new HashSet<StateSetPath>();
 		for(String c : enable.keySet()) {
 			use.addAll(enable.get(c));
 		}
@@ -273,38 +273,30 @@ public class StateBased extends ConcreteMemoryMeasure {
 		return out;
 	}
 	
-	public ArrayList<String> getStateSetPathMinusEvent(StateSet in){
+	public ArrayList<String> getStateSetPath(StateSetPath in){
 		if(pathTracing == null) {
 			return null;
 		}
-		return copy(pathTracing.get(in).get(0), null);
+		ArrayList<String> out = in.getEventPath();
+		return out;
 	}
 
-	public ArrayList<String> getStateSetPathEvent(StateSet in) {
+	public ArrayList<String> getStateSetPathEvents(StateSetPath in) {
 		if(pathTracing == null) {
 			return null;
 		}
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < pathTracing.get(in).size(); i++) {
-			ArrayList<String> use = pathTracing.get(in).get(i);
-			out.add(use.get(use.size() - 1));
+		for(String s : disable.keySet()) {
+			if(disable.get(s).contains(in)) {
+				out.add(s);
+			}
 		}
 		return out;
 	}
-	
+
 //---  Support Methods   ----------------------------------------------------------------------
 	
- 	private ArrayList<String> copy(ArrayList<String> start, String next){
-		ArrayList<String> out = new ArrayList<String>();
-		for(String s : start) {
-			out.add(s);
-		}
-		if(next != null)
-			out.add(next);
-		return out;
-	}
-	
-	private StateSet initialStateSet(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs) {
+	private StateSetPath initialStateSetPath(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs) {
 		String[] use = new String[plants.size() + specs.size()];
 		for(int i = 0; i < plants.size(); i++) {
 			use[i] = getInitialState(plants.get(i));
@@ -312,10 +304,10 @@ public class StateBased extends ConcreteMemoryMeasure {
 		for(int i = 0; i < specs.size(); i++) {
 			use[i + plants.size()] = getInitialState(specs.get(i));
 		}
-		return new StateSet(use);
+		return new StateSetPath(use);
 	}
 
-	private StateSet stateSetStep(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, StateSet curr, String event) {
+	private StateSetPath stateSetStep(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, StateSetPath curr, String event) {
 		String[] out = new String[plants.size() + specs.size()];
 
 		for(int i = 0; i < plants.size(); i++) {
@@ -327,12 +319,16 @@ public class StateBased extends ConcreteMemoryMeasure {
 			TransitionSystem t = specs.get(i);
 			out[i + plants.size()] = canPerformEvent(t, curr.getSpecState(i), event) ? t.getStateEventTransitionStates(curr.getSpecState(i), event).get(0) : curr.getSpecState(i);
 		}
-		return new StateSet(out);
+		//System.out.println(curr.toString() + " " + event + " " + Arrays.toString(out) + " " + curr.getEventPath());
+		StateSetPath use = new StateSetPath(out, curr);
+		if(use.isNew())
+			use.addEvent(event);
+		return use;
 	}
 	
-	private HashSet<StateSet> reachableStateSets(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashSet<StateSet> initial, ArrayList<String> agentObs){
-		HashSet<StateSet> out = new HashSet<StateSet>();
-		for(StateSet i : initial) {
+	private HashSet<StateSetPath> reachableStateSetPaths(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashSet<StateSetPath> initial, ArrayList<String> agentObs){
+		HashSet<StateSetPath> out = new HashSet<StateSetPath>();
+		for(StateSetPath i : initial) {
 			out.add(i);
 		}
 		ArrayList<String> unobs = new ArrayList<String>();
@@ -342,12 +338,12 @@ public class StateBased extends ConcreteMemoryMeasure {
 			}
 		}
 		
-		LinkedList<StateSet> queue = new LinkedList<StateSet>();
-		HashSet<StateSet> visited = new HashSet<StateSet>();
+		LinkedList<StateSetPath> queue = new LinkedList<StateSetPath>();
+		HashSet<StateSetPath> visited = new HashSet<StateSetPath>();
 		queue.addAll(initial);
 		
 		while(!queue.isEmpty()) {
-			StateSet curr = queue.poll();
+			StateSetPath curr = queue.poll();
 			
 			if(visited.contains(curr)) {
 				continue;
@@ -372,7 +368,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 		return knowsEvent(system, event) && system.getStateTransitionEvents(state).contains(event);
 	}
 	
-	private boolean canProceed(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, StateSet curr, String event) {
+	private boolean canProceed(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, StateSetPath curr, String event) {
 		if(plants != null) {
 			for(int i = 0; i < plants.size(); i++) {
 				TransitionSystem t = plants.get(i);
@@ -392,16 +388,54 @@ public class StateBased extends ConcreteMemoryMeasure {
 		return true;
 	}
 
+	private void printEnableDisableSets() {
+		System.out.println("Enable/Disable Sets:\nEnable: " + enable + "\nDisable: " + disable + "\n");
+	}
+	
 	//-- SubsetConstructHiding  ---------------------------------------------------------------
 	
-	private HashSet<StateSet> intersection(HashSet<StateSet> conglom, HashSet<StateSet> check){
-		HashSet<StateSet> out = new HashSet<StateSet>();
-		for(StateSet s : check) {
+	private HashSet<StateSetPath> intersection(HashSet<StateSetPath> conglom, HashSet<StateSetPath> check){
+		HashSet<StateSetPath> out = new HashSet<StateSetPath>();
+		for(StateSetPath s : check) {
 			if(conglom.contains(s)) {
 				out.add(s);
 			}
 		}
 		return out;
+	}
+	
+	private void initializePathTracingDisablement(StateSetPath in) {
+		if(pathTracing != null) {
+			if(!pathTracing.containsKey(in)) {
+				pathTracing.put(in, new ArrayList<ArrayList<StateSetPath>>());
+			}
+		}
+	}
+
+	private int instantiatePathTracingController() {
+		int index = 0;
+		
+		if(pathTracing == null) {
+			return -1;
+		}
+		
+		for(StateSetPath s : pathTracing.keySet()) {
+			pathTracing.get(s).add(new ArrayList<StateSetPath>());
+			index = pathTracing.get(s).size() - 1;
+		}
+		
+		return index; 
+	}
+	
+	private void trackPathTracingEquivalence(HashSet<StateSetPath> holdDis, HashSet<StateSetPath> holdEna, int index) {
+		
+		if(pathTracing != null) {
+			for(StateSetPath st : holdDis) {
+				for(StateSetPath et : holdEna) {
+					pathTracing.get(st).get(index).add(et);
+				}
+			}
+		}
 	}
 
 }
