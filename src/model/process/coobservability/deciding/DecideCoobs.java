@@ -26,8 +26,8 @@ public class DecideCoobs implements DecideCondition{
 	
 //---  Constants   ----------------------------------------------------------------------------
 	
-	public static final int DECISION_MODE_ENABLE = 0;
-	public static final int DECISION_MODE_DISABLE = 1;
+	public static final int DECISION_MODE_ENABLE = 1;
+	public static final int DECISION_MODE_DISABLE = 0;
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	

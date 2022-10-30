@@ -124,7 +124,7 @@ public class GenerateDot {
 			}
 			line += "\" style=filled";
 		}
-		
+		line += " fontsize=\"28\"";
 		return line + "];";
 	}
 	
@@ -147,6 +147,7 @@ public class GenerateDot {
 		trans += cont != null && cont ? "diamond" : "";
 		trans += "\" style=\"";
 		trans += bad != null && bad ? "dashed" : "";
+		trans += "\" fontsize=\"28";
 		trans += "\"];";
 		return trans;
 	}

@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import model.convert.GenerateDot;
 import model.convert.GenerateFSM;
@@ -88,7 +89,15 @@ public class Manager implements ReceiveMemoryMeasure{
 	}
 	
 	public void flushFSMs() {
+		HashSet<String> gather = new HashSet<String>();
+		for(String s : fsms.keySet()) {
+			gather.add(s);
+		}
+		for(String s : gather) {
+			fsms.remove(s);
+		}
 		fsms = new HashMap<String, TransitionSystem>();
+		lastProcessData = null;
 	}
 	
 	//-- FSM Generation  --------------------------------------

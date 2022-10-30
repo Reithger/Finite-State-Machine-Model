@@ -123,11 +123,14 @@ public class DecideSBCoobs implements DecideCondition{
 	
 	@Override
 	public HashSet<IllegalConfig> getCounterExamples() {
+		
+		return null;
+		/*
 		HashSet<IllegalConfig> out = new HashSet<IllegalConfig>();
 		if(sbStructure == null) {
 			return out;
 		}
-		for(StateSetPath s : sbStructure.getRemainingDisableStates()) {
+		for(StateSet s : sbStructure.getRemainingDisableStates()) {
 			AgentStates aS = new AgentStates(s.getStates(), sbStructure.getStateSetPath(s));
 			for(String t : sbStructure.getStateSetPathEvents(s)) {
 				getSequences(0, aS, sbStructure.getEquivalentPaths(s), new ArrayList<ArrayList<String>>(), t, out);
@@ -135,17 +138,18 @@ public class DecideSBCoobs implements DecideCondition{
 		}
 		System.out.println("~~~\n~~~\n" + out);
 		return out;
+		*/
 	}
 
 //---  Support Methods   ----------------------------------------------------------------------
 	
-	private void getSequences(int index, AgentStates aS, ArrayList<ArrayList<StateSetPath>> paths, ArrayList<ArrayList<String>> use, String s, HashSet<IllegalConfig> out){
+	private void getSequences(int index, AgentStates aS, ArrayList<ArrayList<StateSet>> paths, ArrayList<ArrayList<String>> use, String s, HashSet<IllegalConfig> out){
 		if(index >= paths.size()) {
 			out.add(new IllegalConfig(aS, copy(use), s));
 		}
 		else {
-			for(StateSetPath st : paths.get(index)) {
-				use.add(st.getEventPath());
+			for(StateSet st : paths.get(index)) {
+				//use.add(st.getEventPath());
 				getSequences(index + 1, aS, paths, use, s, out);
 				use.remove(use.size() - 1);
 			}

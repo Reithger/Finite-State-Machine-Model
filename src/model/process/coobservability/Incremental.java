@@ -138,6 +138,9 @@ public class Incremental extends IncrementalMemoryMeasure {
 	 */
 	
 	private IllegalConfig pickCounterExample(HashSet<IllegalConfig> counters) {
+		if(counters == null) {
+			return null;
+		}
 		IllegalConfig out = null;
 		//System.out.println("---COUNTEREXAMPLES: " + counters);
 		switch(counterexampleChoice) {
@@ -238,7 +241,7 @@ public class Incremental extends IncrementalMemoryMeasure {
 		
 		TransitionSystem out = null;
 		
-		use = counterexample == null ? INCREMENTAL_B_RANDOM : incrementalOptionB;
+		use = counterexample == null ? pickComponentHeuristicNoReject(incrementalOptionB) : incrementalOptionB;
 		
 		switch(use) {
 			case INCREMENTAL_B_SOONEST:
@@ -357,6 +360,18 @@ public class Incremental extends IncrementalMemoryMeasure {
 		return out;
 	}
 
+	private int pickComponentHeuristicNoReject(int in) {
+		HashSet<Integer> check = new HashSet<Integer>();
+		check.add(INCREMENTAL_B_RANDOM);
+		check.add(INCREMENTAL_B_LOW_STATE);
+		check.add(INCREMENTAL_B_HIGH_STATE);
+		check.add(INCREMENTAL_B_LOW_EVENTS);
+		check.add(INCREMENTAL_B_HIGH_EVENTS);
+		check.add(INCREMENTAL_B_LOW_TRANS);
+		check.add(INCREMENTAL_B_HIGH_TRANS);
+		return check.contains(in) ? in : INCREMENTAL_B_RANDOM;
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
 
 	private int[] getIncrementalSettings() {
@@ -420,13 +435,13 @@ public class Incremental extends IncrementalMemoryMeasure {
 			use.add(ic.getEvent());
 		}
 		String reachedState = navigateTransitionSystem(plant, observablePath(plant, use));
-		System.out.println("States: " + ic.getStateSet());
-		System.out.println("For: " + ic.getEventPath() + " " +  ic.getEvent() + ", " + plant.getId() + " reached: " + reachedState + " from start: " + plant.getStatesWithAttribute(initialRef).get(0) + ", knowing: " + plant.getEventNames());
+		//System.out.println("States: " + ic.getStateSet());
+		//System.out.println("For: " + ic.getEventPath() + " " +  ic.getEvent() + ", " + plant.getId() + " reached: " + reachedState + " from start: " + plant.getStatesWithAttribute(initialRef).get(0) + ", knowing: " + plant.getEventNames());
 		if(reachedState != null) {
 			for(ArrayList<String> s : ic.getObservedPaths()) {
 				use = s;
 				use.add(ic.getEvent());
-				System.out.println("Agent View: " + use);
+				//System.out.println("Agent View: " + use);
 				reachedState = navigateTransitionSystem(plant, observablePath(plant, use));
 				if(reachedState == null) {
 					return true;
@@ -458,12 +473,12 @@ public class Incremental extends IncrementalMemoryMeasure {
 	
 	private String navigateTransitionSystem(TransitionSystem plant, ArrayList<String> eventPath) {
 		String curr = plant.getStatesWithAttribute(initialRef).get(0);
-		System.out.println("Path: " + eventPath);
+		//System.out.println("Path: " + eventPath);
 		for(String s : eventPath) {
-			System.out.println("Knows event " + s + "? " + plant.getEventNames().contains(s) + ", Sees it: " + plant.getEventsWithAttribute(observableRef).contains(s));
+			//System.out.println("Knows event " + s + "? " + plant.getEventNames().contains(s) + ", Sees it: " + plant.getEventsWithAttribute(observableRef).contains(s));
 			if(plant.getEventNames().contains(s)) {
 				ArrayList<String> next = plant.getStateEventTransitionStates(curr, s);
-				System.out.println("H: " + curr + ", " + s + ", " + next);
+				//System.out.println("H: " + curr + ", " + s + ", " + next);
 				if(next != null && next.size() > 0) {
 					curr = next.get(0);
 				}

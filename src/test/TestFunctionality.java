@@ -109,7 +109,7 @@ public class TestFunctionality {
 		
 		Incremental.assignIncrementalOptions(0, 0, 0);
 		
-		Integer testCase = null;	//786, 809, 812, 927, *1135, 1142, 1190, 1195, 1926, 2779, 2904, 2994, 4560, 4835
+		Integer testCase = null;	//786, 809, 812, 927, *1135, 1142, 1190, 1195, 1926, 2779, 2904, 2994, 4560, 4835, 4926, 5156
 		
 		if(testCase != null) {
 			String prefix = "test_full_suite_";
@@ -118,6 +118,7 @@ public class TestFunctionality {
 			//Scanner sc = new Scanner(System.in);
 			while(true) {
 				autoTestNewRandomSystem(1, 1, 5, 2, 4, 2, .4, 2, 0, .4, .3);
+				garbageCollect();
 				//sc.nextLine();
 			}
 		}
