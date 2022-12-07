@@ -104,12 +104,35 @@ public class TestFunctionality {
 		//autoTestNewRandomSystem(3, 3, 6, 2, 4, 2, .5, 2, 0, .4, .3);
 		//while(true)
 		//	autoTestHeuristicsIncremental(2, 2, 5, 2, 4, 2, .4, 2, 0, .4, .3);
-		
-		
-		
+		/*
+		SystemGeneration.generateSystemExample1("Example M_L");
+		SystemGeneration.generateSystemExample2("Example M_K");
+		SystemGeneration.generateSystemExample3("Example M_L-M_K");
+		SystemGeneration.generateSystemExample4("Example Observer M_L-M_K");
+		makeImageDisplay("Example M_L", "Example M_L");
+		makeImageDisplay("Example M_K", "Example M_K");
+		makeImageDisplay("Example M_L-M_K", "Example M_L-M_K");
+		makeImageDisplay("Example Observer M_L-M_K", "Example Observer M_L-M_K");
+		*/
 		Incremental.assignIncrementalOptions(0, 0, 0);
 		
 		Integer testCase = null;	//786, 809, 812, 927, *1135, 1142, 1190, 1195, 1926, 2779, 2904, 2994, 4560, 4835, 4926, 5156
+		
+		
+		int numPlants = 2;
+		int numSpecs = 2;
+		
+		int numStates = 5;
+		int numStateVar = 2;
+		int numEvents = 4;
+		int numEventsVar = 2;
+		
+		double eventShareRate = .4;
+		
+		int numControllers = 4;
+		int numControllersVar = 0;
+		double controllerObserveRate = .4;
+		double controllerControlRate = .3;
 		
 		if(testCase != null) {
 			String prefix = "test_full_suite_";
@@ -117,7 +140,7 @@ public class TestFunctionality {
 		} else {
 			//Scanner sc = new Scanner(System.in);
 			while(true) {
-				autoTestNewRandomSystem(1, 1, 5, 2, 4, 2, .4, 2, 0, .4, .3);
+				autoTestNewRandomSystem(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
 				garbageCollect();
 				//sc.nextLine();
 			}
@@ -864,8 +887,8 @@ public class TestFunctionality {
 		ArrayList<Double> data = model.getLastProcessData().getStoredData();
 		ArrayList<String> use = model.getLastProcessData().getOutputGuide();
 		
-		use.add(0, "Total Time");
-		use.add(1, "Overall Memory Usage");
+		use.add(0, "Total Time (ms)");
+		use.add(1, "Overall Memory Usage (Mb)");
 		
 		printEquivalentResults(use, res, val, data);
 	}

@@ -22,6 +22,94 @@ public class SystemGeneration {
 	
 	//-- Solo System  -----------------------------------------
 	
+	public static void generateSystemExample1(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 7);
+
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_A);
+		
+		model.addTransition(name, "0", "a_{1}", "1");
+		model.addTransition(name, "0", "a_{2}", "2");
+		
+		model.addTransition(name, "1", "b_{1}", "3");
+		model.addTransition(name, "1", "b_{2}", "4");
+		model.addTransition(name, "2", "b_{1}", "5");
+		model.addTransition(name, "2", "b_{2}", "6");
+		
+		model.addTransition(name, "3", "c", "3");
+		model.addTransition(name, "4", "c", "4");
+		model.addTransition(name, "5", "c", "5");
+		model.addTransition(name, "6", "c", "6");
+		
+		
+	}
+	
+	public static void generateSystemExample2(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 7);
+
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_A);
+		
+		model.addTransition(name, "0", "a_{1}", "1");
+		model.addTransition(name, "0", "a_{2}", "2");
+		
+		model.addTransition(name, "1", "b_{1}", "3");
+		model.addTransition(name, "1", "b_{2}", "4");
+		model.addTransition(name, "2", "b_{1}", "5");
+		model.addTransition(name, "2", "b_{2}", "6");
+		
+		model.addTransition(name, "3", "c", "3");
+	}
+	
+	public static void generateSystemExample3(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 7);
+
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_A);
+		
+		model.addTransition(name, "0", "a_{1}", "1");
+		model.addTransition(name, "0", "a_{2}", "2");
+		
+		model.addTransition(name, "1", "b_{1}", "3");
+		model.addTransition(name, "1", "b_{2}", "4");
+		model.addTransition(name, "2", "b_{1}", "5");
+		model.addTransition(name, "2", "b_{2}", "6");
+		
+		model.addTransition(name, "3", "c", "3");
+		model.addTransition(name, "4", "c", "4");
+		model.addTransition(name, "5", "c", "5");
+		model.addTransition(name, "6", "c", "6");
+		
+		setBadTransitions(name,"4","c","5","c","6","c");
+	}
+	
+	public static void generateSystemExample4(String name) {
+		generateSystemDefault(name);
+		
+		model.addState(name, "(0, 1, 2)");
+		model.addState(name, "(3, 5)");
+		model.addState(name, "(4, 6)");
+		
+		initialState(name, "(0, 1, 2)");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_A);
+		
+		model.addTransition(name, "(0, 1, 2)", "b_{1}", "(3, 5)");
+		model.addTransition(name, "(0, 1, 2)", "b_{2}", "(4, 6)");
+		model.addTransition(name, "(4, 6)", "c", "(4, 6)");
+		model.addTransition(name, "(3, 5)", "c", "(3, 5)");
+		
+	}
+	
 	public static void generateSystemA(String name) {
 		generateSystemDefault(name);
 		
