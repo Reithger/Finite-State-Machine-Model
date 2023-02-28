@@ -92,19 +92,19 @@ public class DecideCoobs implements DecideCondition{
 	
 	@Override
 	public boolean decideCondition() {
-		System.out.println("--- Deciding Coobservability ---");
-		System.out.println("--- Using: " + plants + ", " + specs + " ---");
+		//System.out.println("--- Deciding Coobservability ---");
+		//System.out.println("--- Using: " + plants + ", " + specs + " ---");
 		TransitionSystem use = specs == null ? plants.get(0) : deriveTruePlant();
-		/*if(use.getTransitionsWithAttribute(badTransRef).size() == 0) {
-			System.out.println("Immediate bail");
+		if(use.getTransitionsWithAttribute(badTransRef).size() == 0) {
+			//System.out.println("Immediate bail");
 			return true;
-		}*/
+		}
 		ustruct = new UStructure(use, attr, agents);
-		ustruct.reserveTransitionSystem(use);
+		//ustruct.reserveTransitionSystem(use);
 		//ustruct.reserveTransitionSystem(ustruct.getUStructure());
 		boolean out = decideResult();
-		if(!out)
-			System.out.println("--- " + use.getId() + " - Counterexamples: " + getCounterExamples().iterator().next());
+		//if(!out)
+			//System.out.println("--- " + use.getId() + " - Counterexamples: " + getCounterExamples().iterator().next());
 		return out;
 	}
 	

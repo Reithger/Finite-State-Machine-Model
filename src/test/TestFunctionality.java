@@ -9,14 +9,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Scanner;
 
 import controller.FiniteStateMachine;
 import controller.convert.FormatConversion;
-import model.AttributeList;
 import model.Manager;
-import model.fsm.TransitionSystem;
 import model.process.coobservability.Incremental;
 import test.help.AgentChicanery;
 import test.help.EventSets;
@@ -25,6 +22,7 @@ import test.help.SystemGeneration;
 import visual.composite.ImageDisplay;
 import visual.frame.WindowFrame;
 import visual.panel.ElementPanel;
+
 
 public class TestFunctionality {
 	
@@ -122,14 +120,14 @@ public class TestFunctionality {
 		int numPlants = 2;
 		int numSpecs = 2;
 		
-		int numStates = 5;
+		int numStates = 4;
 		int numStateVar = 2;
-		int numEvents = 4;
+		int numEvents = 3;
 		int numEventsVar = 2;
 		
 		double eventShareRate = .4;
 		
-		int numControllers = 4;
+		int numControllers = 2;
 		int numControllersVar = 0;
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
