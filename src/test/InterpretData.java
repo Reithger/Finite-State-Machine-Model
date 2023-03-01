@@ -84,7 +84,7 @@ public class InterpretData {
 	}
 	
 	/*
-	 * TODO: Finish the logic on getting the third quartile properly
+	 * TODO: Test it to make sure it's right
 	 * 
 	 */
 	
@@ -92,11 +92,21 @@ public class InterpretData {
 		ArrayList<Double> out = new ArrayList<Double>();
 		for(ArrayList<Double> column : data) {
 			if((column.size() - column.size() / 2) % 2 == 0) {
-				out.add(column.get(column.size() / 2));
+				out.add((column.get(column.size() * 3 / 4) + column.get(column.size() * 3 / 4 + 1)) / 2);
 			}
 			else {
-				out.add((column.get(column.size() / 2) + column.get(column.size() / 2 + 1)) / 2);
+				out.add((column.get(column.size() * 3 / 4)));
 			}
+		}
+		return out;
+	}
+	
+	public ArrayList<Double> calculateInterquartileRange(){
+		ArrayList<Double> out = new ArrayList<Double>();
+		ArrayList<Double> first = calculateFirstQuartile();
+		ArrayList<Double> third = calculateThirdQuartile();
+		for(int i = 0; i < third.size(); i++) {
+			out.add(third.get(i) - first.get(i));
 		}
 		return out;
 	}

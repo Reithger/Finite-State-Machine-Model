@@ -31,6 +31,7 @@ import test.help.SystemGeneration;
  * 
  * Large single plant and specification examples
  * 
+ * Denote when a test batch has fully finished so that incomplete tests are re-done
  * 
  * @author aclevinger
  *
@@ -79,10 +80,10 @@ public class DataGathering {
 		}
 		
 
-		//initializeTestFolder(f, "/Test Batch Random Basic 1");
-		//testBasicConfigOne(50);
+		initializeTestFolder(f, "/Test Batch Random Basic 1");
+		testBasicConfigOne(50);
 		initializeTestFolder(f, "/Test Batch Random Heuristic 1");
-		testHeuristicConfigOne(20);
+		testHeuristicConfigOne(200);
 	}
 	
 	private static void initializeTestFolder(File f, String in) {
@@ -195,16 +196,15 @@ public class DataGathering {
 //---  System Testing   -----------------------------------------------------------------------
 	
 	private static void autoTestNewRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate, int testChoice) throws Exception {
-		String testName = TEST_NAME;
+		String testName = TEST_NAME + "_" +  count;
 		File f;
-		f = new File(defaultWritePath + "/" + testName + "_" +  count);
+		f = new File(defaultWritePath + "/" + testName);
 		
 		if(f.exists()) {
 			return;
 		}
 		
 		f.mkdir();
-		testName += count+"";
 		writePath = defaultWritePath + "/" + testName;
 		//System.out.println("This test: " + testName);
 		printOut(testName + ", " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()) + "\n---------------------------------------------\n");
@@ -539,10 +539,10 @@ public class DataGathering {
 		if(writePath != null) {
 			File f = new File(writePath + "/" + RESULTS_FILE);
 			try {
-			RandomAccessFile raf = new RandomAccessFile(f, "rw");
-			raf.seek(raf.length());
-			raf.writeBytes(text + "\n");
-			raf.close();
+				RandomAccessFile raf = new RandomAccessFile(f, "rw");
+				raf.seek(raf.length());
+				raf.writeBytes(text + "\n");
+				raf.close();
 			}
 			catch(Exception e) {
 				e.printStackTrace();

@@ -342,10 +342,9 @@ public class Incremental extends IncrementalMemoryMeasure {
 					}
 				}
 				Random rand = new Random();
-				if(pool.size() == 0) {
-					return null;
+				if(pool.size() != 0) {
+					out = pool.get(rand.nextInt(pool.size()));
 				}
-				out = pool.get(rand.nextInt(pool.size()));
 				break;
 		}
 		
