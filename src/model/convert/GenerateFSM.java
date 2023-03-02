@@ -187,7 +187,8 @@ public class GenerateFSM {
 				}
 				det.add(event);
 				usedEvents.add(event);
-				String line = stateNames.get(state1) + SEPARATOR + eventNames.get(event) + SEPARATOR + stateNames.get(state2);
+				boolean order = rand.nextDouble() < .5;
+				String line = stateNames.get(order ? state1 : state2) + SEPARATOR + eventNames.get(event) + SEPARATOR + stateNames.get(order ? state2 : state1);
 				//TODO: Examine use of sizeTrans here for proportion of transition attributes
 				line += writeAttributes(getRandomValue(rand), numTransPerState.size(), i, transitionAttributes, transitionNumbers, track);
 				out.append(line + "\n");

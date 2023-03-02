@@ -12,7 +12,7 @@ public class RandomGeneration {
 	
 //---  Constant Values   ----------------------------------------------------------------------
 	
-	private static final int TRANSITION_NUMBER_DEFAULT = 2;
+	private static final int TRANSITION_NUMBER_DEFAULT = 3;
 	private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 	
 //---  Static Preparation   -------------------------------------------------------------------

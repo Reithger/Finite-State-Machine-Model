@@ -34,6 +34,8 @@ import test.help.SystemGeneration;
  * Denote when a test batch has fully finished so that incomplete tests are re-done (when memory exception, want to re-do that test fully)
  *  - May want to have it use existing system data to re-attempt? Should know how often they can't be done for a random sample size.
  * 
+ * 2 or 3 max transitions in the random generation? May want to define that differently based on size.
+ * 
  * @author aclevinger
  *
  */
@@ -89,7 +91,7 @@ public class DataGathering {
 		initializeTestFolder(f, "/Test Batch Random Basic 1");
 		testBasicConfigOne(100);
 		initializeTestFolder(f, "/Test Batch Random Basic 2");
-		testBasicConfigTwo(50);
+		testBasicConfigTwo(30);
 		initializeTestFolder(f, "/Test Batch Random Basic 3");
 		testBasicConfigThree(50);
 		initializeTestFolder(f, "/Test Batch Random Basic 4");
@@ -438,9 +440,15 @@ public class DataGathering {
 			
 			if(finished)
 				return;
+			
+			//TODO: Could just have it reset output/raw_num to retain old example for reference?
+			
+			for(String s : f.list()) {
+				g = new File(f.getAbsolutePath() + "/" + s);
+				g.delete();
+			}
 		}
 
-		f.delete();
 		f.mkdir();
 		
 		//System.out.println("This test: " + testName);
