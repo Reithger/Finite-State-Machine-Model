@@ -31,7 +31,7 @@ import test.help.SystemGeneration;
  * 
  * Large single plant and specification examples
  * 
- * Denote when a test batch has fully finished so that incomplete tests are re-done
+ * Denote when a test batch has fully finished so that incomplete tests are re-done (when memory exception, want to re-do that test fully)
  * 
  * @author aclevinger
  *
@@ -81,13 +81,27 @@ public class DataGathering {
 		
 
 		initializeTestFolder(f, "/Test Batch Random Basic 1");
-		testBasicConfigOne(50);
+		testBasicConfigOne(100);
+		initializeTestFolder(f, "/Test Batch Random Basic 2");
+		testBasicConfigTwo(50);
+		initializeTestFolder(f, "/Test Batch Random Basic 3");
+		testBasicConfigThree(50);
+		initializeTestFolder(f, "/Test Batch Random Basic 4");
+		testBasicConfigFour(40);
+		initializeTestFolder(f, "/Test Batch Random Inc 1");
+		testIncConfigOne(100);
+		initializeTestFolder(f, "/Test Batch Random Inc 2");
+		testIncConfigTwo(75);
+		initializeTestFolder(f, "/Test Batch Random Inc 3");
+		testIncConfigThree(50);
 		initializeTestFolder(f, "/Test Batch Random Heuristic 1");
 		testHeuristicConfigOne(200);
+		initializeTestFolder(f, "/Test Batch Random Heuristic 2");
+		testHeuristicConfigTwo(200);
 	}
 	
 	private static void initializeTestFolder(File f, String in) {
-		defaultWritePath = f.getAbsolutePath() + in;
+		defaultWritePath = f.getAbsolutePath() + "/Test Batches/" + in;
 		File g = new File(defaultWritePath);
 		g.mkdir();
 	}
@@ -156,9 +170,175 @@ public class DataGathering {
 		}
 	}
 	
+	private static void testBasicConfigTwo(int count) throws Exception{
+		Incremental.assignIncrementalOptions(0, 1, 1);
+		
+		int numPlants = 3;
+		int numSpecs = 3;
+		
+		int numStates = 4;
+		int numStateVar = 2;
+		int numEvents = 3;
+		int numEventsVar = 2;
+		
+		double eventShareRate = .4;
+		
+		int numControllers = 2;
+		int numControllersVar = 0;
+		double controllerObserveRate = .4;
+		double controllerControlRate = .3;
+		
+		int counter = 0;
+		
+		while(counter < count) {
+			System.out.println("Test Basic Config Two: " + counter);
+			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
+			garbageCollect();
+			counter++;
+		}
+	}
+	
+	private static void testBasicConfigThree(int count) throws Exception{
+		Incremental.assignIncrementalOptions(0, 1, 1);
+		
+		int numPlants = 1;
+		int numSpecs = 1;
+		
+		int numStates = 20;
+		int numStateVar = 4;
+		int numEvents = 7;
+		int numEventsVar = 2;
+		
+		double eventShareRate = .4;
+		
+		int numControllers = 3;
+		int numControllersVar = 0;
+		double controllerObserveRate = .4;
+		double controllerControlRate = .3;
+		
+		int counter = 0;
+		
+		while(counter < count) {
+			System.out.println("Test Basic Config Three: " + counter);
+			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
+			garbageCollect();
+			counter++;
+		}
+	}
+	
+	private static void testBasicConfigFour(int count) throws Exception{
+		Incremental.assignIncrementalOptions(0, 1, 1);
+		
+		int numPlants = 1;
+		int numSpecs = 1;
+		
+		int numStates = 50;
+		int numStateVar = 15;
+		int numEvents = 8;
+		int numEventsVar = 2;
+		
+		double eventShareRate = .4;
+		
+		int numControllers = 5;
+		int numControllersVar = 0;
+		double controllerObserveRate = .4;
+		double controllerControlRate = .3;
+		
+		int counter = 0;
+		
+		while(counter < count) {
+			System.out.println("Test Basic Config Four: " + counter);
+			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
+			garbageCollect();
+			counter++;
+		}
+	}
+	
 	  //- Incremental ---------------------
 	
+	private static void testIncConfigOne(int count) throws Exception{
+		Incremental.assignIncrementalOptions(0, 1, 1);
+		
+		int numPlants = 2;
+		int numSpecs = 2;
+		
+		int numStates = 4;
+		int numStateVar = 2;
+		int numEvents = 3;
+		int numEventsVar = 2;
+		
+		double eventShareRate = .4;
+		
+		int numControllers = 2;
+		int numControllersVar = 0;
+		double controllerObserveRate = .4;
+		double controllerControlRate = .3;
+		
+		int counter = 0;
+		
+		while(counter < count) {
+			System.out.println("Test Inc Config One: " + counter);
+			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
+			garbageCollect();
+			counter++;
+		}
+	}
 	
+	private static void testIncConfigTwo(int count) throws Exception{
+		Incremental.assignIncrementalOptions(0, 1, 1);
+		
+		int numPlants = 3;
+		int numSpecs = 3;
+		
+		int numStates = 4;
+		int numStateVar = 2;
+		int numEvents = 3;
+		int numEventsVar = 2;
+		
+		double eventShareRate = .4;
+		
+		int numControllers = 2;
+		int numControllersVar = 0;
+		double controllerObserveRate = .4;
+		double controllerControlRate = .3;
+		
+		int counter = 0;
+		
+		while(counter < count) {
+			System.out.println("Test Inc Config Two: " + counter);
+			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
+			garbageCollect();
+			counter++;
+		}
+	}
+	
+	private static void testIncConfigThree(int count) throws Exception{
+		Incremental.assignIncrementalOptions(0, 1, 1);
+		
+		int numPlants = 5;
+		int numSpecs = 5;
+		
+		int numStates = 4;
+		int numStateVar = 2;
+		int numEvents = 3;
+		int numEventsVar = 2;
+		
+		double eventShareRate = .4;
+		
+		int numControllers = 3;
+		int numControllersVar = 0;
+		double controllerObserveRate = .4;
+		double controllerControlRate = .3;
+		
+		int counter = 0;
+		
+		while(counter < count) {
+			System.out.println("Test Inc Config Three: " + counter);
+			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
+			garbageCollect();
+			counter++;
+		}
+	}
 	
 	  //- Heuristics ----------------------
 	
@@ -184,6 +364,35 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Heuristic Config One: " + counter);
+			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
+			garbageCollect();
+			counter++;
+			
+		}
+	}
+	
+	private static void testHeuristicConfigTwo(int count) throws Exception{
+		Incremental.assignIncrementalOptions(0, 1, 1);
+		
+		int numPlants = 5;
+		int numSpecs = 5;
+		
+		int numStates = 4;
+		int numStateVar = 2;
+		int numEvents = 3;
+		int numEventsVar = 2;
+		
+		double eventShareRate = .4;
+		
+		int numControllers = 4;
+		int numControllersVar = 0;
+		double controllerObserveRate = .4;
+		double controllerControlRate = .3;
+		
+		int counter = 0;
+		
+		while(counter < count) {
+			System.out.println("Test Heuristic Config Two: " + counter);
 			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
 			garbageCollect();
 			counter++;
