@@ -21,7 +21,7 @@ import test.help.SystemGeneration;
 
 /**
  * 
- * Multithread so can bail on terminal tests
+ * Multithread so can bail on terminal tests; need some mechanism to let me ignore this running for 10 hours
  * 
  * Interface for setting up test configs, # of tests to run, overall data output
  * 
@@ -32,6 +32,7 @@ import test.help.SystemGeneration;
  * Large single plant and specification examples
  * 
  * Denote when a test batch has fully finished so that incomplete tests are re-done (when memory exception, want to re-do that test fully)
+ *  - May want to have it use existing system data to re-attempt? Should know how often they can't be done for a random sample size.
  * 
  * @author aclevinger
  *
@@ -46,6 +47,8 @@ public class DataGathering {
 	private static final String ANALYSIS_FILE = "raw_num.txt";
 	
 	private static final String TEST_NAME = "test";
+	
+	private static final String VERIFY_COMPLETE_TEST = "!!~~Verified Complete and Done!~~!!";
 	
 	private static final int TEST_ALL = 0;
 	private static final int TEST_BASIC = 1;
@@ -71,6 +74,9 @@ public class DataGathering {
 		
 		File f = new File(FiniteStateMachine.ADDRESS_IMAGES);
 		f = f.getParentFile();
+		
+		f = new File(f.getAbsolutePath() + "/TestBatches/");
+		f.mkdir();
 		
 		SystemGeneration.assignManager(model);
 		
@@ -101,7 +107,7 @@ public class DataGathering {
 	}
 	
 	private static void initializeTestFolder(File f, String in) {
-		defaultWritePath = f.getAbsolutePath() + "/Test Batches/" + in;
+		defaultWritePath = f.getAbsolutePath() + in;
 		File g = new File(defaultWritePath);
 		g.mkdir();
 	}
@@ -408,13 +414,35 @@ public class DataGathering {
 		String testName = TEST_NAME + "_" +  count;
 		File f;
 		f = new File(defaultWritePath + "/" + testName);
+
+		writePath = defaultWritePath + "/" + testName;
 		
 		if(f.exists()) {
-			return;
+			System.out.println("Existed");
+			
+			boolean finished = false;
+
+			File g = new File(writePath + "/" + RESULTS_FILE);
+			try {
+				RandomAccessFile raf = new RandomAccessFile(g, "r");
+				String line = raf.readLine();
+				while(line != null && !line.equals(VERIFY_COMPLETE_TEST)) {
+					line = raf.readLine();
+				}
+				raf.close();
+				finished = line != null && line.equals(VERIFY_COMPLETE_TEST);
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+			
+			if(finished)
+				return;
 		}
-		
+
+		f.delete();
 		f.mkdir();
-		writePath = defaultWritePath + "/" + testName;
+		
 		//System.out.println("This test: " + testName);
 		printOut(testName + ", " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()) + "\n---------------------------------------------\n");
 		
@@ -474,7 +502,7 @@ public class DataGathering {
 			default:
 				break;
 		}
-
+		confirmComplete();
 	}
 	
 	private static void autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
@@ -742,6 +770,10 @@ public class DataGathering {
 		return Double.parseDouble(use.substring(0, posit));
 	}
 
+	private static void confirmComplete() {
+		printOut("\n" + VERIFY_COMPLETE_TEST + "\n");
+	}
+	
 	//-- File Output  -----------------------------------------
 	
 	private static void printOut(String text) {
