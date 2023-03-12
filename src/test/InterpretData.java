@@ -2,6 +2,32 @@ package test;
 
 import java.util.ArrayList;
 
+/**
+ * 
+ * 
+ * Run same example 5-10 times and calculate average result for standardized average performance?
+ * 
+ * Deviance over multiple runnings? Make sure standardized over loading-in from memory or generation.
+ *  - Generate all my examples ahead of time, then on a fresh run calculate multiple times.
+ *  - # transitions, state space data as well
+ *  - Report on number of plants, specifications, controllers, unique events
+ * 
+ * Pre-existing examples, just a table with data for # states, # transitions, run each ~5 times for average performance
+ * 
+ * Bar graph, runtime/state-space/memory usage of each example w/ context of plants/specs/controllers
+ * 
+ * Split-bar graph that stacks relative run-times on top of eachother to show relative performance
+ * 
+ * Case-to-case comparison of relative performance between approaches to say general quality of improvement
+ * 
+ * Classify examples by size of state-space for specific data interpretation
+ * 
+ * Split results by when it returns true or false
+ * 
+ * @author SirBo
+ *
+ */
+
 public class InterpretData {
 
 	private ArrayList<ArrayList<Double>> data;
