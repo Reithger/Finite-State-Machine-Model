@@ -68,7 +68,9 @@ public class DecideSBCoobs implements DecideCondition{
 	@Override
 	public boolean decideCondition() {
 		sbStructure = new StateBased(plants, specs, attributes, agents, getPathKnowledge());
-		return sbStructure.isSBCoobservable();
+		boolean out = sbStructure.isSBCoobservable();
+		sbStructure.assignTestResult(out);
+		return out;
 	}
 
 	@Override

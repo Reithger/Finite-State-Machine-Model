@@ -11,6 +11,14 @@ import model.process.coobservability.support.Agent;
 import model.process.coobservability.support.IllegalConfig;
 import model.process.memory.IncrementalMemoryMeasure;
 
+/**
+ * 
+ * TODO: Second-round selection for multiple contenders should be deterministic not random selection
+ * 
+ * @author SirBo
+ *
+ */
+
 public class Incremental extends IncrementalMemoryMeasure {
 	
 //---  Constants   ----------------------------------------------------------------------------

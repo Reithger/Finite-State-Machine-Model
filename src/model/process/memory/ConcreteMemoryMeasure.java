@@ -5,7 +5,12 @@ import java.util.ArrayList;
 import model.fsm.TransitionSystem;
 
 public class ConcreteMemoryMeasure implements MemoryMeasure {
+	
+//---  Constants   ----------------------------------------------------------------------------
 
+	private static final Double TEST_RESULT_TRUE = 1.0;
+	private static final Double TEST_RESULT_FALSE = 0.0;
+	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private long startingMemory;
@@ -13,6 +18,8 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	private ArrayList<Long> spaceUsage;
 	
 	private TransitionSystem hold;
+	
+	private boolean testResult;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -39,6 +46,10 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	@Override
 	public void reserveTransitionSystem(TransitionSystem in) {
 		hold = in;
+	}
+	
+	public void assignTestResult(boolean in) {
+		testResult = in;
 	}
 	
 //---  Getter Methods   -----------------------------------------------------------------------
@@ -73,6 +84,10 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 		return threeSig(inMB(max));
 	}
 	
+	public boolean getTestResult() {
+		return testResult;
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------	
 
 	private static double inMB(long in) {
@@ -94,6 +109,7 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	public ArrayList<String> getOutputGuide() {
 		ArrayList<String> out = new ArrayList<String>();
 		
+		out.add("Test Outcome");
 		out.add("Average Memory Consumption");
 		out.add("Maximum Memory Consumption");
 		
@@ -104,6 +120,7 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	public ArrayList<Double> getStoredData() {
 		ArrayList<Double> out = new ArrayList<Double>();
 		
+		out.add(getTestResult() ? TEST_RESULT_TRUE : TEST_RESULT_FALSE);
 		out.add(getAverageMemoryUsage());
 		out.add(getMaximumMemoryUsage());
 		

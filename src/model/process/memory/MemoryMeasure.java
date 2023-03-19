@@ -10,6 +10,8 @@ public interface MemoryMeasure {
 	
 	public abstract double getMaximumMemoryUsage();
 	
+	public abstract boolean getTestResult();
+	
 	public abstract String produceOutputLog();
 	
 	public abstract ArrayList<String> getOutputGuide();

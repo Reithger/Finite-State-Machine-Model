@@ -103,6 +103,7 @@ public class DecideCoobs implements DecideCondition{
 		//ustruct.reserveTransitionSystem(use);
 		//ustruct.reserveTransitionSystem(ustruct.getUStructure());
 		boolean out = decideResult();
+		ustruct.assignTestResult(out);
 		//if(!out)
 			//System.out.println("--- " + use.getId() + " - Counterexamples: " + getCounterExamples().iterator().next());
 		return out;

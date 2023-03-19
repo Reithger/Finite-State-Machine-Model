@@ -36,6 +36,13 @@ import test.help.SystemGeneration;
  * 
  * 2 or 3 max transitions in the random generation? May want to define that differently based on size.
  * 
+ * 
+ * 
+ * Need to add multithreading, separate class that runs a thread of DataGathering where DataGathering pushes to the multithreader when
+ * a test starts to start a counter; need internal way to pick back up a test and denote a DNF when severing thread/resetting memory.
+ * 
+ * 
+ * 
  * @author aclevinger
  *
  */
@@ -46,7 +53,9 @@ public class DataGathering {
 
 	private static final String RESULTS_FILE = "output.txt";
 	
-	private static final String ANALYSIS_FILE = "raw_num.txt";
+	private static final String ANALYSIS_FILE = "raw_num";
+	
+	private static final String TEXT_EXTENSION = ".txt";
 	
 	private static final String TEST_NAME = "test";
 	
@@ -57,6 +66,15 @@ public class DataGathering {
 	private static final int TEST_INC = 2;
 	private static final int TEST_HEUR = 3;
 	
+	private static final int TYPE_COOBS = 0;
+	private static final int TYPE_SB = 1;
+	private static final int TYPE_INC_COOBS = 2;
+	private static final int TYPE_INC_SB = 3;
+	private static final String ANALYSIS_COOBS = "_coobs";
+	private static final String ANALYSIS_SB = "_sb";
+	private static final String ANALYSIS_INC_COOBS = "_inc_coobs";
+	private static final String ANALYSIS_INC_SB = "_inc_sb";
+	
 //---  Instance Variables   -------------------------------------------------------------------
 	
 	private static Manager model;
@@ -66,6 +84,8 @@ public class DataGathering {
 	private static String defaultWritePath;
 	
 	private static String writePath;
+	
+	private static String analysisSubtype;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -441,7 +461,7 @@ public class DataGathering {
 			if(finished)
 				return;
 			
-			//TODO: Could just have it reset output/raw_num to retain old example for reference?
+			//TODO: Shouldn't make a new example, need to know DNF status of a particular test. Would be better time time-out.
 			
 			for(String s : f.list()) {
 				g = new File(f.getAbsolutePath() + "/" + s);
@@ -678,6 +698,7 @@ public class DataGathering {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		boolean result = inf ? model.isInferenceCoobservableUStruct(plants, specs, eventAtt, agents) : model.isCoobservableUStruct(plants, specs, eventAtt, agents);
+		assignAnalysisSubtype(TYPE_COOBS);
 		handleOutData(t, hold);
 		printOut("\t\t\t\t" + (inf ? "Inferencing " : "" ) + "Coobservable: " + result);
 		garbageCollect();
@@ -694,6 +715,7 @@ public class DataGathering {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		boolean result = model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents);
+		assignAnalysisSubtype(TYPE_SB);
 		handleOutData(t, hold);
 		printOut("\t\t\t\tSB-Coobservable: " + result);
 		garbageCollect();
@@ -710,6 +732,7 @@ public class DataGathering {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		boolean result = inf ? model.isIncrementalInferenceCoobservable(plants, specs, eventAtt, agents) : model.isIncrementalCoobservable(plants, specs, eventAtt, agents);
+		assignAnalysisSubtype(TYPE_INC_COOBS);
 		handleOutData(t, hold);
 		printOut("\t\t\t\tIncremental" + (inf ? " Inference" : "") + " Coobservable: " + result);
 		garbageCollect();
@@ -720,6 +743,7 @@ public class DataGathering {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		boolean result = model.isIncrementalSBCoobservable(plants, specs, eventAtt, agents);
+		assignAnalysisSubtype(TYPE_INC_SB);
 		handleOutData(t, hold);
 		printOut("\t\t\t\tIncremental SB Coobservable: " + result);
 		garbageCollect();
@@ -735,6 +759,25 @@ public class DataGathering {
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
+	
+	private static void assignAnalysisSubtype(int in) {
+		switch(in) {
+			case TYPE_COOBS:
+				analysisSubtype = ANALYSIS_COOBS;
+				break;
+			case TYPE_SB:
+				analysisSubtype = ANALYSIS_SB;
+				break;
+			case TYPE_INC_COOBS:
+				analysisSubtype = ANALYSIS_INC_COOBS;
+				break;
+			case TYPE_INC_SB:
+				analysisSubtype = ANALYSIS_INC_SB;
+				break;
+			default:
+				analysisSubtype = "";
+		}
+	}
 	
 	//-- Data Output Gathering  -------------------------------
 	
@@ -801,7 +844,7 @@ public class DataGathering {
 
 	private static void printEquivalentResults(ArrayList<String> guide, long time, double overallMem, ArrayList<Double> vals) {
 		if(writePath != null) {
-			File f = new File(writePath + "/" + ANALYSIS_FILE);
+			File f = new File(writePath + "/" + ANALYSIS_FILE + analysisSubtype + TEXT_EXTENSION);
 			try {
 			RandomAccessFile raf = new RandomAccessFile(f, "rw");
 			raf.seek(raf.length());
