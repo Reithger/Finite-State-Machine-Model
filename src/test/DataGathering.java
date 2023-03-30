@@ -61,6 +61,10 @@ public class DataGathering {
 	
 	private static final String VERIFY_COMPLETE_TEST = "!!~~Verified Complete and Done!~~!!";
 	
+	private static final String DECLARE_MEMORY_ERROR = "!!~~Possible Memory Exception~~!!";
+	
+	private static final String VERIFY_MEMORY_ERROR = "!!~~Verified Memory Exception~~!!";
+	
 	private static final int TEST_ALL = 0;
 	private static final int TEST_BASIC = 1;
 	private static final int TEST_INC = 2;
@@ -192,7 +196,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Basic Config One: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
 			garbageCollect();
 			counter++;
 		}
@@ -220,7 +224,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Basic Config Two: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
 			garbageCollect();
 			counter++;
 		}
@@ -248,7 +252,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Basic Config Three: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
 			garbageCollect();
 			counter++;
 		}
@@ -276,7 +280,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Basic Config Four: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
 			garbageCollect();
 			counter++;
 		}
@@ -306,7 +310,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Inc Config One: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
 			garbageCollect();
 			counter++;
 		}
@@ -334,7 +338,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Inc Config Two: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
 			garbageCollect();
 			counter++;
 		}
@@ -362,7 +366,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Inc Config Three: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
 			garbageCollect();
 			counter++;
 		}
@@ -392,7 +396,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Heuristic Config One: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
 			garbageCollect();
 			counter++;
 			
@@ -421,7 +425,7 @@ public class DataGathering {
 		
 		while(counter < count) {
 			System.out.println("Test Heuristic Config Two: " + counter);
-			autoTestNewRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
+			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
 			garbageCollect();
 			counter++;
 			
@@ -432,42 +436,85 @@ public class DataGathering {
 	
 //---  System Testing   -----------------------------------------------------------------------
 	
-	private static void autoTestNewRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate, int testChoice) throws Exception {
+	//TODO: Function that lets multithread wrapper tell newest test file to print DECLARE_MEMORY_ERROR and VERIFY_MEMORY_ERROR
+	
+	private static void autoTestRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate, int testChoice) throws Exception {
 		String testName = TEST_NAME + "_" +  count;
 		File f;
 		f = new File(defaultWritePath + "/" + testName);
 
 		writePath = defaultWritePath + "/" + testName;
 		
-		if(f.exists()) {
-			System.out.println("Existed");
-			
-			boolean finished = false;
-
-			File g = new File(writePath + "/" + RESULTS_FILE);
-			try {
-				RandomAccessFile raf = new RandomAccessFile(g, "r");
-				String line = raf.readLine();
-				while(line != null && !line.equals(VERIFY_COMPLETE_TEST)) {
-					line = raf.readLine();
-				}
-				raf.close();
-				finished = line != null && line.equals(VERIFY_COMPLETE_TEST);
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-			
-			if(finished)
-				return;
-			
-			//TODO: Shouldn't make a new example, need to know DNF status of a particular test. Would be better time time-out.
-			
-			for(String s : f.list()) {
-				g = new File(f.getAbsolutePath() + "/" + s);
-				g.delete();
-			}
+		boolean inMem = false;
+		
+		if(!f.exists()) {
+			autoGenerateNewRandomSystem(count, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate, numAgents, numAgentVar, obsRate, ctrRate);
+			inMem = true;
 		}
+		
+		boolean finished = checkForTerm(writePath + "/" + RESULTS_FILE, VERIFY_COMPLETE_TEST);
+
+		if(finished)
+			return;
+		
+		boolean memoryError = checkForTerm(writePath + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR);
+		
+		if(!memoryError && checkForTerm(writePath + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR)) {
+			//TODO: Implies an actual crash ocurred, restart testing fresh delete output.txt
+		}
+		
+		if(!inMem)
+			readInOldSystem(testName);
+
+		ArrayList<String> plants = getPlants(testName);
+		ArrayList<String> specs = getSpecs(testName);
+		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = getAgents(testName);
+		
+		switch(testChoice) {
+			case TEST_ALL:
+				autoTestSystemFull(testName, plants, specs, agents);
+				break;
+			case TEST_BASIC:
+				autoTestSystemCoobsSB(testName, plants, specs, agents, memoryError);
+				break;
+			case TEST_INC:
+				autoTestSystemIncr(testName, plants, specs, agents, memoryError);
+				break;
+			case TEST_HEUR:
+				autoTestHeuristics(testName, plants, specs, agents, memoryError);
+				break;
+			default:
+				break;
+		}
+		confirmComplete();
+		
+	}
+	
+	private static void readInOldSystem(String prefixNom) throws FileNotFoundException {
+		String path = writePath;
+		ArrayList<String> plants = new ArrayList<String>();
+		int counter = 0;	
+		String hold = pullSourceData(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
+		while(hold != null) {
+			plants.add(model.readInFSM(hold));
+			hold = pullSourceData(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
+		}
+
+		ArrayList<String> specs = new ArrayList<String>();
+		counter = 0;
+		hold = pullSourceData(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
+		while(hold != null) {
+			specs.add(model.readInFSM(hold));
+			hold = pullSourceData(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
+		}
+	}
+
+	private static void autoGenerateNewRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate) throws Exception {
+		String testName = TEST_NAME + "_" +  count;
+		File f;
+		f = new File(defaultWritePath + "/" + testName);
+
+		writePath = defaultWritePath + "/" + testName;
 
 		f.mkdir();
 		
@@ -513,24 +560,6 @@ public class DataGathering {
 			}
 			Files.move(new File(FormatConversion.createImgFromFSM(model.generateFSMDot(s), s)).toPath(), new File(writePath + "/" + s + ".png").toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
-		
-		switch(testChoice) {
-			case TEST_ALL:
-				autoTestSystemFull(testName, RandomGeneration.getPlantNames(testName, numPlants), RandomGeneration.getSpecNames(testName, numSpecs), agents);
-				break;
-			case TEST_BASIC:
-				autoTestSystemCoobsSB(testName, RandomGeneration.getPlantNames(testName, numPlants), RandomGeneration.getSpecNames(testName, numSpecs), agents);
-				break;
-			case TEST_INC:
-				autoTestSystemIncr(testName, RandomGeneration.getPlantNames(testName, numPlants), RandomGeneration.getSpecNames(testName, numSpecs), agents);
-				break;
-			case TEST_HEUR:
-				autoTestHeuristics(testName, RandomGeneration.getPlantNames(testName, numPlants), RandomGeneration.getSpecNames(testName, numSpecs), agents);
-				break;
-			default:
-				break;
-		}
-		confirmComplete();
 	}
 	
 	private static void autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
@@ -571,21 +600,24 @@ public class DataGathering {
 		resetModel();
 	}
 	
-	private static void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
-		printCoobsLabel(prefixNom, false);
-		boolean coobs = checkCoobservable(plantNames, specNames, agents, false);
+	private static void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
+		boolean coobs = false;
+		if(!memoryError) {
+			printCoobsLabel(prefixNom, false);
+			coobs = checkCoobservable(plantNames, specNames, agents, false);
+		}
 
 		printSBCoobsLabel(prefixNom);
 		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
 
 		
-		if(coobs && !sbCoobs) {
+		if(!memoryError && (coobs && !sbCoobs)) {
 			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
 		}
 		
 		boolean error = false;
 		
-		if(sbCoobs && !coobs) {
+		if(!memoryError && (sbCoobs && !coobs)) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
 			error = true;
 		}
@@ -595,9 +627,12 @@ public class DataGathering {
 		resetModel();
 	}
 
-	private static void autoTestSystemIncr(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
-		printIncrementalLabel(prefixNom, false);
-		boolean icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
+	private static void autoTestSystemIncr(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
+		boolean icCoobs = false;
+		if(!memoryError) {
+			printIncrementalLabel(prefixNom, false);
+			icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
+		}
 		
 		printSBCoobsLabel(prefixNom);
 		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
@@ -614,7 +649,7 @@ public class DataGathering {
 			printOut("~~~\nError!!! : Incremental SB Algo. did not return same as SB Algo.\n~~~");
 			error = true;
 		}
-		if(sbCoobs && !icCoobs) {
+		if(!memoryError && (sbCoobs && !icCoobs)) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
 			error = true;
 		}
@@ -624,7 +659,7 @@ public class DataGathering {
 		resetModel();
 	}
 	
-	private static void autoTestHeuristics(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
+	private static void autoTestHeuristics(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
 		Boolean expected = null;
 		
 		for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
@@ -632,8 +667,11 @@ public class DataGathering {
 				for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
 					Incremental.assignIncrementalOptions(i, j, k);
 					
-					printIncrementalLabel(prefixNom + " " + i + " " + j + " " + k, false);
-					boolean icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
+					Boolean icCoobs = null;
+					if(!memoryError) {
+						printIncrementalLabel(prefixNom + " " + i + " " + j + " " + k, false);
+						icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
+					}
 					
 					if(expected == null) {
 						expected = icCoobs;
@@ -642,54 +680,17 @@ public class DataGathering {
 					printIncrementalSBLabel(prefixNom + " " + i + " " + j + " " + k);
 					boolean icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
 
-					if(expected != icCoobs || expected != icSbCoobs) {
+					if(expected == null) {
+						expected = icSbCoobs;
+					}
+					
+					if((icCoobs != null && expected != icCoobs) || expected != icSbCoobs) {
 						throw new Exception("Change in Heuristics caused difference result");
-					}
-					
-					boolean error = false;
-					
-					if(icSbCoobs && !icCoobs) {
-						error = true;
-					}
-					if(error) {
-						throw new Exception("Logic Conflict in Data Output");
 					}
 				}
 			}
 		}
 		resetModel();
-	}
-
-	private static void autoTestOldSystem(String prefixNom) throws Exception {
-		String path = defaultWritePath + "/" + prefixNom;
-		ArrayList<String> plants = new ArrayList<String>();
-		int counter = 0;	
-		String hold = pullSourceData(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
-		while(hold != null) {
-			plants.add(model.readInFSM(hold));
-			hold = pullSourceData(path + "/" + prefixNom + "_p_" + counter++ + ".txt");
-		}
-
-		ArrayList<String> specs = new ArrayList<String>();
-		counter = 0;
-		hold = pullSourceData(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
-		while(hold != null) {
-			specs.add(model.readInFSM(hold));
-			hold = pullSourceData(path + "/" + prefixNom + "_s_" + counter++ + ".txt");
-		}
-
-		hold = pullSourceData(path + "/" + prefixNom + "_agents.txt");
-
-		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = model.readInAgents(hold);
-		
-		printOut("Agent Information: \n" + agents.toString().replace("},", "},\n").replaceAll("[\\[\\]]", " "));
-		printOut("\n---------------------------------------------\n");
-
-		hold = writePath;
-		writePath = null;
-		
-		autoTestSystemFull(prefixNom, plants, specs, agents);
-		writePath = hold;
 	}
 
 //---  Coobservability Testing   --------------------------------------------------------------
@@ -881,7 +882,51 @@ public class DataGathering {
 		}
 		return null;
 	}
+
+	private static boolean checkForTerm(String path, String phrase) {
+		File g = new File(path);
+		try {
+			RandomAccessFile raf = new RandomAccessFile(g, "r");
+			String line = raf.readLine();
+			while(line != null && !line.equals(phrase)) {
+				line = raf.readLine();
+			}
+			raf.close();
+			return line != null && line.equals(phrase);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	
+	private static ArrayList<String> getPlants(String prefix) throws Exception{
+		ArrayList<String> plants = new ArrayList<String>();
+		int counter = 0;	
+		String hold = pullSourceData(writePath + "/" + prefix + "_p_" + counter++ + ".txt");
+		while(hold != null) {
+			plants.add(model.readInFSM(hold));
+			hold = pullSourceData(writePath + "/" + prefix + "_p_" + counter++ + ".txt");
+		}
+		return plants;
+	}
+	
+	private static ArrayList<String> getSpecs(String prefix) throws Exception{
+		ArrayList<String> plants = new ArrayList<String>();
+		int counter = 0;	
+		String hold = pullSourceData(writePath + "/" + prefix + "_s_" + counter++ + ".txt");
+		while(hold != null) {
+			plants.add(model.readInFSM(hold));
+			hold = pullSourceData(writePath + "/" + prefix + "_s_" + counter++ + ".txt");
+		}
+		return plants;
+	}
+	
+	private static ArrayList<HashMap<String, ArrayList<Boolean>>> getAgents(String prefix) throws Exception{
+		String hold = pullSourceData(writePath + "/" + prefix + "_agents.txt");
+		return model.readInAgents(hold);
+	}
+
 	//-- Model Management  ------------------------------------
 	
 	private static void garbageCollect() {
