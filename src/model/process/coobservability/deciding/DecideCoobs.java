@@ -91,7 +91,7 @@ public class DecideCoobs implements DecideCondition{
 //---  Operations   ---------------------------------------------------------------------------
 	
 	@Override
-	public boolean decideCondition() {
+	public boolean decideCondition() throws Exception{
 		//System.out.println("--- Deciding Coobservability ---");
 		//System.out.println("--- Using: " + plants + ", " + specs + " ---");
 		TransitionSystem use = specs == null ? plants.get(0) : deriveTruePlant();

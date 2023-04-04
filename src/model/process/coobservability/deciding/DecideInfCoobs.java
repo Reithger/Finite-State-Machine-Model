@@ -24,7 +24,7 @@ public class DecideInfCoobs extends DecideCoobs{
 	}
 	
 	@Override
-	public boolean decideCondition() {
+	public boolean decideCondition() throws Exception{
 		return super.decideCondition() ? true : ustruct.getFilteredIllegalConfigStates().isEmpty();
 	}
 

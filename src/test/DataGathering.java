@@ -51,49 +51,87 @@ public class DataGathering {
 	
 //---  Constants   ----------------------------------------------------------------------------
 
-	private static final String RESULTS_FILE = "output.txt";
+	private final String RESULTS_FILE = "output.txt";
 	
-	private static final String ANALYSIS_FILE = "raw_num";
+	private final String ANALYSIS_FILE = "raw_num";
 	
-	private static final String TEXT_EXTENSION = ".txt";
+	private final String TEXT_EXTENSION = ".txt";
 	
-	private static final String TEST_NAME = "test";
+	private final String TEST_NAME = "test";
 	
-	private static final String VERIFY_COMPLETE_TEST = "!!~~Verified Complete and Done!~~!!";
+	private final String VERIFY_COMPLETE_TEST = "!!~~Verified Complete and Done!~~!!";
 	
-	private static final String DECLARE_MEMORY_ERROR = "!!~~Possible Memory Exception~~!!";
+	private final String DECLARE_MEMORY_ERROR = "!!~~Possible Memory Exception~~!!";
 	
-	private static final String VERIFY_MEMORY_ERROR = "!!~~Verified Memory Exception~~!!";
+	private final String VERIFY_MEMORY_ERROR = "!!~~Verified Memory Exception~~!!";
 	
-	private static final int TEST_ALL = 0;
-	private static final int TEST_BASIC = 1;
-	private static final int TEST_INC = 2;
-	private static final int TEST_HEUR = 3;
+	private final int TEST_ALL = 0;
+	private final int TEST_BASIC = 1;
+	private final int TEST_INC = 2;
+	private final int TEST_HEUR = 3;
 	
-	private static final int TYPE_COOBS = 0;
-	private static final int TYPE_SB = 1;
-	private static final int TYPE_INC_COOBS = 2;
-	private static final int TYPE_INC_SB = 3;
-	private static final String ANALYSIS_COOBS = "_coobs";
-	private static final String ANALYSIS_SB = "_sb";
-	private static final String ANALYSIS_INC_COOBS = "_inc_coobs";
-	private static final String ANALYSIS_INC_SB = "_inc_sb";
+	private final int TYPE_COOBS = 0;
+	private final int TYPE_SB = 1;
+	private final int TYPE_INC_COOBS = 2;
+	private final int TYPE_INC_SB = 3;
+	private final String ANALYSIS_COOBS = "_coobs";
+	private final String ANALYSIS_SB = "_sb";
+	private final String ANALYSIS_INC_COOBS = "_inc_coobs";
+	private final String ANALYSIS_INC_SB = "_inc_sb";
+	
+	private final String[] TEST_NAMES = new String[] {"/Test Batch Random Basic 1",
+															 "/Test Batch Random Basic 2",
+															 "/Test Batch Random Basic 3",
+															 "/Test Batch Random Basic 4",
+															 "/Test Batch Random Inc 1",
+															 "/Test Batch Random Inc 2",
+															 "/Test Batch Random Inc 3",
+															 "/Test Batch Random Heuristic 1",
+															 "/Test Batch Random Heuristic 2"};
+	private final int[] TEST_SIZES = new int[] {100,
+													   30,
+													   50,
+													   40,
+													   100,
+													   75,
+													   50,
+													   200,
+													   200};
+	
+	private boolean finished;
+	
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	
-	private static Manager model;
+	private Manager model;
 	
-	private static ArrayList<String> eventAtt;
+	private ArrayList<String> eventAtt;
 	
-	private static String defaultWritePath;
+	private String defaultWritePath;
 	
-	private static String writePath;
+	private String writePath;
 	
-	private static String analysisSubtype;
+	private String analysisSubtype;
+	
+	private TestReset clock;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public static void main(String[] args) throws Exception{
+	public DataGathering(TestReset inClock) {
+		clock = inClock;
+	}
+
+	public void allInOneRunTests() throws Exception{
+		finished = false;
+		runTests(initializeDataGathering());
+		finished = true;
+	}
+	
+	public boolean getFinished() {
+		return finished;
+	}
+	
+	public File initializeDataGathering() {
 		FormatConversion.assignPaths(FiniteStateMachine.ADDRESS_IMAGES, FiniteStateMachine.ADDRESS_CONFIG);
 		FiniteStateMachine.fileConfiguration();
 		model = new Manager();
@@ -111,28 +149,33 @@ public class DataGathering {
 			eventAtt.add(s);
 		}
 		
-
-		initializeTestFolder(f, "/Test Batch Random Basic 1");
-		testBasicConfigOne(100);
-		initializeTestFolder(f, "/Test Batch Random Basic 2");
-		testBasicConfigTwo(30);
-		initializeTestFolder(f, "/Test Batch Random Basic 3");
-		testBasicConfigThree(50);
-		initializeTestFolder(f, "/Test Batch Random Basic 4");
-		testBasicConfigFour(40);
-		initializeTestFolder(f, "/Test Batch Random Inc 1");
-		testIncConfigOne(100);
-		initializeTestFolder(f, "/Test Batch Random Inc 2");
-		testIncConfigTwo(75);
-		initializeTestFolder(f, "/Test Batch Random Inc 3");
-		testIncConfigThree(50);
-		initializeTestFolder(f, "/Test Batch Random Heuristic 1");
-		testHeuristicConfigOne(200);
-		initializeTestFolder(f, "/Test Batch Random Heuristic 2");
-		testHeuristicConfigTwo(200);
+		defaultWritePath = f.getAbsolutePath();
+		
+		return f;
 	}
 	
-	private static void initializeTestFolder(File f, String in) {
+	public void runTests(File f) throws Exception{
+		initializeTestFolder(f, TEST_NAMES[0]);
+		testBasicConfigOne(TEST_SIZES[0]);
+		initializeTestFolder(f, TEST_NAMES[1]);
+		testBasicConfigTwo(TEST_SIZES[1]);
+		initializeTestFolder(f, TEST_NAMES[2]);
+		testBasicConfigThree(TEST_SIZES[2]);
+		initializeTestFolder(f, TEST_NAMES[3]);
+		testBasicConfigFour(TEST_SIZES[3]);
+		initializeTestFolder(f, TEST_NAMES[4]);
+		testIncConfigOne(TEST_SIZES[4]);
+		initializeTestFolder(f, TEST_NAMES[5]);
+		testIncConfigTwo(TEST_SIZES[5]);
+		initializeTestFolder(f, TEST_NAMES[6]);
+		testIncConfigThree(TEST_SIZES[6]);
+		initializeTestFolder(f, TEST_NAMES[7]);
+		testHeuristicConfigOne(TEST_SIZES[7]);
+		initializeTestFolder(f, TEST_NAMES[8]);
+		testHeuristicConfigTwo(TEST_SIZES[8]);
+	}
+	
+	private void initializeTestFolder(File f, String in) {
 		defaultWritePath = f.getAbsolutePath() + in;
 		File g = new File(defaultWritePath);
 		g.mkdir();
@@ -142,7 +185,7 @@ public class DataGathering {
 	
 	//-- Test Data Interpretation  ----------------------------
 	
-	private static void interpretTestBatchData(String path) {
+	private void interpretTestBatchData(String path) {
 		int counter = 0;
 		/*
 		 * Need to know total number of tests ahead of time
@@ -174,7 +217,7 @@ public class DataGathering {
 	
 	  //- Basic ---------------------------
 	  
-	private static void testBasicConfigOne(int count) throws Exception{
+	private void testBasicConfigOne(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 2;
@@ -202,7 +245,7 @@ public class DataGathering {
 		}
 	}
 	
-	private static void testBasicConfigTwo(int count) throws Exception{
+	private void testBasicConfigTwo(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 3;
@@ -230,7 +273,7 @@ public class DataGathering {
 		}
 	}
 	
-	private static void testBasicConfigThree(int count) throws Exception{
+	private void testBasicConfigThree(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 1;
@@ -258,7 +301,7 @@ public class DataGathering {
 		}
 	}
 	
-	private static void testBasicConfigFour(int count) throws Exception{
+	private void testBasicConfigFour(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 1;
@@ -288,7 +331,7 @@ public class DataGathering {
 	
 	  //- Incremental ---------------------
 	
-	private static void testIncConfigOne(int count) throws Exception{
+	private void testIncConfigOne(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 2;
@@ -316,7 +359,7 @@ public class DataGathering {
 		}
 	}
 	
-	private static void testIncConfigTwo(int count) throws Exception{
+	private void testIncConfigTwo(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 3;
@@ -344,7 +387,7 @@ public class DataGathering {
 		}
 	}
 	
-	private static void testIncConfigThree(int count) throws Exception{
+	private void testIncConfigThree(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 5;
@@ -374,7 +417,7 @@ public class DataGathering {
 	
 	  //- Heuristics ----------------------
 	
-	private static void testHeuristicConfigOne(int count) throws Exception{
+	private void testHeuristicConfigOne(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 2;
@@ -403,7 +446,7 @@ public class DataGathering {
 		}
 	}
 	
-	private static void testHeuristicConfigTwo(int count) throws Exception{
+	private void testHeuristicConfigTwo(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
 		int numPlants = 5;
@@ -438,13 +481,34 @@ public class DataGathering {
 	
 	//TODO: Function that lets multithread wrapper tell newest test file to print DECLARE_MEMORY_ERROR and VERIFY_MEMORY_ERROR
 	
-	private static void autoTestRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate, int testChoice) throws Exception {
+	public void markTestUnfinished() {
+		if(checkTestDeclaredMemoryError(writePath) && !checkTestVerifiedMemoryError(writePath)) {
+			printOut(VERIFY_MEMORY_ERROR);
+		}
+		else{
+			printOut(DECLARE_MEMORY_ERROR);
+		}
+	}
+	
+	private boolean checkTestVerifiedComplete(String path) {
+		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_TEST);
+	}
+	
+	private boolean checkTestDeclaredMemoryError(String path) {
+		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR);
+	}
+	
+	private boolean checkTestVerifiedMemoryError(String path) {
+		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR);
+	}
+	
+	private void autoTestRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate, int testChoice) throws Exception {
 		String testName = TEST_NAME + "_" +  count;
 		File f;
 		f = new File(defaultWritePath + "/" + testName);
 
 		writePath = defaultWritePath + "/" + testName;
-		
+
 		boolean inMem = false;
 		
 		if(!f.exists()) {
@@ -452,17 +516,13 @@ public class DataGathering {
 			inMem = true;
 		}
 		
-		boolean finished = checkForTerm(writePath + "/" + RESULTS_FILE, VERIFY_COMPLETE_TEST);
+		boolean finished = checkTestVerifiedComplete(writePath);
 
 		if(finished)
 			return;
 		
-		boolean memoryError = checkForTerm(writePath + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR);
-		
-		if(!memoryError && checkForTerm(writePath + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR)) {
-			//TODO: Implies an actual crash ocurred, restart testing fresh delete output.txt
-		}
-		
+		boolean memoryError = checkTestVerifiedMemoryError(writePath);
+
 		if(!inMem)
 			readInOldSystem(testName);
 
@@ -490,7 +550,7 @@ public class DataGathering {
 		
 	}
 	
-	private static void readInOldSystem(String prefixNom) throws FileNotFoundException {
+	private void readInOldSystem(String prefixNom) throws FileNotFoundException {
 		String path = writePath;
 		ArrayList<String> plants = new ArrayList<String>();
 		int counter = 0;	
@@ -509,7 +569,7 @@ public class DataGathering {
 		}
 	}
 
-	private static void autoGenerateNewRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate) throws Exception {
+	private void autoGenerateNewRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate) throws Exception {
 		String testName = TEST_NAME + "_" +  count;
 		File f;
 		f = new File(defaultWritePath + "/" + testName);
@@ -562,7 +622,7 @@ public class DataGathering {
 		}
 	}
 	
-	private static void autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
+	private void autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		printCoobsLabel(prefixNom, false);
 		boolean coobs = checkCoobservable(plantNames, specNames, agents, false);
 
@@ -600,7 +660,7 @@ public class DataGathering {
 		resetModel();
 	}
 	
-	private static void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
+	private void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
 		boolean coobs = false;
 		if(!memoryError) {
 			printCoobsLabel(prefixNom, false);
@@ -627,7 +687,7 @@ public class DataGathering {
 		resetModel();
 	}
 
-	private static void autoTestSystemIncr(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
+	private void autoTestSystemIncr(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
 		boolean icCoobs = false;
 		if(!memoryError) {
 			printIncrementalLabel(prefixNom, false);
@@ -659,7 +719,7 @@ public class DataGathering {
 		resetModel();
 	}
 	
-	private static void autoTestHeuristics(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
+	private void autoTestHeuristics(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
 		Boolean expected = null;
 		
 		for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
@@ -695,7 +755,7 @@ public class DataGathering {
 
 //---  Coobservability Testing   --------------------------------------------------------------
 
-	private static boolean checkCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf) {
+	private boolean checkCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf)throws Exception {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		boolean result = inf ? model.isInferenceCoobservableUStruct(plants, specs, eventAtt, agents) : model.isCoobservableUStruct(plants, specs, eventAtt, agents);
@@ -706,13 +766,13 @@ public class DataGathering {
 		return result;
 	}
 
-	private static void printCoobsLabel(String system, boolean type) {
+	private void printCoobsLabel(String system, boolean type) {
 		printOut(system + " " + (type ? "Inference Coobservability:" : "Coobservability:") + " \t");
 	}
 	
 //---  SB Coobservability Testing   -----------------------------------------------------------
 
-	private static boolean checkSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	private boolean checkSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		boolean result = model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents);
@@ -723,13 +783,13 @@ public class DataGathering {
 		return result;
 	}
 
-	private static void printSBCoobsLabel(String system) {
+	private void printSBCoobsLabel(String system) {
 		printOut(system + " SB Coobservability: \t");
 	}
 
 //---  Incremental Testing   ------------------------------------------------------------------
 	
-	private static boolean checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf) {
+	private boolean checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf) throws Exception{
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		boolean result = inf ? model.isIncrementalInferenceCoobservable(plants, specs, eventAtt, agents) : model.isIncrementalCoobservable(plants, specs, eventAtt, agents);
@@ -740,7 +800,7 @@ public class DataGathering {
 		return result;
 	}
 
-	private static boolean checkIncrementalSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	private boolean checkIncrementalSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		boolean result = model.isIncrementalSBCoobservable(plants, specs, eventAtt, agents);
@@ -751,17 +811,17 @@ public class DataGathering {
 		return result;
 	}
 	
-	private static void printIncrementalLabel(String system, boolean inf) {
+	private void printIncrementalLabel(String system, boolean inf) {
 		printOut(system + " Incremental" + (inf ? " Inference" : "") + " Coobservability: \t");
 	}
 
-	private static void printIncrementalSBLabel(String system) {
+	private void printIncrementalSBLabel(String system) {
 		printOut(system + " Incremental SB Coobservability: \t");
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
 	
-	private static void assignAnalysisSubtype(int in) {
+	private void assignAnalysisSubtype(int in) {
 		switch(in) {
 			case TYPE_COOBS:
 				analysisSubtype = ANALYSIS_COOBS;
@@ -782,7 +842,7 @@ public class DataGathering {
 	
 	//-- Data Output Gathering  -------------------------------
 	
-	private static void handleOutData(long t, long hold) {
+	private void handleOutData(long t, long hold) {
 		printOut(model.getLastProcessData().produceOutputLog());
 		long res = (System.currentTimeMillis() - t);
 		printTimeTook(res);
@@ -798,37 +858,38 @@ public class DataGathering {
 		printEquivalentResults(use, res, val, data);
 	}
 
-	private static void printTimeTook(long t) {
+	private void printTimeTook(long t) {
 		printOut("\t\t\t\tTook " + t + " ms");
 	}
 	
-	private static void printMemoryUsage(double reduction) {
+	private void printMemoryUsage(double reduction) {
 		printOut("\t\t\t\tUsing " + threeSig(reduction) + " Mb");
 		garbageCollect();
 	}
 	
-	private static long getCurrentMemoryUsage() {
+	private long getCurrentMemoryUsage() {
 		Runtime r = Runtime.getRuntime();
 		return ((r.totalMemory() - r.freeMemory()));
 	}
 	
-	private static double inMB(long in) {
+	private double inMB(long in) {
 		return (double)in / 1000000;
 	}
 	
-	private static Double threeSig(double in) {
+	private Double threeSig(double in) {
 		String use = in+"0000";
 		int posit = use.indexOf(".") + 4;
 		return Double.parseDouble(use.substring(0, posit));
 	}
 
-	private static void confirmComplete() {
+	private void confirmComplete() {
 		printOut("\n" + VERIFY_COMPLETE_TEST + "\n");
+		clock.resetClock();
 	}
 	
 	//-- File Output  -----------------------------------------
 	
-	private static void printOut(String text) {
+	private void printOut(String text) {
 		if(writePath != null) {
 			File f = new File(writePath + "/" + RESULTS_FILE);
 			try {
@@ -843,7 +904,7 @@ public class DataGathering {
 		}
 	}
 
-	private static void printEquivalentResults(ArrayList<String> guide, long time, double overallMem, ArrayList<Double> vals) {
+	private void printEquivalentResults(ArrayList<String> guide, long time, double overallMem, ArrayList<Double> vals) {
 		if(writePath != null) {
 			File f = new File(writePath + "/" + ANALYSIS_FILE + analysisSubtype + TEXT_EXTENSION);
 			try {
@@ -869,7 +930,7 @@ public class DataGathering {
 
 	//-- Data Input  ------------------------------------------
 	
-	private static String pullSourceData(String path) throws FileNotFoundException {
+	private String pullSourceData(String path) throws FileNotFoundException {
 		File f = new File(path);
 		if(f.exists()) {
 			StringBuilder sb = new StringBuilder();
@@ -883,7 +944,7 @@ public class DataGathering {
 		return null;
 	}
 
-	private static boolean checkForTerm(String path, String phrase) {
+	private boolean checkForTerm(String path, String phrase) {
 		File g = new File(path);
 		try {
 			RandomAccessFile raf = new RandomAccessFile(g, "r");
@@ -900,7 +961,7 @@ public class DataGathering {
 		return false;
 	}
 	
-	private static ArrayList<String> getPlants(String prefix) throws Exception{
+	private ArrayList<String> getPlants(String prefix) throws Exception{
 		ArrayList<String> plants = new ArrayList<String>();
 		int counter = 0;	
 		String hold = pullSourceData(writePath + "/" + prefix + "_p_" + counter++ + ".txt");
@@ -911,7 +972,7 @@ public class DataGathering {
 		return plants;
 	}
 	
-	private static ArrayList<String> getSpecs(String prefix) throws Exception{
+	private ArrayList<String> getSpecs(String prefix) throws Exception{
 		ArrayList<String> plants = new ArrayList<String>();
 		int counter = 0;	
 		String hold = pullSourceData(writePath + "/" + prefix + "_s_" + counter++ + ".txt");
@@ -922,19 +983,19 @@ public class DataGathering {
 		return plants;
 	}
 	
-	private static ArrayList<HashMap<String, ArrayList<Boolean>>> getAgents(String prefix) throws Exception{
+	private ArrayList<HashMap<String, ArrayList<Boolean>>> getAgents(String prefix) throws Exception{
 		String hold = pullSourceData(writePath + "/" + prefix + "_agents.txt");
 		return model.readInAgents(hold);
 	}
 
 	//-- Model Management  ------------------------------------
 	
-	private static void garbageCollect() {
+	private void garbageCollect() {
 		System.gc();
 		Runtime.getRuntime().gc();
 	}
 	
-	private static void resetModel() {
+	private void resetModel() {
 		model.flushFSMs();
 		garbageCollect();
 	}

@@ -25,7 +25,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public StateBased(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agents, boolean pathTrack) {
+	public StateBased(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agents, boolean pathTrack) throws Exception{
 		super();
 		disable = new HashMap<String, HashSet<StateSet>>();
 		enable = new HashMap<String, HashSet<StateSet>>();
@@ -53,7 +53,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 		return true;
 	}
 	
-	private void operate(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agen) {
+	private void operate(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<Agent> agen) throws Exception{
 		HashSet<String> eventNamesHold = new HashSet<String>();
 		HashSet<String> controllable = new HashSet<String>();
 		
@@ -196,7 +196,7 @@ public class StateBased extends ConcreteMemoryMeasure {
 	 * 
 	 */
 
-	private HashMap<String, HashSet<StateSet>> observerConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont, HashSet<String> controllable){
+	private HashMap<String, HashSet<StateSet>> observerConstructHiding(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, HashMap<String, HashSet<StateSet>> enable, HashMap<String, HashSet<StateSet>> disable, ArrayList<String> agentObs, ArrayList<String> agentCont, HashSet<String> controllable) throws Exception{
 		HashMap<String, HashSet<StateSet>> out = new HashMap<String, HashSet<StateSet>>();
 		
 		for(String c : controllable) {

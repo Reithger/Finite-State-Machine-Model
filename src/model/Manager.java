@@ -279,7 +279,7 @@ public class Manager implements ReceiveMemoryMeasure{
 	
 	//-- CoObservability  -------------------------------------
 	
-	public String buildUStructure(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public String buildUStructure(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		if(bail(ref)) {
 			return null;
 		}
@@ -292,7 +292,7 @@ public class Manager implements ReceiveMemoryMeasure{
 		return tS.getId();
 	}
 	
-	public String buildUStructure(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public String buildUStructure(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents)throws Exception {
 		if(bail(plants) || bail(specs)) {
 			return null;
 		}
@@ -312,7 +312,7 @@ public class Manager implements ReceiveMemoryMeasure{
 		return tS.getId();
 	}
 	
-	public ArrayList<String> buildUStructureCrush(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents){
+	public ArrayList<String> buildUStructureCrush(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents)throws Exception{
 		if(bail(ref)) {
 			return null;
 		}
@@ -329,14 +329,14 @@ public class Manager implements ReceiveMemoryMeasure{
 		return out;
 	}
 	
-	public Boolean isCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		if(bail(ref)) {
 			return null;
 		}
 		return ProcessDES.isCoobservableUStruct(fsms.get(ref), attr, agents);
 	}
 	
-	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		if(bail(plants) || bail(specs)) {
 			return null;
 		}
@@ -351,14 +351,14 @@ public class Manager implements ReceiveMemoryMeasure{
 		return ProcessDES.isCoobservableUStruct(usePl, useSp, attr, agents);
 	}
 	
-	public Boolean isInferenceCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isInferenceCoobservableUStruct(String ref, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		if(bail(ref)) {
 			return null;
 		}
 		return ProcessDES.isInferenceCoobservableUStruct(fsms.get(ref), attr, agents);
 	}
 
-	public Boolean isInferenceCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isInferenceCoobservableUStruct(ArrayList<String> plants, ArrayList<String> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents)throws Exception {
 		if(bail(plants) || bail(specs)) {
 			return null;
 		}
@@ -373,7 +373,7 @@ public class Manager implements ReceiveMemoryMeasure{
 		return ProcessDES.isInferenceCoobservableUStruct(usePl, useSp, attr, agents);
 	}
 
-	public Boolean isSBCoobservableUrvashi(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isSBCoobservableUrvashi(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents)throws Exception {
 		if(bail(refPlants) || bail(refSpecs)) {
 			return null;
 		}
@@ -388,7 +388,7 @@ public class Manager implements ReceiveMemoryMeasure{
 		return ProcessDES.isSBCoobservableUrvashi(plants, specs, attr, agents);
 	}
 	
-	public Boolean isIncrementalCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isIncrementalCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		if(bail(refPlants) || bail(refSpecs)) {
 			return null;
 		}
@@ -403,7 +403,7 @@ public class Manager implements ReceiveMemoryMeasure{
 		return ProcessDES.isIncrementalCoobservable(plants, specs, attr, agents);
 	}
 	
-	public Boolean isIncrementalInferenceCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isIncrementalInferenceCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents)throws Exception {
 		if(bail(refPlants) || bail(refSpecs)) {
 			return null;
 		}
@@ -418,7 +418,7 @@ public class Manager implements ReceiveMemoryMeasure{
 		return ProcessDES.isIncrementalInferenceCoobservable(plants, specs, attr, agents);
 	}
 	
-	public Boolean isIncrementalSBCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) {
+	public Boolean isIncrementalSBCoobservable(ArrayList<String> refPlants, ArrayList<String> refSpecs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		if(bail(refPlants) || bail(refSpecs)) {
 			return null;
 		}

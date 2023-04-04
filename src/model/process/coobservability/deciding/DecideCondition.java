@@ -10,7 +10,7 @@ import model.process.memory.MemoryMeasure;
 
 public interface DecideCondition {
 	
-	public abstract boolean decideCondition();
+	public abstract boolean decideCondition() throws Exception;
 	
 	public abstract DecideCondition constructDeciderCoobs(ArrayList<String> events, TransitionSystem specStart, ArrayList<String> attr, ArrayList<Agent> agents);
 	

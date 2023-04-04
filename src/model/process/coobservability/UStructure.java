@@ -41,7 +41,7 @@ public class UStructure extends UStructMemoryMeasure{
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
-	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) {
+	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) throws Exception{
 		super();
 		HashMap<String, HashSet<String>> badTransitions = initializeBadTransitions(thePlant);
 		agents = initializeAgents(thePlant, attr, theAgents);
@@ -103,7 +103,7 @@ public class UStructure extends UStructMemoryMeasure{
 	
 //---  Operations   ---------------------------------------------------------------------------
 
-	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) {
+	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) throws Exception{
 		uStructure = initializeUStructure(plant);
 		uStructure.setId("U-Struct - " + plant.getId());
 		
@@ -257,7 +257,7 @@ public class UStructure extends UStructMemoryMeasure{
 		return out;
 	}
 
-	private void calculateCrush(boolean display) {
+	private void calculateCrush(boolean display) throws Exception{
 		//TODO: For actual calculation, we ignore the plant crush map, so need a way to reduce work when wanting result but have it available when wanting the print out
 		for(int i = display ? 0 : 1; i < agents.length; i++) {
 			Agent age = agents[i];
@@ -330,7 +330,7 @@ public class UStructure extends UStructMemoryMeasure{
 	
 //---  Getter Methods   -----------------------------------------------------------------------
 
-	public HashSet<IllegalConfig> getFilteredIllegalConfigStates(){
+	public HashSet<IllegalConfig> getFilteredIllegalConfigStates() throws Exception{
 		calculateCrush(false);
 		HashSet<IllegalConfig> typeOne = new HashSet<IllegalConfig>();
 		typeOne.addAll(getIllegalConfigOneStates());
@@ -352,7 +352,7 @@ public class UStructure extends UStructMemoryMeasure{
 		return uStructure;
 	}
 	
-	public ArrayList<TransitionSystem> getCrushUStructures(){
+	public ArrayList<TransitionSystem> getCrushUStructures() throws Exception{
 		ArrayList<TransitionSystem> out = new ArrayList<TransitionSystem>();
 
 		calculateCrush(true);
@@ -379,7 +379,7 @@ public class UStructure extends UStructMemoryMeasure{
 		return goodBadStates;
 	}
 	
-	public CrushMap[] getCrushMappings() {
+	public CrushMap[] getCrushMappings() throws Exception{
 		calculateCrush(true);
 		return crushMap;
 	}

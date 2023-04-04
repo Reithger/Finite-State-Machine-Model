@@ -170,24 +170,27 @@ public class GenerateFSM {
 			numTransPerState.add(rand.nextInt(sizeTrans) + 1);
 		}
 		HashSet<Integer> usedEvents = new HashSet<Integer>();
+		HashMap<Integer, HashSet<Integer>> detMap = new HashMap<Integer, HashSet<Integer>>();
+		for(int i = 0; i < sizeStates; i++) {
+			detMap.put(i, new HashSet<Integer>());
+		}
 		for(int i = 0; i < sizeStates; i++) {
 			int numTr = numTransPerState.get(i);
-			HashSet<Integer> det = new HashSet<Integer>();
 			for(int j = 0; j < numTr; j++) {
 				int state1 = i;
 				int state2 = rand.nextInt(sizeStates);
 				int event = rand.nextInt(sizeEvents);
 				int count = 0;
-				while(isDet && det.contains(event) && det.size() < sizeEvents && count < (10 * sizeEvents)) {
+				boolean order = rand.nextDouble() < .5;
+				while(isDet && detMap.get(order ? state1 : state2).contains(event) && detMap.get(order ? state1 : state2).size() < sizeEvents && count < (10 * sizeEvents)) {
 					event = rand.nextInt(sizeEvents);
 					count++;
 				}
-				if(isDet && det.contains(event)) {
+				if(isDet && detMap.get(order ? state1 : state2).contains(event)) {
 					continue;
 				}
-				det.add(event);
+				detMap.get(order ? state1 : state2).add(event);
 				usedEvents.add(event);
-				boolean order = rand.nextDouble() < .5;
 				String line = stateNames.get(order ? state1 : state2) + SEPARATOR + eventNames.get(event) + SEPARATOR + stateNames.get(order ? state2 : state1);
 				//TODO: Examine use of sizeTrans here for proportion of transition attributes
 				line += writeAttributes(getRandomValue(rand), numTransPerState.size(), i, transitionAttributes, transitionNumbers, track);
