@@ -25,11 +25,13 @@ public class DataGatheringManager implements TestReset{
 			while(!check) {
 				
 			}
-			thread.cancel();
-			
-			data.markTestUnfinished();
-			System.gc();
-			Runtime.getRuntime().gc();
+			if(!data.getFinished()) {
+				thread.cancel();
+				
+				data.markTestUnfinished();
+				System.gc();
+				Runtime.getRuntime().gc();
+			}
 		}
 	}
 	

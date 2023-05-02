@@ -1,6 +1,7 @@
 package test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * 
@@ -39,53 +40,47 @@ public class InterpretData {
 	public void addDataRow(String[] inData) {
 		ArrayList<Double> hold = new ArrayList<Double>();
 		for(String s : inData) {
-			hold.add(Double.parseDouble(s));
+			if(!s.equals(""))
+				hold.add(Double.parseDouble(s));
 		}
+		System.out.println("Data: " + hold);
 		data.add(hold);
 	}
 	
 	public ArrayList<Double> calculateAverages() {
 		ArrayList<Double> out = new ArrayList<Double>();
-		for(ArrayList<Double> column : data) {
-			Double hold = 0.0;
+		for(int i = 0; i < data.get(0).size(); i++) {
+			double total = 0.0;
+			ArrayList<Double> column = pullColumn(i);
 			for(Double d : column) {
-				hold += d;
+				total += d;
 			}
-			hold /= column.size();
-			out.add(hold);
+			total /= column.size();
+			out.add(total);
 		}
 		return out;
 	}
 	
 	public ArrayList<Double> calculateMinimums(){
 		ArrayList<Double> out = new ArrayList<Double>();
-		for(ArrayList<Double> column : data) {
-			Double hold = null;
-			for(Double d : column) {
-				if(hold == null || d < hold)
-					hold = d;
-			}
-			out.add(hold);
+		for(int i = 0; i < data.get(0).size(); i++) {
+			out.add(pullColumn(i).get(0));
 		}
 		return out;
 	}
 	
 	public ArrayList<Double> calculateMaximums(){
 		ArrayList<Double> out = new ArrayList<Double>();
-		for(ArrayList<Double> column : data) {
-			Double hold = null;
-			for(Double d : column) {
-				if(hold == null || d > hold)
-					hold = d;
-			}
-			out.add(hold);
+		for(int i = 0; i < data.get(0).size(); i++) {
+			out.add(pullColumn(i).get(pullColumn(i).size() - 1));
 		}
 		return out;
 	}
 	
-	public ArrayList<Double> calculateMedian(){
+	public ArrayList<Double> calculateMedians(){
 		ArrayList<Double> out = new ArrayList<Double>();
-		for(ArrayList<Double> column : data) {
+		for(int i = 0; i < data.get(0).size(); i++) {
+			ArrayList<Double> column = pullColumn(i);
 			if(column.size() % 2 == 0) {
 				out.add((column.get(column.size() / 2) + column.get(column.size() / 2 - 1)) / 2);
 			}
@@ -98,7 +93,8 @@ public class InterpretData {
 	
 	public ArrayList<Double> calculateFirstQuartile(){
 		ArrayList<Double> out = new ArrayList<Double>();
-		for(ArrayList<Double> column : data) {
+		for(int i = 0; i < data.get(0).size(); i++) {
+			ArrayList<Double> column = pullColumn(i);
 			if((column.size() / 2) % 2 == 0){
 				out.add((column.get(column.size() / 4) + (column.get(column.size() / 4 + 1) / 2)));
 			}
@@ -116,7 +112,8 @@ public class InterpretData {
 	
 	public ArrayList<Double> calculateThirdQuartile(){
 		ArrayList<Double> out = new ArrayList<Double>();
-		for(ArrayList<Double> column : data) {
+		for(int i = 0; i < data.get(0).size(); i++) {
+			ArrayList<Double> column = pullColumn(i);
 			if((column.size() - column.size() / 2) % 2 == 0) {
 				out.add((column.get(column.size() * 3 / 4) + column.get(column.size() * 3 / 4 + 1)) / 2);
 			}
@@ -134,6 +131,18 @@ public class InterpretData {
 		for(int i = 0; i < third.size(); i++) {
 			out.add(third.get(i) - first.get(i));
 		}
+		return out;
+	}
+	
+	private ArrayList<Double> pullColumn(int column){
+		ArrayList<Double> out = new ArrayList<Double>();
+		for(int i = 0; i < data.size(); i++) {
+			if(data.get(i).size() > column) {
+				Double val = data.get(i).get(column);
+				out.add(val);
+			}
+		}
+		Collections.sort(out);
 		return out;
 	}
 	

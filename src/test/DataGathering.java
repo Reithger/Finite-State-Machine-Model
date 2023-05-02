@@ -32,6 +32,8 @@ import test.help.SystemGeneration;
  * 
  * Need proper memory failure handling in heuristic tests
  * 
+ * MemoryMeasure should probably be a HashMap instead of synchronized lists; when writing to file map each key to an index to associate value properly; use dummy value to denote it's missing
+ * 
  * 
  * @author aclevinger
  *
@@ -145,24 +147,49 @@ public class DataGathering {
 	}
 	
 	public void runTests(File f) throws Exception{
-		initializeTestFolder(f, TEST_NAMES[0]);
-		testBasicConfigOne(TEST_SIZES[0]);
-		initializeTestFolder(f, TEST_NAMES[1]);
-		testBasicConfigTwo(TEST_SIZES[1]);
-		initializeTestFolder(f, TEST_NAMES[2]);
-		testBasicConfigThree(TEST_SIZES[2]);
-		initializeTestFolder(f, TEST_NAMES[3]);
-		testBasicConfigFour(TEST_SIZES[3]);
-		initializeTestFolder(f, TEST_NAMES[4]);
-		testIncConfigOne(TEST_SIZES[4]);
-		initializeTestFolder(f, TEST_NAMES[5]);
-		testIncConfigTwo(TEST_SIZES[5]);
-		initializeTestFolder(f, TEST_NAMES[6]);
-		testIncConfigThree(TEST_SIZES[6]);
-		initializeTestFolder(f, TEST_NAMES[7]);
-		testHeuristicConfigOne(TEST_SIZES[7]);
-		initializeTestFolder(f, TEST_NAMES[8]);
-		testHeuristicConfigTwo(TEST_SIZES[8]);
+		
+		//Coobs and SB
+		int testNum = 0;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testBasicConfigOne(TEST_SIZES[testNum]);
+		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
+		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		testNum = 1;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testBasicConfigTwo(TEST_SIZES[testNum]);
+		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
+		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		testNum = 2;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testBasicConfigThree(TEST_SIZES[testNum]);
+		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
+		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		testNum = 3;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testBasicConfigFour(TEST_SIZES[testNum]);
+		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
+		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		
+		// SB and Inc
+		testNum = 4;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testIncConfigOne(TEST_SIZES[testNum]);
+		testNum = 5;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testIncConfigTwo(TEST_SIZES[testNum]);
+		testNum = 6;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testIncConfigThree(TEST_SIZES[testNum]);
+		
+		//Heuristics Test (SB Inc and Coobs Inc)
+		testNum = 7;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testHeuristicConfigOne(TEST_SIZES[testNum]);
+		testNum = 8;
+		initializeTestFolder(f, TEST_NAMES[testNum]);
+		testHeuristicConfigTwo(TEST_SIZES[testNum]);
+		
+		
 	}
 	
 	private void initializeTestFolder(File f, String in) {
@@ -175,8 +202,8 @@ public class DataGathering {
 	
 	//-- Test Data Interpretation  ----------------------------
 	
-	private void interpretTestBatchData(String path) {
-		int counter = 0;
+	private void interpretTestBatchDataSimple(String path, String type, int size) {
+		int counter = 1;
 		/*
 		 * Need to know total number of tests ahead of time
 		 * Minimum, maximum, average, interquartile range -> box plots
@@ -184,9 +211,9 @@ public class DataGathering {
 		 * Pull data first then analyze
 		 * 
 		 */
-		ArrayList<ArrayList<Double>> rawData = new ArrayList<ArrayList<Double>>();
-		String[] attributes;
-		File f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE);
+		InterpretData hold = new InterpretData();
+		String[] attributes = null;
+		File f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
 		if(f.exists()) {
 			try {
 				RandomAccessFile raf = new RandomAccessFile(f, "rw");
@@ -197,10 +224,71 @@ public class DataGathering {
 				e.printStackTrace();
 			}
 		}
-		
-		while(f.exists()) {
-			
+
+		try {
+			RandomAccessFile raf = new RandomAccessFile(f, "rw");
+			while(counter <= size) {
+				if(f.exists()) {
+					raf = new RandomAccessFile(f, "rw");
+					raf.readLine();
+					String[] values = raf.readLine().split(", ");
+					while(values != null) {
+						for(int i = 0; i < values.length; i++) {
+							values[i] = values[i].trim();
+						}
+						hold.addDataRow(values);
+						
+						String next = raf.readLine();
+						if(next != null) {
+							values = next.split(",");
+						}
+						else {
+							values = null;
+						}
+					}
+					raf.close();
+				}
+				f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
+			}
 		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		f = new File(path + "/analysis" + type + ".txt");
+		f.delete();
+		try {
+			RandomAccessFile raf = new RandomAccessFile(f, "rw");
+			raf.writeBytes("\t\t\t\t\t");
+			for(String s : attributes) {
+				raf.writeBytes(s + ", ");
+			}
+			raf.writeBytes("\nAverage: \t\t\t");
+			for(double v : hold.calculateAverages()) {
+				raf.writeBytes(threeSig(v) + ", \t");
+			}
+			raf.writeBytes("\nMinimum: \t\t\t");
+			for(double v : hold.calculateMinimums()) {
+				raf.writeBytes(threeSig(v) + ", \t");
+			}
+			raf.writeBytes("\nMaximum: \t\t\t");
+			for(double v : hold.calculateMaximums()) {
+				raf.writeBytes(threeSig(v) + ", \t");
+			}
+			raf.writeBytes("\nMedian: \t\t\t");
+			for(double v : hold.calculateMedians()) {
+				raf.writeBytes(threeSig(v) + ", \t");
+			}
+			raf.writeBytes("\nInter Quartile Range: ");
+			for(double v : hold.calculateInterquartileRange()) {
+				raf.writeBytes(threeSig(v) + ", \t");
+			}
+			raf.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("Done");
 	}
 	
 	//-- Random Tests  ----------------------------------------
