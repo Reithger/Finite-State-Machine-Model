@@ -21,26 +21,16 @@ import test.help.SystemGeneration;
 
 /**
  * 
- * Multithread so can bail on terminal tests; need some mechanism to let me ignore this running for 10 hours
  * 
- * Interface for setting up test configs, # of tests to run, overall data output
- * 
- * Incremental heuristics testing; small batch of random with all variations, all specific examples
- * 
- * Integrate specific examples from papers
- * 
- * Large single plant and specification examples
- * 
- * Denote when a test batch has fully finished so that incomplete tests are re-done (when memory exception, want to re-do that test fully)
- *  - May want to have it use existing system data to re-attempt? Should know how often they can't be done for a random sample size.
+ * Integrate specific examples from papers, make sure run heuristics on them
  * 
  * 2 or 3 max transitions in the random generation? May want to define that differently based on size.
  * 
  * 
  * 
- * Need to add multithreading, separate class that runs a thread of DataGathering where DataGathering pushes to the multithreader when
- * a test starts to start a counter; need internal way to pick back up a test and denote a DNF when severing thread/resetting memory.
+ * Heuristics incremental tests should also compare against 100 true-random heuristic examples averaged
  * 
+ * Need proper memory failure handling in heuristic tests
  * 
  * 
  * @author aclevinger
@@ -240,7 +230,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Basic Config One: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
-			garbageCollect();
+			resetModel();
 			counter++;
 		}
 	}
@@ -268,7 +258,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Basic Config Two: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
-			garbageCollect();
+			resetModel();
 			counter++;
 		}
 	}
@@ -296,7 +286,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Basic Config Three: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
-			garbageCollect();
+			resetModel();
 			counter++;
 		}
 	}
@@ -324,7 +314,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Basic Config Four: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
-			garbageCollect();
+			resetModel();
 			counter++;
 		}
 	}
@@ -354,7 +344,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Inc Config One: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
-			garbageCollect();
+			resetModel();
 			counter++;
 		}
 	}
@@ -382,7 +372,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Inc Config Two: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
-			garbageCollect();
+			resetModel();
 			counter++;
 		}
 	}
@@ -410,7 +400,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Inc Config Three: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
-			garbageCollect();
+			resetModel();
 			counter++;
 		}
 	}
@@ -440,7 +430,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Heuristic Config One: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
-			garbageCollect();
+			resetModel();
 			counter++;
 			
 		}
@@ -469,7 +459,7 @@ public class DataGathering {
 		while(counter < count) {
 			System.out.println("Test Heuristic Config Two: " + counter);
 			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
-			garbageCollect();
+			resetModel();
 			counter++;
 			
 		}
@@ -877,7 +867,7 @@ public class DataGathering {
 	}
 	
 	private Double threeSig(double in) {
-		String use = in+"0000";
+		String use = (in < 0 ? 0 : in)+"0000";
 		int posit = use.indexOf(".") + 4;
 		return Double.parseDouble(use.substring(0, posit));
 	}
@@ -917,7 +907,11 @@ public class DataGathering {
 			}
 			raf.writeBytes(time + ", \t" + threeSig(overallMem) + ", \t");
 			for(Double d : vals) {
-				raf.writeBytes(threeSig(d) + ", \t");
+				if(d != null)
+					raf.writeBytes(threeSig(d) + ", \t");
+				else {
+					raf.writeBytes("\n,,\t\t\t");
+				}
 			}
 			raf.writeBytes("\n");
 			raf.close();

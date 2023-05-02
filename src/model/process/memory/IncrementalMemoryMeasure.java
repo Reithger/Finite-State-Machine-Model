@@ -45,4 +45,28 @@ public class IncrementalMemoryMeasure extends ConcreteMemoryMeasure{
 		return out;
 	}
 	
+	@Override
+	public ArrayList<String> getOutputGuide(){
+		ArrayList<String> out = endStates != null  ? endStates.get(0).getOutputGuide() : super.getOutputGuide();
+		
+		out.add("Num Components");
+		
+		return out;
+	}
+	
+	@Override
+	public ArrayList<Double> getStoredData(){
+		ArrayList<Double> out = super.getStoredData();
+		
+		if(endStates != null) {
+			for(int i = 0; i < endStates.size(); i++) {
+				out.add(null);
+				out.addAll(endStates.get(i).getStoredData());
+				out.add((double)(endNumComponents.get(i)));
+			}
+		}
+		
+		return out;
+	}
+	
 }

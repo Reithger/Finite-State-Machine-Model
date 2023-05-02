@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * 
  * Split results by when it returns true or false
  * 
- * @author SirBo
+ * @author Ada Clevinger
  *
  */
 

@@ -114,8 +114,8 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 		ArrayList<String> out = new ArrayList<String>();
 		
 		out.add("Test Outcome");
-		out.add("Average Memory Consumption");
-		out.add("Maximum Memory Consumption");
+		out.add("Average Memory Consumption (Mb)");
+		out.add("Maximum Memory Consumption (Mb)");
 		
 		return out;
 	}

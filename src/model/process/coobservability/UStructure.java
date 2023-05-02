@@ -40,7 +40,7 @@ public class UStructure extends UStructMemoryMeasure{
 	private Agent[] agents;
 	
 //---  Constructors   -------------------------------------------------------------------------
-	
+
 	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) throws Exception{
 		super();
 		HashMap<String, HashSet<String>> badTransitions = initializeBadTransitions(thePlant);

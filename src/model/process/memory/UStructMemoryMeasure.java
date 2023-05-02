@@ -98,4 +98,12 @@ public class UStructMemoryMeasure extends ConcreteMemoryMeasure{
 		return out;
 	}
 	
+	public static ConcreteMemoryMeasure produceBlank() {
+		UStructMemoryMeasure out = new UStructMemoryMeasure();
+		out.assignStateSize(0);
+		out.assignTransitionSize(0);
+		out.assignTestResult(true);
+		return out;
+	}
+	
 }

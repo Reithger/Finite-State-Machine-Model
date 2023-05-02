@@ -125,6 +125,7 @@ public class Incremental extends IncrementalMemoryMeasure {
 			logData(decider, hold);
 		}
 		reserveTransitionSystem(decider.produceMemoryMeasure().getReserveSystem());
+		assignTestResult(true);
 		return true;
 	}
 	
