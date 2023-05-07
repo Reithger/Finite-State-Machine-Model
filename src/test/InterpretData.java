@@ -3,6 +3,8 @@ package test;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import model.process.memory.ConcreteMemoryMeasure;
+
 /**
  * 
  * 
@@ -25,6 +27,8 @@ import java.util.Collections;
  * 
  * Split results by when it returns true or false
  * 
+ * Make sure we can see data for just true results and data for just false results; static variable to swap states, probably, for ease of function use?
+ * 
  * @author Ada Clevinger
  *
  */
@@ -43,7 +47,6 @@ public class InterpretData {
 			if(!s.equals(""))
 				hold.add(Double.parseDouble(s));
 		}
-		System.out.println("Data: " + hold);
 		data.add(hold);
 	}
 	
@@ -132,6 +135,38 @@ public class InterpretData {
 			out.add(third.get(i) - first.get(i));
 		}
 		return out;
+	}
+	
+	public ArrayList<Integer> getColumnSizes(){
+		ArrayList<Integer> out = new ArrayList<Integer>();
+		for(int i = 0; i < data.get(0).size(); i++) {
+			out.add(pullColumn(i).size());
+		}
+		return out;
+	}
+	
+	public int getNumberTrueResults() {
+		int counter = 0;
+		for(Double v : pullColumn(2)) {
+			if(v.equals(ConcreteMemoryMeasure.TEST_RESULT_TRUE)) {
+				counter++;
+			}
+		}
+		return counter;
+	}
+	
+	public int getNumberFalseResults() {
+		int counter = 0;
+		for(Double v : pullColumn(2)) {
+			if(v.equals(ConcreteMemoryMeasure.TEST_RESULT_FALSE)) {
+				counter++;
+			}
+		}
+		return counter;
+	}
+	
+	public int getNumberDNF(int size) {
+		return size - pullColumn(0).size();
 	}
 	
 	private ArrayList<Double> pullColumn(int column){

@@ -34,6 +34,9 @@ import test.help.SystemGeneration;
  * 
  * MemoryMeasure should probably be a HashMap instead of synchronized lists; when writing to file map each key to an index to associate value properly; use dummy value to denote it's missing
  * 
+ * Incorporate DNF values into analysis
+ * 
+ * Heuristic: Alternate choosing Plants or Specs
  * 
  * @author aclevinger
  *
@@ -80,8 +83,8 @@ public class DataGathering {
 															 "/Test Batch Random Inc 3",
 															 "/Test Batch Random Heuristic 1",
 															 "/Test Batch Random Heuristic 2"};
-	private final int[] TEST_SIZES = new int[] {100,
-													   30,
+	private final int[] TEST_SIZES = new int[] {150,
+													   75,
 													   50,
 													   40,
 													   100,
@@ -204,46 +207,42 @@ public class DataGathering {
 	
 	private void interpretTestBatchDataSimple(String path, String type, int size) {
 		int counter = 1;
-		/*
-		 * Need to know total number of tests ahead of time
-		 * Minimum, maximum, average, interquartile range -> box plots
-		 * 
-		 * Pull data first then analyze
-		 * 
-		 */
+		
 		InterpretData hold = new InterpretData();
 		String[] attributes = null;
 		File f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
-		if(f.exists()) {
-			try {
-				RandomAccessFile raf = new RandomAccessFile(f, "rw");
-				attributes = raf.readLine().split(", ");
-				raf.close();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
 
 		try {
-			RandomAccessFile raf = new RandomAccessFile(f, "rw");
-			while(counter <= size) {
+			RandomAccessFile raf;
+			while(counter <= size+1) {
 				if(f.exists()) {
 					raf = new RandomAccessFile(f, "rw");
-					raf.readLine();
-					String[] values = raf.readLine().split(", ");
-					while(values != null) {
-						for(int i = 0; i < values.length; i++) {
-							values[i] = values[i].trim();
-						}
-						hold.addDataRow(values);
-						
-						String next = raf.readLine();
-						if(next != null) {
-							values = next.split(",");
-						}
-						else {
-							values = null;
+					boolean skip = false;
+					if(attributes == null) {
+						String line = raf.readLine();
+						if(line != null)
+							attributes = line.split(", ");
+						else
+							skip = true;
+					}
+					else {
+						raf.readLine();
+					}
+					if(!skip) {
+						String[] values = raf.readLine().split(", ");
+						while(values != null) {
+							for(int i = 0; i < values.length; i++) {
+								values[i] = values[i].trim();
+							}
+							hold.addDataRow(values);
+							
+							String next = raf.readLine();
+							if(next != null) {
+								values = next.split(",");
+							}
+							else {
+								values = null;
+							}
 						}
 					}
 					raf.close();
@@ -252,6 +251,7 @@ public class DataGathering {
 			}
 		}
 		catch(Exception e) {
+			System.out.println(f.getAbsolutePath());
 			e.printStackTrace();
 		}
 		
@@ -259,30 +259,37 @@ public class DataGathering {
 		f.delete();
 		try {
 			RandomAccessFile raf = new RandomAccessFile(f, "rw");
-			raf.writeBytes("\t\t\t\t\t");
+			raf.writeBytes("\t\t\t\t\t\t");
 			for(String s : attributes) {
 				raf.writeBytes(s + ", ");
 			}
-			raf.writeBytes("\nAverage: \t\t\t");
+			raf.writeBytes("\nAverage: \t\t\t\t");
 			for(double v : hold.calculateAverages()) {
 				raf.writeBytes(threeSig(v) + ", \t");
 			}
-			raf.writeBytes("\nMinimum: \t\t\t");
+			raf.writeBytes("\nMinimum: \t\t\t\t");
 			for(double v : hold.calculateMinimums()) {
 				raf.writeBytes(threeSig(v) + ", \t");
 			}
-			raf.writeBytes("\nMaximum: \t\t\t");
+			raf.writeBytes("\nMaximum: \t\t\t\t");
 			for(double v : hold.calculateMaximums()) {
 				raf.writeBytes(threeSig(v) + ", \t");
 			}
-			raf.writeBytes("\nMedian: \t\t\t");
+			raf.writeBytes("\nMedian: \t\t\t\t");
 			for(double v : hold.calculateMedians()) {
 				raf.writeBytes(threeSig(v) + ", \t");
 			}
-			raf.writeBytes("\nInter Quartile Range: ");
+			raf.writeBytes("\nInter Quart Range:\t\t");
 			for(double v : hold.calculateInterquartileRange()) {
 				raf.writeBytes(threeSig(v) + ", \t");
 			}
+			raf.writeBytes("\nNumber Valid Tests:\t\t");
+			for(Integer v : hold.getColumnSizes()) {
+				raf.writeBytes(v + ", \t");
+			}
+			raf.writeBytes("\n\nNumber True Results:\t" + hold.getNumberTrueResults());
+			raf.writeBytes("\nNumber False Results:\t" + hold.getNumberFalseResults());
+			raf.writeBytes("\nNumber of DNFs:\t\t\t" + hold.getNumberDNF(size));
 			raf.close();
 		}
 		catch(Exception e) {

@@ -9,8 +9,8 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	
 //---  Constants   ----------------------------------------------------------------------------
 
-	private static final Double TEST_RESULT_TRUE = 1.0;
-	private static final Double TEST_RESULT_FALSE = 0.0;
+	public static final Double TEST_RESULT_TRUE = 1.0;
+	public static final Double TEST_RESULT_FALSE = 0.0;
 	
 //---  Instance Variables   -------------------------------------------------------------------
 	

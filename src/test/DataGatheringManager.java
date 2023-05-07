@@ -40,7 +40,6 @@ public class DataGatheringManager implements TestReset{
 			clock.cancel();
 		clock = new TestTimer();
 		clockTimer.schedule(clock,  TIME_OUT);
-		System.out.println(clock + " " + TIME_OUT);
 	}
 	
 	class TestRunner extends TimerTask{
