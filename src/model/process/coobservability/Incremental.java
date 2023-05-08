@@ -38,6 +38,14 @@ public class Incremental extends IncrementalMemoryMeasure {
 	public final static int INCREMENTAL_B_HIGH_TRANS = 8;
 	public final static int INCREMENTAL_B_SHARE_EVENTS = 9;
 	public final static int INCREMENTAL_B_DIFF_EVENTS = 10;
+	
+	public final static int[] INCREMENTAL_B_NO_REJECT = new int[] {INCREMENTAL_B_RANDOM,
+																   INCREMENTAL_B_LOW_STATE,
+																   INCREMENTAL_B_HIGH_STATE,
+																   INCREMENTAL_B_LOW_EVENTS,
+																   INCREMENTAL_B_HIGH_EVENTS,
+																   INCREMENTAL_B_LOW_TRANS,
+																   INCREMENTAL_B_HIGH_TRANS};
 
 	public final static int COUNTEREXAMPLE_RANDOM = 0;
 	public final static int COUNTEREXAMPLE_SHORT = 1;
@@ -374,13 +382,8 @@ public class Incremental extends IncrementalMemoryMeasure {
 
 	private int pickComponentHeuristicNoReject(int in) {
 		HashSet<Integer> check = new HashSet<Integer>();
-		check.add(INCREMENTAL_B_RANDOM);
-		check.add(INCREMENTAL_B_LOW_STATE);
-		check.add(INCREMENTAL_B_HIGH_STATE);
-		check.add(INCREMENTAL_B_LOW_EVENTS);
-		check.add(INCREMENTAL_B_HIGH_EVENTS);
-		check.add(INCREMENTAL_B_LOW_TRANS);
-		check.add(INCREMENTAL_B_HIGH_TRANS);
+		for (int i : INCREMENTAL_B_NO_REJECT)
+			check.add(i);
 		return check.contains(in) ? in : INCREMENTAL_B_RANDOM;
 	}
 	

@@ -29,21 +29,17 @@ import test.help.SystemGeneration;
  * 
  * 
  * Heuristics incremental tests should also compare against 100 true-random heuristic examples averaged
- * 
- * Need proper memory failure handling in heuristic tests to retain old data and be efficient (one-and-done on memory failure, need to properly tag instead of full restart)
- * 
+
  * MemoryMeasure should probably be a HashMap instead of synchronized lists; when writing to file map each key to an index to associate value properly; use dummy value to denote it's missing
- * 
- * Incorporate DNF values into analysis
- * 
+
  * Heuristic: Alternate choosing Plants or Specs
  * 
  * Using size of test, check if final test for a batch is already done and verified complete to save on time
- * 
- * Need DNF integration for State Based testing; turns out we can break that!
- * 
+
  * Possibility on skipping redoing a complete test to not note its result for comparison to other actively calculated results. Need to retrieve result somehow.
- * 
+ *  - A logic error could slip through if a later test finished after a preliminary crash and prior test results aren't in memory
+ * Retain some progress data for incremental by assigning memory measure object before test begins, then save output of that when marking unfinished?
+
  * @author aclevinger
  *
  */
@@ -167,44 +163,62 @@ public class DataGathering {
 		//Coobs and SB
 		int testNum = 0;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testBasicConfigOne(TEST_SIZES[testNum]);
-		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
-		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testBasicConfigOne(TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		}
 		testNum = 1;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testBasicConfigTwo(TEST_SIZES[testNum]);
-		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
-		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testBasicConfigTwo(TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		}
 		testNum = 2;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testBasicConfigThree(TEST_SIZES[testNum]);
-		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
-		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testBasicConfigThree(TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		}
 		testNum = 3;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testBasicConfigFour(TEST_SIZES[testNum]);
-		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
-		interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testBasicConfigFour(TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+		}
 		
 		// SB and Inc
 		testNum = 4;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testIncConfigOne(TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testIncConfigOne(TEST_SIZES[testNum]);
+		}
 		testNum = 5;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testIncConfigTwo(TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testIncConfigTwo(TEST_SIZES[testNum]);
+		}
 		testNum = 6;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testIncConfigThree(TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testIncConfigThree(TEST_SIZES[testNum]);
+		}
 		
 		heuristics = true;
 		//Heuristics Test (SB Inc and Coobs Inc)
 		testNum = 7;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testHeuristicConfigOne(TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testHeuristicConfigOne(TEST_SIZES[testNum]);
+		}
 		testNum = 8;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		testHeuristicConfigTwo(TEST_SIZES[testNum]);
+		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum])) {
+			testHeuristicConfigTwo(TEST_SIZES[testNum]);
+		}
 		
 		
 	}
@@ -574,6 +588,14 @@ public class DataGathering {
 		}
 	}
 	
+	private boolean testsCompleted(String testBatch, int maxSize) {
+		if(checkTestVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + (maxSize))) {
+			System.out.println(testBatch + " already complete at: " + maxSize + " tests");
+			return true;
+		}
+		return false;
+	}
+	
   //-- Specific Tests  ----------------------------------------
 	
 //---  System Testing   -----------------------------------------------------------------------
@@ -907,7 +929,7 @@ public class DataGathering {
 					String post = generateHeuristicsPostscript(i, j, k);
 					Boolean icCoobs = null;
 					if(!completedTests.contains(ANALYSIS_INC_COOBS + post) && !memoryError.contains(ANALYSIS_INC_COOBS + post)) {
-						printIncrementalLabel(prefixNom + generateHeuristicsPostscript(i, j, k), false);
+						printIncrementalLabel(prefixNom + post, false);
 						icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
 					}
 					
@@ -916,8 +938,8 @@ public class DataGathering {
 					}
 
 					Boolean icSbCoobs = null;
-					if(!completedTests.contains(ANALYSIS_INC_SB + post) && !memoryError.contains(ANALYSIS_INC_SB + post)) {
-						printIncrementalSBLabel(prefixNom + generateHeuristicsPostscript(i, j, k));
+					if(k == 0 && indexOf(Incremental.INCREMENTAL_B_NO_REJECT, j) != -1 && (!completedTests.contains(ANALYSIS_INC_SB + post) && !memoryError.contains(ANALYSIS_INC_SB + post))) {
+						printIncrementalSBLabel(prefixNom + post);
 						icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
 					}
 					
@@ -925,13 +947,22 @@ public class DataGathering {
 						expected = icSbCoobs;
 					}
 					
-					if((icCoobs != null && icSbCoobs != null) && expected != icSbCoobs) {
-						throw new Exception("Change in Heuristics caused difference result");
+					if((expected != null) && ((icCoobs != null && expected != icCoobs) || (icSbCoobs != null && expected != icSbCoobs))) {
+						throw new Exception("Change in Heuristics caused difference result: " + post);
 					}
 				}
 			}
 		}
 		resetModel();
+	}
+	
+	private int indexOf(int[] arr, int key) {
+		for(int i = 0; i < arr.length; i++) {
+			if(arr[i] == key) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 //---  Coobservability Testing   --------------------------------------------------------------
@@ -1141,6 +1172,9 @@ public class DataGathering {
 
 	private boolean checkForTerm(String path, String phrase) {
 		File g = new File(path);
+		if(!g.exists()) {
+			return false;
+		}
 		try {
 			RandomAccessFile raf = new RandomAccessFile(g, "r");
 			String line = raf.readLine();
