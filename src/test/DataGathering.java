@@ -30,13 +30,19 @@ import test.help.SystemGeneration;
  * 
  * Heuristics incremental tests should also compare against 100 true-random heuristic examples averaged
  * 
- * Need proper memory failure handling in heuristic tests
+ * Need proper memory failure handling in heuristic tests to retain old data and be efficient (one-and-done on memory failure, need to properly tag instead of full restart)
  * 
  * MemoryMeasure should probably be a HashMap instead of synchronized lists; when writing to file map each key to an index to associate value properly; use dummy value to denote it's missing
  * 
  * Incorporate DNF values into analysis
  * 
  * Heuristic: Alternate choosing Plants or Specs
+ * 
+ * Using size of test, check if final test for a batch is already done and verified complete to save on time
+ * 
+ * Need DNF integration for State Based testing; turns out we can break that!
+ * 
+ * Possibility on skipping redoing a complete test to not note its result for comparison to other actively calculated results. Need to retrieve result somehow.
  * 
  * @author aclevinger
  *
@@ -60,6 +66,8 @@ public class DataGathering {
 	
 	private final String VERIFY_MEMORY_ERROR = "!!~~Verified Memory Exception~~!!";
 	
+	private final String VERIFY_COMPLETE_CHECKPOINT = "!!~~Verified Subtest Complete~~!!";
+	
 	private final int TEST_ALL = 0;
 	private final int TEST_BASIC = 1;
 	private final int TEST_INC = 2;
@@ -73,6 +81,8 @@ public class DataGathering {
 	private final String ANALYSIS_SB = "_sb";
 	private final String ANALYSIS_INC_COOBS = "_inc_coobs";
 	private final String ANALYSIS_INC_SB = "_inc_sb";
+	
+	private final String[] ANALYSIS_TYPES = new String[] {ANALYSIS_COOBS, ANALYSIS_SB, ANALYSIS_INC_COOBS, ANALYSIS_INC_SB};
 	
 	private final String[] TEST_NAMES = new String[] {"/Test Batch Random Basic 1",
 															 "/Test Batch Random Basic 2",
@@ -93,7 +103,6 @@ public class DataGathering {
 													   200,
 													   200};
 	
-	private boolean finished;
 	
 	
 //---  Instance Variables   -------------------------------------------------------------------
@@ -109,6 +118,10 @@ public class DataGathering {
 	private String analysisSubtype;
 	
 	private TestReset clock;
+	
+	private boolean finished;
+	
+	private boolean heuristics;
 	
 //---  Constructors   -------------------------------------------------------------------------
 	
@@ -150,7 +163,7 @@ public class DataGathering {
 	}
 	
 	public void runTests(File f) throws Exception{
-		
+		heuristics = false;
 		//Coobs and SB
 		int testNum = 0;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
@@ -184,6 +197,7 @@ public class DataGathering {
 		initializeTestFolder(f, TEST_NAMES[testNum]);
 		testIncConfigThree(TEST_SIZES[testNum]);
 		
+		heuristics = true;
 		//Heuristics Test (SB Inc and Coobs Inc)
 		testNum = 7;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
@@ -563,15 +577,18 @@ public class DataGathering {
   //-- Specific Tests  ----------------------------------------
 	
 //---  System Testing   -----------------------------------------------------------------------
-	
-	//TODO: Function that lets multithread wrapper tell newest test file to print DECLARE_MEMORY_ERROR and VERIFY_MEMORY_ERROR
-	
+
 	public void markTestUnfinished() {
-		if(checkTestDeclaredMemoryError(writePath) && !checkTestVerifiedMemoryError(writePath)) {
-			printOut(VERIFY_MEMORY_ERROR);
+		if(!heuristics) {
+			if(checkTestDeclaredTypeMemoryError(writePath)) {
+				printOut(VERIFY_MEMORY_ERROR + analysisSubtype);
+			}
+			else{
+				printOut(DECLARE_MEMORY_ERROR + analysisSubtype);
+			}
 		}
-		else{
-			printOut(DECLARE_MEMORY_ERROR);
+		else {
+			printOut(VERIFY_MEMORY_ERROR + analysisSubtype + retrieveHeuristicsPostscript()); 
 		}
 	}
 	
@@ -583,8 +600,74 @@ public class DataGathering {
 		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR);
 	}
 	
+	private boolean checkTestDeclaredTypeMemoryError(String path) {
+		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR + analysisSubtype);
+	}
+	
+	private int checkTestNumberDeclaredMemoryError(String path) {
+		return checkForTermLinePositions(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR).size();
+	}
+	
 	private boolean checkTestVerifiedMemoryError(String path) {
 		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR);
+	}
+	
+	private int checkTestNumberVerifiedMemoryError(String path) {
+		return checkForTermLinePositions(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR).size();
+	}
+	
+	private ArrayList<String> checkTestTypesVerifiedMemoryError(String path){
+		ArrayList<String> out = new ArrayList<String>();
+		if(!heuristics) {
+			for(String s : ANALYSIS_TYPES) {
+				if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + s)) {
+					out.add(s);
+				}
+			}
+		}
+		else {
+			for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
+				for(int j = 0; j < Incremental.NUM_B_HEURISTICS; j++) {
+					for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
+						String post = generateHeuristicsPostscript(i, j, k);
+						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + ANALYSIS_INC_SB + post)) {
+							out.add(ANALYSIS_INC_SB + post);
+						}
+						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + ANALYSIS_INC_COOBS + post)) {
+							out.add(ANALYSIS_INC_COOBS + post);
+						}
+					}
+				}
+			}
+		}
+		return out;
+	}
+	
+	private ArrayList<String> checkTestsCompleted(String path){
+		ArrayList<String> out = new ArrayList<String>();
+		if(!heuristics) {
+			for(String s : ANALYSIS_TYPES) {
+				if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + s)) {
+					out.add(s);
+				}
+			}
+		}
+		else {
+			for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
+				for(int j = 0; j < Incremental.NUM_B_HEURISTICS; j++) {
+					for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
+						String post = generateHeuristicsPostscript(i, j, k);
+						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + ANALYSIS_INC_SB + post)) {
+							out.add(ANALYSIS_INC_SB + post);
+						}
+						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + ANALYSIS_INC_COOBS + post)) {
+							out.add(ANALYSIS_INC_COOBS + post);
+						}
+					}
+				}
+			}
+		}
+		return out;
 	}
 	
 	private void autoTestRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate, int testChoice) throws Exception {
@@ -606,7 +689,8 @@ public class DataGathering {
 		if(finished)
 			return;
 		
-		boolean memoryError = checkTestVerifiedMemoryError(writePath);
+		ArrayList<String> completeTests = checkTestsCompleted(writePath);
+		ArrayList<String> memoryError = checkTestTypesVerifiedMemoryError(writePath);
 
 		if(!inMem)
 			readInOldSystem(testName);
@@ -620,13 +704,13 @@ public class DataGathering {
 				autoTestSystemFull(testName, plants, specs, agents);
 				break;
 			case TEST_BASIC:
-				autoTestSystemCoobsSB(testName, plants, specs, agents, memoryError);
+				autoTestSystemCoobsSB(testName, plants, specs, agents, completeTests, memoryError);
 				break;
 			case TEST_INC:
-				autoTestSystemIncr(testName, plants, specs, agents, memoryError);
+				autoTestSystemIncr(testName, plants, specs, agents, completeTests, memoryError);
 				break;
 			case TEST_HEUR:
-				autoTestHeuristics(testName, plants, specs, agents, memoryError);
+				autoTestHeuristics(testName, plants, specs, agents, completeTests, memoryError);
 				break;
 			default:
 				break;
@@ -745,91 +829,103 @@ public class DataGathering {
 		resetModel();
 	}
 	
-	private void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
+	private void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
 		boolean coobs = false;
-		if(!memoryError) {
+		if(!completedTests.contains(ANALYSIS_COOBS) && !memoryError.contains(ANALYSIS_COOBS)) {
 			printCoobsLabel(prefixNom, false);
 			coobs = checkCoobservable(plantNames, specNames, agents, false);
 		}
 
-		printSBCoobsLabel(prefixNom);
-		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
-
+		boolean sbCoobs = false;
+		if(!completedTests.contains(ANALYSIS_SB) && !memoryError.contains(ANALYSIS_SB)) {
+			printSBCoobsLabel(prefixNom);
+			sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
+		}
 		
-		if(!memoryError && (coobs && !sbCoobs)) {
+		if(memoryError.isEmpty() && (coobs && !sbCoobs)) {
 			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
 		}
 		
 		boolean error = false;
 		
-		if(!memoryError && (sbCoobs && !coobs)) {
+		if(memoryError.isEmpty() && (sbCoobs && !coobs)) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
 			error = true;
 		}
 		if(error) {
-			throw new Exception("Logic Conflict in Data Output");
+			throw new Exception("Logic Conflict in Data Output: " + prefixNom);
 		}
 		resetModel();
 	}
 
-	private void autoTestSystemIncr(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
-		boolean icCoobs = false;
-		if(!memoryError) {
+	private void autoTestSystemIncr(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
+		Boolean icCoobs = null;
+		if(!completedTests.contains(ANALYSIS_INC_COOBS) && !memoryError.contains(ANALYSIS_INC_COOBS)) {
 			printIncrementalLabel(prefixNom, false);
 			icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
 		}
 		
-		printSBCoobsLabel(prefixNom);
-		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
-		printIncrementalSBLabel(prefixNom);
-		boolean icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
+		Boolean sbCoobs = null;
+		if(!completedTests.contains(ANALYSIS_SB) && !memoryError.contains(ANALYSIS_SB)) {
+			printSBCoobsLabel(prefixNom);
+			sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
+		}
+		
+		Boolean icSbCoobs = null;
+		if(!completedTests.contains(ANALYSIS_INC_SB) && !memoryError.contains(ANALYSIS_INC_SB)) {
+			printIncrementalSBLabel(prefixNom);
+			icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
+		}
 
-		if(icCoobs && !sbCoobs) {
+		if((icCoobs != null && sbCoobs != null) && icCoobs && !sbCoobs) {
 			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
 		}
 		
 		boolean error = false;
 		
-		if(sbCoobs != icSbCoobs) {
+		if((sbCoobs != null && icSbCoobs != null) && sbCoobs != icSbCoobs) {
 			printOut("~~~\nError!!! : Incremental SB Algo. did not return same as SB Algo.\n~~~");
 			error = true;
 		}
-		if(!memoryError && (sbCoobs && !icCoobs)) {
+		if((sbCoobs != null && icCoobs != null) && (sbCoobs && !icCoobs)) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
 			error = true;
 		}
 		if(error) {
-			throw new Exception("Logic Conflict in Data Output");
+			throw new Exception("Logic Conflict in Data Output: " + prefixNom);
 		}
 		resetModel();
 	}
 	
-	private void autoTestHeuristics(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean memoryError) throws Exception{
+	private void autoTestHeuristics(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
 		Boolean expected = null;
 		
 		for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
 			for(int j = 0; j < Incremental.NUM_B_HEURISTICS; j++) {
 				for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
 					Incremental.assignIncrementalOptions(i, j, k);
-					
+					String post = generateHeuristicsPostscript(i, j, k);
 					Boolean icCoobs = null;
-					if(!memoryError) {
-						printIncrementalLabel(prefixNom + " " + i + " " + j + " " + k, false);
+					if(!completedTests.contains(ANALYSIS_INC_COOBS + post) && !memoryError.contains(ANALYSIS_INC_COOBS + post)) {
+						printIncrementalLabel(prefixNom + generateHeuristicsPostscript(i, j, k), false);
 						icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
 					}
 					
 					if(expected == null) {
 						expected = icCoobs;
 					}
-					
-					printIncrementalSBLabel(prefixNom + " " + i + " " + j + " " + k);
-					boolean icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
 
+					Boolean icSbCoobs = null;
+					if(!completedTests.contains(ANALYSIS_INC_SB + post) && !memoryError.contains(ANALYSIS_INC_SB + post)) {
+						printIncrementalSBLabel(prefixNom + generateHeuristicsPostscript(i, j, k));
+						icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
+					}
+					
 					if(expected == null) {
 						expected = icSbCoobs;
 					}
 					
-					if((icCoobs != null && expected != icCoobs) || expected != icSbCoobs) {
+					if((icCoobs != null && icSbCoobs != null) && expected != icSbCoobs) {
 						throw new Exception("Change in Heuristics caused difference result");
 					}
 				}
@@ -843,8 +939,8 @@ public class DataGathering {
 	private boolean checkCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf)throws Exception {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
-		boolean result = inf ? model.isInferenceCoobservableUStruct(plants, specs, eventAtt, agents) : model.isCoobservableUStruct(plants, specs, eventAtt, agents);
 		assignAnalysisSubtype(TYPE_COOBS);
+		boolean result = inf ? model.isInferenceCoobservableUStruct(plants, specs, eventAtt, agents) : model.isCoobservableUStruct(plants, specs, eventAtt, agents);
 		handleOutData(t, hold);
 		printOut("\t\t\t\t" + (inf ? "Inferencing " : "" ) + "Coobservable: " + result);
 		garbageCollect();
@@ -860,8 +956,8 @@ public class DataGathering {
 	private boolean checkSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
-		boolean result = model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents);
 		assignAnalysisSubtype(TYPE_SB);
+		boolean result = model.isSBCoobservableUrvashi(plants, specs, eventAtt, agents);
 		handleOutData(t, hold);
 		printOut("\t\t\t\tSB-Coobservable: " + result);
 		garbageCollect();
@@ -877,8 +973,8 @@ public class DataGathering {
 	private boolean checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf) throws Exception{
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
-		boolean result = inf ? model.isIncrementalInferenceCoobservable(plants, specs, eventAtt, agents) : model.isIncrementalCoobservable(plants, specs, eventAtt, agents);
 		assignAnalysisSubtype(TYPE_INC_COOBS);
+		boolean result = inf ? model.isIncrementalInferenceCoobservable(plants, specs, eventAtt, agents) : model.isIncrementalCoobservable(plants, specs, eventAtt, agents);
 		handleOutData(t, hold);
 		printOut("\t\t\t\tIncremental" + (inf ? " Inference" : "") + " Coobservable: " + result);
 		garbageCollect();
@@ -888,8 +984,8 @@ public class DataGathering {
 	private boolean checkIncrementalSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
-		boolean result = model.isIncrementalSBCoobservable(plants, specs, eventAtt, agents);
 		assignAnalysisSubtype(TYPE_INC_SB);
+		boolean result = model.isIncrementalSBCoobservable(plants, specs, eventAtt, agents);
 		handleOutData(t, hold);
 		printOut("\t\t\t\tIncremental SB Coobservable: " + result);
 		garbageCollect();
@@ -925,9 +1021,19 @@ public class DataGathering {
 		}
 	}
 	
+	private String retrieveHeuristicsPostscript() {
+		int[] hold = Incremental.retrieveIncrementalOptions();
+		return "_" + hold[0] + "_" + hold[1] + "_" + hold[2];
+	}
+	
+	private String generateHeuristicsPostscript(int a, int b, int c) {
+		return "_" + a + "_" + b + "_" + c;
+	}
+	
 	//-- Data Output Gathering  -------------------------------
 	
 	private void handleOutData(long t, long hold) {
+		printOut(VERIFY_COMPLETE_CHECKPOINT + analysisSubtype + (heuristics ? retrieveHeuristicsPostscript() : ""));
 		printOut(model.getLastProcessData().produceOutputLog());
 		long res = (System.currentTimeMillis() - t);
 		printTimeTook(res);
@@ -1048,6 +1154,29 @@ public class DataGathering {
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	private ArrayList<Integer> checkForTermLinePositions(String path, String phrase){
+		ArrayList<Integer> out = new ArrayList<Integer>();
+		File g = new File(path);
+		try {
+			RandomAccessFile raf = new RandomAccessFile(g, "r");
+			String line = raf.readLine();
+			int counter = 1;
+			while(line != null) {
+				if(line.equals(phrase)) {
+					out.add(counter);
+				}
+				counter++;
+				line = raf.readLine();
+			}
+			raf.close();
+			return out;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return new ArrayList<Integer>();
 	}
 	
 	private ArrayList<String> getPlants(String prefix) throws Exception{

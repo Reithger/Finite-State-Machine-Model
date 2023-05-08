@@ -75,6 +75,10 @@ public class Incremental extends IncrementalMemoryMeasure {
 		badRef = bad;
 	}
 	
+	public static int[] retrieveIncrementalOptions() {
+		return new int[] {incrementalOptionA, incrementalOptionB, counterexampleChoice};
+	}
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public Incremental(DecideCondition dC) {
