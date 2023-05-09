@@ -34,11 +34,19 @@ import model.process.memory.ConcreteMemoryMeasure;
  */
 
 public class InterpretData {
-
+	
 	private ArrayList<ArrayList<Double>> data;
 	
 	public InterpretData() {
 		data = new ArrayList<ArrayList<Double>>();
+	}
+	
+	public void mergeData(InterpretData in) {
+		data.addAll(in.getData());
+	}
+	
+	protected ArrayList<ArrayList<Double>> getData(){
+		return data;
 	}
 	
 	public void addDataRow(String[] inData) {
@@ -46,6 +54,9 @@ public class InterpretData {
 		for(String s : inData) {
 			if(!s.equals(""))
 				hold.add(Double.parseDouble(s));
+			else {
+				hold.add(null);
+			}
 		}
 		data.add(hold);
 	}
@@ -98,11 +109,16 @@ public class InterpretData {
 		ArrayList<Double> out = new ArrayList<Double>();
 		for(int i = 0; i < data.get(0).size(); i++) {
 			ArrayList<Double> column = pullColumn(i);
+			int pos1 = column.size() / 4;
+			int pos2 = column.size() / 4 + 1;
+			if(pos2 >= column.size()) {
+				pos2 -= 1;
+			}
 			if((column.size() / 2) % 2 == 0){
-				out.add((column.get(column.size() / 4) + (column.get(column.size() / 4 + 1) / 2)));
+				out.add((column.get(pos1) + (column.get(pos2) / 2)));
 			}
 			else {
-				out.add(column.get(column.size() / 4 + 1));
+				out.add(column.get(pos2));
 			}
 		}
 		return out;
@@ -117,11 +133,16 @@ public class InterpretData {
 		ArrayList<Double> out = new ArrayList<Double>();
 		for(int i = 0; i < data.get(0).size(); i++) {
 			ArrayList<Double> column = pullColumn(i);
+			int pos1 = column.size() * 3 / 4;
+			int pos2 = column.size() * 3 / 4 + 1;
+			if(pos2 >= column.size()) {
+				pos2 -= 1;
+			}
 			if((column.size() - column.size() / 2) % 2 == 0) {
-				out.add((column.get(column.size() * 3 / 4) + column.get(column.size() * 3 / 4 + 1)) / 2);
+				out.add((column.get(pos1) + column.get(pos2)) / 2);
 			}
 			else {
-				out.add((column.get(column.size() * 3 / 4)));
+				out.add((column.get(pos1)));
 			}
 		}
 		return out;
@@ -174,10 +195,14 @@ public class InterpretData {
 		for(int i = 0; i < data.size(); i++) {
 			if(data.get(i).size() > column) {
 				Double val = data.get(i).get(column);
-				out.add(val);
+				if(val != null)
+					out.add(val);
 			}
 		}
 		Collections.sort(out);
+		if(out.size() == 0) {
+			out.add(-1.0);
+		}
 		return out;
 	}
 	

@@ -100,6 +100,8 @@ public class Incremental extends IncrementalMemoryMeasure {
 		ArrayList<TransitionSystem> copySpecs = new ArrayList<TransitionSystem>();
 		copyPlants.addAll(plants);
 		copySpecs.addAll(specs);
+
+		logHeuristics(retrieveIncrementalOptions());
 		
 		while(!copySpecs.isEmpty()) {
 			TransitionSystem pick = pickComponent(null, copySpecs, null);								//Get initial spec to use (heuristics choose here)

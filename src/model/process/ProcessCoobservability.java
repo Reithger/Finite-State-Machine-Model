@@ -87,8 +87,6 @@ public class ProcessCoobservability {
 	 * 
 	 * TODO: Technically would want an inferencing and non-inferencing version of this down the line
 	 * 
-	 * TODO: Also probably want the data output for this to include information about the final UStructures it came up with before resetting for general knowledge; new MemoryMeasure object
-	 * 
 	 * @param plants
 	 * @param specs
 	 * @param attr
