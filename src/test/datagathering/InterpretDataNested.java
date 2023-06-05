@@ -1,4 +1,4 @@
-package test;
+package test.datagathering;
 
 public class InterpretDataNested extends InterpretData{
 

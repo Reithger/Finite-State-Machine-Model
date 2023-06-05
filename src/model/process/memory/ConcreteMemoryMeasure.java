@@ -3,7 +3,7 @@ package model.process.memory;
 import java.util.ArrayList;
 
 import model.fsm.TransitionSystem;
-import test.DataGatheringManager;
+import test.datagathering.DataGatheringManager;
 
 public class ConcreteMemoryMeasure implements MemoryMeasure {
 	

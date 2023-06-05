@@ -17,6 +17,7 @@ import model.Manager;
 import model.process.coobservability.Incremental;
 import test.help.AgentChicanery;
 import test.help.EventSets;
+import test.help.RandomGenStats;
 import test.help.RandomGeneration;
 import test.help.SystemGeneration;
 import visual.composite.ImageDisplay;
@@ -380,10 +381,11 @@ public class TestFunctionality {
 		printOut(" " + numPlants + ", " + numSpecs + ", " + numStates + ", " + numStateVar + ", " + numEve + ", " + numEveVar + ", " + shareRate + ", " + numAgents + ", " + numAgentVar + ", " + obsRate + ", " + ctrRate + "\n");
 		printOut("---------------------------------------------\n");
 		
-		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(testName, model, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate);
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate, numAgents, numAgentVar, obsRate, ctrRate);
+		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(testName, model, info);
 		ArrayList<String> names = RandomGeneration.getComponentNames(testName, numPlants, numSpecs);
 
-		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, numAgents, numAgentVar, obsRate, ctrRate);
+		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, info);
 		
 		f = new File(writePath + "/" + (testName + "_agents.txt"));
 		try {
@@ -530,11 +532,12 @@ public class TestFunctionality {
 				", Event Share Rate: " + shareRate + ", # Agents: " + numAgents + ", Agent Variance: " + numAgentVar + ", Agent Obs. Event Rate: " + obsRate + ", Agent Ctr. Event Rate: " + ctrRate);
 		printOut(" " + numPlants + ", " + numSpecs + ", " + numStates + ", " + numStateVar + ", " + numEve + ", " + numEveVar + ", " + shareRate + ", " + numAgents + ", " + numAgentVar + ", " + obsRate + ", " + ctrRate + "\n");
 		printOut("---------------------------------------------\n");
-		
-		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(testName, model, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate);
+
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate, numAgents, numAgentVar, obsRate, ctrRate);
+		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(testName, model, info);
 		ArrayList<String> names = RandomGeneration.getComponentNames(testName, numPlants, numSpecs);
 		
-		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, numAgents, numAgentVar, obsRate, ctrRate);
+		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, info);
 		
 		printOut("Agent Information: \n" + agents.toString().replace("},", "},\n").replaceAll("[\\[\\]]", " "));
 		printOut("\n---------------------------------------------\n");

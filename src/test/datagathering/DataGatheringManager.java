@@ -1,4 +1,4 @@
-package test;
+package test.datagathering;
 
 import java.util.Timer;
 import java.util.TimerTask;

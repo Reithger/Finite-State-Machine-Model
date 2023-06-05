@@ -107,13 +107,21 @@ public class RandomGeneration {
 	 */
 	
 
-	public static ArrayList<String> generateRandomSystemSet(String prefixNom, Manager model, int numPlants, int numSpecs, int stateSizeAverage, int stateVariance, int eventSizeAverage, int eventVariance, double eventShareRate) throws Exception {
+	public static ArrayList<String> generateRandomSystemSet(String prefixNom, Manager model, RandomGenStats info) throws Exception {
 		Random rand = new Random();
 		HashMap<String, ArrayList<String>> plantEvents = new HashMap<String, ArrayList<String>>();
 		
 		setupRandomFSMConditions(model, 0, 0, 0);
 		
 		ArrayList<String> out = new ArrayList<String>();
+		
+		int numPlants = info.getNumPlants();
+		int stateSizeAverage = info.getNumStates();
+		int stateVariance = info.getNumStatesVar();
+		int eventSizeAverage = info.getNumEvents();
+		int eventVariance = info.getNumEventsVar();
+		double eventShareRate = info.getEventShareRate();
+		int numSpecs = info.getNumSpecs();
 		
 		for(int i = 0; i < numPlants; i++) {
 			int numStates = stateSizeAverage + (rand.nextInt(stateVariance * 2 + 1) - (stateVariance));
@@ -169,15 +177,16 @@ public class RandomGeneration {
 		return out;
 	}
 	
-	public static ArrayList<HashMap<String, ArrayList<Boolean>>> generateRandomAgents(ArrayList<String> events, int agentSizeAverage, int agentSizeVariance, double obsRate, double ctrRate){
+	public static ArrayList<HashMap<String, ArrayList<Boolean>>> generateRandomAgents(ArrayList<String> events, RandomGenStats info){
 		Random rand = new Random();
-		int numAgents = agentSizeAverage + (agentSizeVariance == 0 ? 0 : (rand.nextInt(agentSizeVariance * 2 + 1) - (agentSizeVariance)));
+		int agentSizeVariance = info.getNumControllersVar();
+		int numAgents = info.getNumControllers() + (agentSizeVariance == 0 ? 0 : (rand.nextInt(agentSizeVariance * 2 + 1) - (agentSizeVariance)));
 		boolean[][][] agentInfo = new boolean[numAgents][events.size()][2];
 		for(int i = 0; i < numAgents; i++) {
 			boolean hasControl = false;
 			for(int j = 0; j < events.size(); j++) {
-				agentInfo[i][j][0] = rand.nextDouble() < obsRate;
-				agentInfo[i][j][1] = rand.nextDouble() < ctrRate;
+				agentInfo[i][j][0] = rand.nextDouble() < info.getControllerObserveRate();
+				agentInfo[i][j][1] = rand.nextDouble() < info.getControllerControlRate();
 				if(agentInfo[i][j][1]) {
 					hasControl = true;
 				}

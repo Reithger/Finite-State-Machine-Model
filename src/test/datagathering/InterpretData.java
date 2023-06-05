@@ -1,4 +1,4 @@
-package test;
+package test.datagathering;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,12 +37,22 @@ public class InterpretData {
 	
 	private ArrayList<ArrayList<Double>> data;
 	
+	private String[] attributes;
+	
 	public InterpretData() {
 		data = new ArrayList<ArrayList<Double>>();
 	}
 	
 	public void mergeData(InterpretData in) {
 		data.addAll(in.getData());
+	}
+	
+	public void assignAttributes(String[] in) {
+		attributes = in;
+	}
+	
+	public String[] getAttributes() {
+		return attributes;
 	}
 	
 	protected ArrayList<ArrayList<Double>> getData(){

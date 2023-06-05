@@ -1,4 +1,4 @@
-package test;
+package test.datagathering;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,10 +16,16 @@ import controller.convert.FormatConversion;
 import model.Manager;
 import model.process.coobservability.Incremental;
 import test.help.EventSets;
+import test.help.RandomGenStats;
 import test.help.RandomGeneration;
 import test.help.SystemGeneration;
 
 /**
+ * 
+ * Make a test batch keep going until minimum number of true/false are met (25 of each?)
+ * 
+ * Make each test occur 3 times to average results, and do general analysis of variance
+ * 
  * 
  * 
  * Integrate specific examples from papers, make sure run heuristics on them
@@ -67,6 +73,10 @@ public class DataGathering {
 	private final String VERIFY_MEMORY_ERROR = "!!~~Verified Memory Exception~~!!";
 	
 	private final String VERIFY_COMPLETE_CHECKPOINT = "!!~~Verified Subtest Complete~~!!";
+	
+	private final int MINIMUM_TRUE_RESULTS = 25;
+	
+	private final int NUMBER_REPEAT_TEST = 3;
 	
 	private final int TEST_ALL = 0;
 	private final int TEST_BASIC = 1;
@@ -170,69 +180,69 @@ public class DataGathering {
 		//Coobs and SB
 		int testNum = 0;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testBasicConfigOne(TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB, TEST_SIZES[testNum]);
 		}
 		testNum = 1;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testBasicConfigTwo(TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB, TEST_SIZES[testNum]);
 		}
 		testNum = 2;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testBasicConfigThree(TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB, TEST_SIZES[testNum]);
 		}
 		testNum = 3;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testBasicConfigFour(TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB, TEST_SIZES[testNum]);
 		}
 		
 		// SB and Inc
 		testNum = 4;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_INC_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testIncConfigOne(TEST_SIZES[testNum]);
-			interpretTestBatchDataIncremental(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_INC_COOBS, TEST_SIZES[testNum]);
-			interpretTestBatchDataIncremental(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_INC_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB, TEST_SIZES[testNum]);
 			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
 		}
 		testNum = 5;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_INC_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testIncConfigTwo(TEST_SIZES[testNum]);
-			interpretTestBatchDataIncremental(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_INC_COOBS, TEST_SIZES[testNum]);
-			interpretTestBatchDataIncremental(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_INC_SB, TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB, TEST_SIZES[testNum]);
 		}
 		testNum = 6;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_INC_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testIncConfigThree(TEST_SIZES[testNum]);
-			interpretTestBatchDataIncremental(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_INC_COOBS, TEST_SIZES[testNum]);
-			interpretTestBatchDataIncremental(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_INC_SB, TEST_SIZES[testNum]);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS, TEST_SIZES[testNum]);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB, TEST_SIZES[testNum]);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB, TEST_SIZES[testNum]);
 		}
 		
 		heuristics = true;
 		//Heuristics Test (SB Inc and Coobs Inc)
 		testNum = 7;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_INC_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testHeuristicConfigOne(TEST_SIZES[testNum]);
 		}
 		testNum = 8;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
-		if(!testsCompleted(TEST_NAMES[testNum], TEST_SIZES[testNum]) || runThrough) {
+		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_INC_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testHeuristicConfigTwo(TEST_SIZES[testNum]);
 		}
 		
@@ -245,14 +255,31 @@ public class DataGathering {
 		g.mkdir();
 	}
 	
+	private boolean testsCompleted(String testBatch, String type, int maxSize) {
+		if(!checkTestVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + (maxSize))) {
+			return false;
+		}
+		int trueResults = generateInterpretDataSimple(defaultWritePath, type, maxSize).getNumberTrueResults();
+		if(!(trueResults >= MINIMUM_TRUE_RESULTS)) {
+			return false;
+		}
+		System.out.println(testBatch + " already complete at: " + maxSize + " tests");
+		System.out.println(testBatch + " satisfies minimum true results: " + trueResults);
+		return true;
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
 	
 	//-- Test Data Interpretation  ----------------------------
 	
 	private void interpretTestBatchDataSimple(String path, String type, int size) {
+		generateRawDataFileSimple(path, type, size);
+		outputInterpretDataSimple(generateInterpretDataSimple(path, type, size), path, type, size);
+	}
+		
+	private void generateRawDataFileSimple(String path, String type, int size) {
 		int counter = 1;
 		
-		InterpretData hold = new InterpretData();
 		String[] attributes = null;
 		File f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
 		File g = new File(path + "/" + RAW_DATA_FILE + type + ".txt");
@@ -276,25 +303,26 @@ public class DataGathering {
 					else {
 						raf.readLine();
 					}
+					InterpretData hold = new InterpretData();
+					//TODO: Need to create the raw file that averages the numbers then read the raw file into this
 					if(!skip) {
 						String line = raf.readLine();
 						String[] values = line.split(", ");
-						rag.writeBytes(line + "\n");
 						while(values != null) {
 							for(int i = 0; i < values.length; i++) {
 								values[i] = values[i].trim();
 							}
 							hold.addDataRow(values);
-							
 							String next = raf.readLine();
-							if(next != null) {
-								values = next.split(",");
-								rag.writeBytes(next + "\n");
-							}
-							else {
-								values = null;
-							}
+							values = next == null ? null : next.split(", ");
 						}
+						ArrayList<Double> aver = hold.calculateAverages();
+						//Should have some way to output general variance using interquartile range; or, for 3 averaged numbers, something else?
+						System.out.println(hold.calculateInterquartileRange() + " " + hold.calculateFirstQuartile() + " " + hold.calculateThirdQuartile());
+						for(int i = 0; i < aver.size(); i++) {
+							rag.writeBytes((aver.get(i)+"") + (i + 1 == aver.size() ? "" : ", "));
+						}
+						rag.writeBytes("\n");
 					}
 					raf.close();
 				}
@@ -306,8 +334,56 @@ public class DataGathering {
 			System.out.println(f.getAbsolutePath());
 			e.printStackTrace();
 		}
+	}
+	
+	private InterpretData generateInterpretDataSimple(String path, String type, int size) {
+		int counter = 1;
 		
-		f = new File(path + "/" + PROCESS_FILE + type + ".txt");
+		InterpretData hold = new InterpretData();
+		String[] attributes = null;
+		File f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + RAW_DATA_FILE + type + ".txt");
+
+		try {
+			RandomAccessFile raf;
+			while(counter <= size+1) {
+				if(f.exists()) {
+					raf = new RandomAccessFile(f, "rw");
+					boolean skip = false;
+					if(attributes == null) {
+						String line = raf.readLine();
+						if(line != null) {
+							attributes = line.split(", ");
+							hold.assignAttributes(attributes);
+						}
+						else
+							skip = true;
+					}
+					else {
+						raf.readLine();
+					}
+					if(!skip) {
+						String line = raf.readLine();
+						String[] values = line.split(", ");
+						for(int i = 0; i < values.length; i++) {
+							values[i] = values[i].trim();
+						}
+						hold.addDataRow(values);
+					}
+					raf.close();
+				}
+				f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
+			}
+		}
+		catch(Exception e) {
+			System.out.println(f.getAbsolutePath());
+			e.printStackTrace();
+		}
+		return hold;
+	}
+		
+	private void outputInterpretDataSimple(InterpretData hold, String path, String type, int size) {
+		String[] attributes = hold.getAttributes();
+		File f = new File(path + "/" + PROCESS_FILE + type + ".txt");
 		f.delete();
 		try {
 			RandomAccessFile raf = new RandomAccessFile(f, "rw");
@@ -512,16 +588,11 @@ public class DataGathering {
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
 		
-		int counter = 0;
-		
-		while(counter < count) {
-			System.out.println("Test Basic Config One: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
-			resetModel();
-			counter++;
-		}
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
+
+		runBasicTest(info, count, "Test Basic Config One");
 	}
-	
+
 	private void testBasicConfigTwo(int count) throws Exception{
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
@@ -540,14 +611,9 @@ public class DataGathering {
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
 		
-		int counter = 0;
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
 		
-		while(counter < count) {
-			System.out.println("Test Basic Config Two: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
-			resetModel();
-			counter++;
-		}
+		runBasicTest(info, count, "Test Basic Config Two");
 	}
 	
 	private void testBasicConfigThree(int count) throws Exception{
@@ -567,15 +633,10 @@ public class DataGathering {
 		int numControllersVar = 0;
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
+
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
 		
-		int counter = 0;
-		
-		while(counter < count) {
-			System.out.println("Test Basic Config Three: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
-			resetModel();
-			counter++;
-		}
+		runBasicTest(info, count, "Test Basic Config Three");
 	}
 	
 	private void testBasicConfigFour(int count) throws Exception{
@@ -595,12 +656,21 @@ public class DataGathering {
 		int numControllersVar = 0;
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
+
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
+		
+		runBasicTest(info, count, "Test Basic Config Four");
+	}
+	
+	private void runBasicTest(RandomGenStats info, int count, String testBatch) throws Exception{
+		int trueResults = generateInterpretDataSimple(defaultWritePath, ANALYSIS_COOBS, count).getNumberTrueResults();
 		
 		int counter = 0;
 		
-		while(counter < count) {
-			System.out.println("Test Basic Config Four: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_BASIC);
+		while(counter < count || trueResults < MINIMUM_TRUE_RESULTS) {
+			System.out.println(testBatch + ": " + counter);
+			if(autoTestRandomSystem(counter + 1, info, TEST_BASIC))
+				trueResults++;
 			resetModel();
 			counter++;
 		}
@@ -626,14 +696,9 @@ public class DataGathering {
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
 		
-		int counter = 0;
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
 		
-		while(counter < count) {
-			System.out.println("Test Inc Config One: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
-			resetModel();
-			counter++;
-		}
+		runIncTest(info, count, "Test Inc Config One");
 	}
 	
 	private void testIncConfigTwo(int count) throws Exception{
@@ -654,14 +719,9 @@ public class DataGathering {
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
 		
-		int counter = 0;
-		
-		while(counter < count) {
-			System.out.println("Test Inc Config Two: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
-			resetModel();
-			counter++;
-		}
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
+
+		runIncTest(info, count, "Test Inc Config Two");
 	}
 	
 	private void testIncConfigThree(int count) throws Exception{
@@ -682,11 +742,20 @@ public class DataGathering {
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
 		
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
+
+		runIncTest(info, count, "Test Inc Config Three");
+	}
+	
+	private void runIncTest(RandomGenStats info, int count, String testBatch) throws Exception{
+		int trueResults = generateInterpretDataSimple(defaultWritePath, ANALYSIS_COOBS, count).getNumberTrueResults();
+		
 		int counter = 0;
 		
-		while(counter < count) {
-			System.out.println("Test Inc Config Three: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_INC);
+		while(counter < count || trueResults < MINIMUM_TRUE_RESULTS) {
+			System.out.println(testBatch + ": " + counter);
+			if(autoTestRandomSystem(counter + 1, info, TEST_INC))
+				trueResults++;
 			resetModel();
 			counter++;
 		}
@@ -712,11 +781,13 @@ public class DataGathering {
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
 		
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
+		
 		int counter = 0;
 		
 		while(counter < count) {
 			System.out.println("Test Heuristic Config One: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
+			autoTestRandomSystem(counter + 1, info, TEST_HEUR);
 			resetModel();
 			counter++;
 			
@@ -741,25 +812,19 @@ public class DataGathering {
 		double controllerObserveRate = .4;
 		double controllerControlRate = .3;
 		
+		RandomGenStats info = new RandomGenStats(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
+		
 		int counter = 0;
 		
 		while(counter < count) {
 			System.out.println("Test Heuristic Config Two: " + counter);
-			autoTestRandomSystem(counter + 1, numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate, TEST_HEUR);
+			autoTestRandomSystem(counter + 1, info, TEST_HEUR);
 			resetModel();
 			counter++;
 			
 		}
 	}
-	
-	private boolean testsCompleted(String testBatch, int maxSize) {
-		if(checkTestVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + (maxSize))) {
-			System.out.println(testBatch + " already complete at: " + maxSize + " tests");
-			return true;
-		}
-		return false;
-	}
-	
+
   //-- Specific Tests  ----------------------------------------
 	
 //---  System Testing   -----------------------------------------------------------------------
@@ -781,86 +846,8 @@ public class DataGathering {
 			printOut(VERIFY_MEMORY_ERROR + analysisSubtype + retrieveHeuristicsPostscript()); 
 		}
 	}
-	
-	private boolean checkTestVerifiedComplete(String path) {
-		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_TEST);
-	}
-	
-	private boolean checkTestDeclaredMemoryError(String path) {
-		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR);
-	}
-	
-	private boolean checkTestDeclaredTypeMemoryError(String path) {
-		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR + analysisSubtype);
-	}
-	
-	private int checkTestNumberDeclaredMemoryError(String path) {
-		return checkForTermLinePositions(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR).size();
-	}
-	
-	private boolean checkTestVerifiedMemoryError(String path) {
-		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR);
-	}
-	
-	private int checkTestNumberVerifiedMemoryError(String path) {
-		return checkForTermLinePositions(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR).size();
-	}
-	
-	private ArrayList<String> checkTestTypesVerifiedMemoryError(String path){
-		ArrayList<String> out = new ArrayList<String>();
-		if(!heuristics) {
-			for(String s : ANALYSIS_TYPES) {
-				if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + s)) {
-					out.add(s);
-				}
-			}
-		}
-		else {
-			for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
-				for(int j = 0; j < Incremental.NUM_B_HEURISTICS; j++) {
-					for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
-						String post = generateHeuristicsPostscript(i, j, k);
-						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + ANALYSIS_INC_SB + post)) {
-							out.add(ANALYSIS_INC_SB + post);
-						}
-						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + ANALYSIS_INC_COOBS + post)) {
-							out.add(ANALYSIS_INC_COOBS + post);
-						}
-					}
-				}
-			}
-		}
-		return out;
-	}
-	
-	private ArrayList<String> checkTestsCompleted(String path){
-		ArrayList<String> out = new ArrayList<String>();
-		if(!heuristics) {
-			for(String s : ANALYSIS_TYPES) {
-				if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + s)) {
-					out.add(s);
-				}
-			}
-		}
-		else {
-			for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
-				for(int j = 0; j < Incremental.NUM_B_HEURISTICS; j++) {
-					for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
-						String post = generateHeuristicsPostscript(i, j, k);
-						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + ANALYSIS_INC_SB + post)) {
-							out.add(ANALYSIS_INC_SB + post);
-						}
-						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + ANALYSIS_INC_COOBS + post)) {
-							out.add(ANALYSIS_INC_COOBS + post);
-						}
-					}
-				}
-			}
-		}
-		return out;
-	}
-	
-	private void autoTestRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate, int testChoice) throws Exception {
+
+	private boolean autoTestRandomSystem(int count, RandomGenStats info, int testChoice) throws Exception {
 		String testName = TEST_NAME + "_" +  count;
 		File f;
 		f = new File(defaultWritePath + "/" + testName);
@@ -870,43 +857,58 @@ public class DataGathering {
 		boolean inMem = false;
 		
 		if(!f.exists()) {
-			autoGenerateNewRandomSystem(count, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate, numAgents, numAgentVar, obsRate, ctrRate);
+			autoGenerateNewRandomSystem(count, info);
 			inMem = true;
 		}
-		
-		boolean finished = checkTestVerifiedComplete(writePath);
 
-		if(finished)
-			return;
+		Boolean out = null;
 		
-		ArrayList<String> completeTests = checkTestsCompleted(writePath);
-		ArrayList<String> memoryError = checkTestTypesVerifiedMemoryError(writePath);
-
-		if(!inMem)
-			readInOldSystem(testName);
-
-		ArrayList<String> plants = getPlants(testName);
-		ArrayList<String> specs = getSpecs(testName);
-		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = getAgents(testName);
 		
-		switch(testChoice) {
-			case TEST_ALL:
-				autoTestSystemFull(testName, plants, specs, agents);
-				break;
-			case TEST_BASIC:
-				autoTestSystemCoobsSB(testName, plants, specs, agents, completeTests, memoryError);
-				break;
-			case TEST_INC:
-				autoTestSystemIncr(testName, plants, specs, agents, completeTests, memoryError);
-				break;
-			case TEST_HEUR:
-				autoTestHeuristics(testName, plants, specs, agents, completeTests, memoryError);
-				break;
-			default:
-				break;
+		
+		int finished = checkTestNumberVerifiedComplete(writePath);
+
+		while(finished < (heuristics ? 1 : NUMBER_REPEAT_TEST)) {
+
+			ArrayList<String> completeTests = checkTestsCompleted(writePath);
+			ArrayList<String> memoryError = checkTestTypesVerifiedMemoryError(writePath);
+	
+			if(!inMem)
+				readInOldSystem(testName);
+	
+			ArrayList<String> plants = getPlants(testName);
+			ArrayList<String> specs = getSpecs(testName);
+			ArrayList<HashMap<String, ArrayList<Boolean>>> agents = getAgents(testName);
+			
+			
+			switch(testChoice) {
+				case TEST_ALL:
+					out = autoTestSystemFull(testName, plants, specs, agents);
+					break;
+				case TEST_BASIC:
+					out = autoTestSystemCoobsSB(testName, plants, specs, agents, finished, completeTests, memoryError);
+					break;
+				case TEST_INC:
+					out = autoTestSystemIncr(testName, plants, specs, agents, finished, completeTests, memoryError);
+					break;
+				case TEST_HEUR:
+					out = autoTestHeuristics(testName, plants, specs, agents, completeTests, memoryError);
+					break;
+				default:
+					break;
+			}
+			confirmComplete();			
+			finished = checkTestNumberVerifiedComplete(writePath);
 		}
-		confirmComplete();
-		
+
+		return out == null ? false : out;
+	}
+	
+	private int contains(ArrayList<String> list, String find) {
+		int out = 0;
+		for(String s : list) {
+			out += (s.equals(find) ? 1 : 0);
+		}
+		return out;
 	}
 	
 	private void readInOldSystem(String prefixNom) throws FileNotFoundException {
@@ -928,7 +930,7 @@ public class DataGathering {
 		}
 	}
 
-	private void autoGenerateNewRandomSystem(int count, int numPlants, int numSpecs, int numStates, int numStateVar, int numEve, int numEveVar, double shareRate, int numAgents, int numAgentVar, double obsRate, double ctrRate) throws Exception {
+	private void autoGenerateNewRandomSystem(int count, RandomGenStats info) throws Exception {
 		String testName = TEST_NAME + "_" +  count;
 		File f;
 		f = new File(defaultWritePath + "/" + testName);
@@ -942,16 +944,15 @@ public class DataGathering {
 		
 		
 		printOut("Test Configuration: Full Suite");
-		printOut("Randomizer Parameters:");
-		printOut(" Plants: " + numPlants + ", Specs: " + numSpecs + ", # States Average: " + numStates + ", State Variance: " + numStateVar + ", # Events Average: " + numEve + ", Event Variance: " + numEveVar + 
-				", Event Share Rate: " + shareRate + ", # Agents: " + numAgents + ", Agent Variance: " + numAgentVar + ", Agent Obs. Event Rate: " + obsRate + ", Agent Ctr. Event Rate: " + ctrRate);
-		printOut(" " + numPlants + ", " + numSpecs + ", " + numStates + ", " + numStateVar + ", " + numEve + ", " + numEveVar + ", " + shareRate + ", " + numAgents + ", " + numAgentVar + ", " + obsRate + ", " + ctrRate + "\n");
+		printOut("Randomizer Parameters: ");
+		printOut(" " + info.toString());
+		printOut(" " + info.shortToString() + "\n");
 		printOut("---------------------------------------------\n");
 		
-		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(testName, model, numPlants, numSpecs, numStates, numStateVar, numEve, numEveVar, shareRate);
-		ArrayList<String> names = RandomGeneration.getComponentNames(testName, numPlants, numSpecs);
+		ArrayList<String> events = RandomGeneration.generateRandomSystemSet(testName, model, info);
+		ArrayList<String> names = RandomGeneration.getComponentNames(testName, info.getNumPlants(), info.getNumSpecs());
 
-		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, numAgents, numAgentVar, obsRate, ctrRate);
+		ArrayList<HashMap<String, ArrayList<Boolean>>> agents = RandomGeneration.generateRandomAgents(events, info);
 		
 		f = new File(writePath + "/" + (testName + "_agents.txt"));
 		try {
@@ -981,7 +982,7 @@ public class DataGathering {
 		}
 	}
 	
-	private void autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
+	private boolean autoTestSystemFull(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		printCoobsLabel(prefixNom, false);
 		boolean coobs = checkCoobservable(plantNames, specNames, agents, false);
 
@@ -1017,17 +1018,18 @@ public class DataGathering {
 			throw new Exception("Logic Conflict in Data Output");
 		}
 		resetModel();
+		return coobs;
 	}
 	
-	private void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
+	private boolean autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, int finishCount, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
 		boolean coobs = false;
-		if(!completedTests.contains(ANALYSIS_COOBS) && !memoryError.contains(ANALYSIS_COOBS)) {
+		if(contains(completedTests, ANALYSIS_COOBS) == finishCount && !memoryError.contains(ANALYSIS_COOBS)) {
 			printCoobsLabel(prefixNom, false);
 			coobs = checkCoobservable(plantNames, specNames, agents, false);
 		}
 
 		boolean sbCoobs = false;
-		if(!completedTests.contains(ANALYSIS_SB) && !memoryError.contains(ANALYSIS_SB)) {
+		if(contains(completedTests, ANALYSIS_SB) == finishCount && !memoryError.contains(ANALYSIS_SB)) {
 			printSBCoobsLabel(prefixNom);
 			sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
 		}
@@ -1046,23 +1048,24 @@ public class DataGathering {
 			throw new Exception("Logic Conflict in Data Output: " + prefixNom);
 		}
 		resetModel();
+		return coobs;
 	}
 
-	private void autoTestSystemIncr(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
+	private boolean autoTestSystemIncr(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, int finishCount, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
 		Boolean icCoobs = null;
-		if(!completedTests.contains(ANALYSIS_INC_COOBS) && !memoryError.contains(ANALYSIS_INC_COOBS)) {
+		if(contains(completedTests, ANALYSIS_INC_COOBS) == finishCount && !memoryError.contains(ANALYSIS_INC_COOBS)) {
 			printIncrementalLabel(prefixNom, false);
 			icCoobs = checkIncrementalCoobservable(plantNames, specNames, agents, false);
 		}
 		
 		Boolean sbCoobs = null;
-		if(!completedTests.contains(ANALYSIS_SB) && !memoryError.contains(ANALYSIS_SB)) {
+		if(contains(completedTests, ANALYSIS_SB) == finishCount && !memoryError.contains(ANALYSIS_SB)) {
 			printSBCoobsLabel(prefixNom);
 			sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
 		}
 		
 		Boolean icSbCoobs = null;
-		if(!completedTests.contains(ANALYSIS_INC_SB) && !memoryError.contains(ANALYSIS_INC_SB)) {
+		if(contains(completedTests, ANALYSIS_INC_SB) == finishCount && !memoryError.contains(ANALYSIS_INC_SB)) {
 			printIncrementalSBLabel(prefixNom);
 			icSbCoobs = checkIncrementalSBCoobservable(plantNames, specNames, agents);
 		}
@@ -1085,9 +1088,10 @@ public class DataGathering {
 			throw new Exception("Logic Conflict in Data Output: " + prefixNom);
 		}
 		resetModel();
+		return icCoobs;
 	}
 	
-	private void autoTestHeuristics(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
+	private boolean autoTestHeuristics(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
 		Boolean expected = null;
 		
 		for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
@@ -1122,6 +1126,7 @@ public class DataGathering {
 			}
 		}
 		resetModel();
+		return expected;
 	}
 	
 	private int indexOf(int[] arr, int key) {
@@ -1227,6 +1232,89 @@ public class DataGathering {
 	
 	private String generateHeuristicsPostscript(int a, int b, int c) {
 		return "_" + a + "_" + b + "_" + c;
+	}
+	
+	private boolean checkTestVerifiedComplete(String path) {
+		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_TEST);
+	}
+	
+	private int checkTestNumberVerifiedComplete(String path) {
+		return checkForTermLinePositions(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_TEST).size();
+	}
+	
+	private boolean checkTestDeclaredMemoryError(String path) {
+		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR);
+	}
+	
+	private boolean checkTestDeclaredTypeMemoryError(String path) {
+		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR + analysisSubtype);
+	}
+	
+	private int checkTestNumberDeclaredMemoryError(String path) {
+		return checkForTermLinePositions(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR).size();
+	}
+	
+	private boolean checkTestVerifiedMemoryError(String path) {
+		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR);
+	}
+	
+	private int checkTestNumberVerifiedMemoryError(String path) {
+		return checkForTermLinePositions(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR).size();
+	}
+
+	private ArrayList<String> checkTestTypesVerifiedMemoryError(String path){
+		ArrayList<String> out = new ArrayList<String>();
+		if(!heuristics) {
+			for(String s : ANALYSIS_TYPES) {
+				if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + s)) {
+					out.add(s);
+				}
+			}
+		}
+		else {
+			for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
+				for(int j = 0; j < Incremental.NUM_B_HEURISTICS; j++) {
+					for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
+						String post = generateHeuristicsPostscript(i, j, k);
+						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + ANALYSIS_INC_SB + post)) {
+							out.add(ANALYSIS_INC_SB + post);
+						}
+						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR + ANALYSIS_INC_COOBS + post)) {
+							out.add(ANALYSIS_INC_COOBS + post);
+						}
+					}
+				}
+			}
+		}
+		return out;
+	}
+	
+	private ArrayList<String> checkTestsCompleted(String path){
+		ArrayList<String> out = new ArrayList<String>();
+		if(!heuristics) {
+			for(String s : ANALYSIS_TYPES) {
+				if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + s)) {
+					for(int i = 0; i < checkForTermLinePositions(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + s).size(); i++)
+						out.add(s);
+				}
+			}
+		}
+		else {
+			for(int i = 0; i < Incremental.NUM_A_HEURISTICS; i++) {
+				for(int j = 0; j < Incremental.NUM_B_HEURISTICS; j++) {
+					for(int k = 0; k < Incremental.NUM_C_HEURISTICS; k++) {
+						String post = generateHeuristicsPostscript(i, j, k);
+						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + ANALYSIS_INC_SB + post)) {
+							out.add(ANALYSIS_INC_SB + post);
+						}
+						if(checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_CHECKPOINT + ANALYSIS_INC_COOBS + post)) {
+							out.add(ANALYSIS_INC_COOBS + post);
+						}
+					}
+				}
+			}
+		}
+		return out;
 	}
 	
 	//-- Data Output Gathering  -------------------------------
