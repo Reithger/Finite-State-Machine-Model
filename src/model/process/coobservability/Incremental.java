@@ -111,6 +111,7 @@ public class Incremental extends IncrementalMemoryMeasure {
 			decider = decider.constructDeciderCoobs(getAllEvents(plants), pick, attr, agents);
 			logMemoryUsage();
 			while(!decider.decideCondition()) {
+				//System.out.println("Loop start");
 				if(copyPlants.isEmpty() && copySpecs.isEmpty()) {
 					logData(decider, hold);
 					reserveTransitionSystem(decider.produceMemoryMeasure().getReserveSystem());
@@ -118,7 +119,10 @@ public class Incremental extends IncrementalMemoryMeasure {
 				}
 				logMemoryUsage();
 				IllegalConfig counterexample = pickCounterExample(decider.getCounterExamples());	//Get a single bad state, probably, maybe write something so UStruct can trace it
+				//System.out.println(hold);
+				//System.out.println(counterexample);
 				pick = pickComponent(copyPlants, copySpecs, counterexample);	//Heuristics go here
+				//System.out.println(pick);
 				if(pick == null) {
 					logData(decider, hold);
 					reserveTransitionSystem(decider.produceMemoryMeasure().getReserveSystem());
@@ -134,7 +138,9 @@ public class Incremental extends IncrementalMemoryMeasure {
 					copyPlants.remove(pick);
 					decider.addComponent(pick, true);
 				}
+				//System.out.println("Loop End");
 			}
+			//System.out.println("Subsystem terminated");
 			copyPlants.addAll(hold);
 			logData(decider, hold);
 		}

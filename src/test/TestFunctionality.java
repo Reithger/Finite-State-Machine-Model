@@ -113,37 +113,20 @@ public class TestFunctionality {
 		makeImageDisplay("Example M_L-M_K", "Example M_L-M_K");
 		makeImageDisplay("Example Observer M_L-M_K", "Example Observer M_L-M_K");
 		*/
-		Incremental.assignIncrementalOptions(0, 0, 0);
+		Incremental.assignIncrementalOptions(0, 1, 1);
 		
-		Integer testCase = null;	//786, 809, 812, 927, *1135, 1142, 1190, 1195, 1926, 2779, 2904, 2994, 4560, 4835, 4926, 5156
+		ArrayList<String> names = SystemGeneration.generateSystemSetDTP();
+		ArrayList<String> plant = new ArrayList<String>(names.subList(0, 3));
+		ArrayList<String> spec = new ArrayList<String>(names.subList(3, 6));
 		
-		
-		int numPlants = 2;
-		int numSpecs = 2;
-		
-		int numStates = 4;
-		int numStateVar = 2;
-		int numEvents = 3;
-		int numEventsVar = 2;
-		
-		double eventShareRate = .4;
-		
-		int numControllers = 2;
-		int numControllersVar = 0;
-		double controllerObserveRate = .4;
-		double controllerControlRate = .3;
-		
-		if(testCase != null) {
-			String prefix = "test_full_suite_";
-			autoTestOldSystem(prefix + testCase);
-		} else {
-			//Scanner sc = new Scanner(System.in);
-			while(true) {
-				autoTestNewRandomSystem(numPlants, numSpecs, numStates, numStateVar, numEvents, numEventsVar, eventShareRate, numControllers, numControllersVar, controllerObserveRate, controllerControlRate);
-				garbageCollect();
-				//sc.nextLine();
-			}
+		for(String s : names) {
+			//makeImageDisplay(s, s);
 		}
+		
+		printIncrementalLabel("System DTP", false);
+		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
+		System.out.println("Hey");
+		checkCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
 		
 		/*
 		String prefix = "C:\\Users\\SirBo\\Documents\\GitHub\\Finite-State-Machine-Model\\Finite State Machine Model\\sources\\";

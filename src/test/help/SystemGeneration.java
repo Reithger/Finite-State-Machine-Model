@@ -457,6 +457,146 @@ public class SystemGeneration {
 		addTransitions(name, "c", "4", "6");
 	}
 	
+	public static ArrayList<String> generateSystemSetDTP() {
+		ArrayList<String> use = new ArrayList<String>();
+		use.add("Sender");
+		use.add("Receiver");
+		use.add("Channel");
+		use.add("SpecOne");
+		use.add("SpecTwo");
+		use.add("SpecThree");
+		generateDTPSender(use.get(0));
+		generateDTPReceiver(use.get(1));
+		generateDTPChannel(use.get(2));
+		generateDTPSpecOne(use.get(3));
+		generateDTPSpecTwo(use.get(4));
+		generateDTPSpecThree(use.get(5));
+		return use;
+	}
+ 	
+	private static void generateDTPSender(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 5);
+		
+		model.removeState(name,  "0");
+		
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_DTP_SENDER);
+		
+		addTransitions(name, "getFrame", "1", "2", "4", "2");
+		addTransitions(name, "loss", "3", "2");
+		addTransitions(name, "send_0", "2", "3", "4", "3");
+		addTransitions(name, "send_1", "2", "3", "4", "3");
+		addTransitions(name, "rcvAck_0", "3", "4");
+		addTransitions(name, "rcvAck_1", "3", "4");
+	}
+	
+	private static void generateDTPReceiver(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 6);
+		
+		model.removeState(name,  "0");
+		
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_DTP_RECEIVER);
+		
+		addTransitions(name, "rcv_0", "1", "2", "4", "5");
+		addTransitions(name, "rcv_1", "1", "2", "4", "5");
+		addTransitions(name, "passToHost", "2", "3", "5", "3");
+		addTransitions(name, "sendAck_0", "3", "4", "5", "4");
+		addTransitions(name, "sendAck_1", "3", "4", "5", "4");
+	}
+	
+	private static void generateDTPChannel(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 5);
+		
+		model.removeState(name,  "0");
+		
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_DTP_CHANNEL);
+		
+		addTransitions(name, "rcv_0", "2", "1");
+		addTransitions(name, "rcvAck_1", "3", "1");
+		addTransitions(name, "rcv_1", "4", "1");
+		addTransitions(name, "rcvAck_0", "5", "1");
+		
+		addTransitions(name, "send_0", "1", "2");
+		addTransitions(name, "send_1", "1", "4");
+		addTransitions(name, "sendAck_0", "1", "5");
+		addTransitions(name, "sendAck_1", "1", "3");
+		
+		addTransitions(name, "loss", "2", "1", "4", "1", "5", "1", "3", "1");
+	}
+	
+	private static void generateDTPSpecOne(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 3);
+		
+		model.removeState(name,  "0");
+		
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_DTP_SPEC_ONE);
+
+		addTransitions(name, "getFrame", "1", "2");
+		addTransitions(name, "passToHost", "2", "1");
+		
+		for(String s : EventSets.EVENT_LIST_DTP) {
+			if(!(s.equals("getFrame") || s.equals("passToHost"))) {
+				addTransitions(name, s, "1", "1", "2", "2");
+			}
+		}
+	}
+	
+	private static void generateDTPSpecTwo(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 7);
+		
+		model.removeState(name,  "0");
+		
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_DTP_SPEC_TWO);
+		
+		addTransitions(name, "getFrame", "1", "2", "4", "5");
+		addTransitions(name, "loss", "3", "2", "6", "5");
+		
+		addTransitions(name, "rcvAck_0", "3", "4", "6", "5");
+		addTransitions(name, "rcvAck_1", "3", "2", "6", "1");
+		
+		addTransitions(name, "send_0", "2", "3");
+		addTransitions(name, "send_1", "5", "6");
+	}
+	
+	private static void generateDTPSpecThree(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 7);
+		
+		model.removeState(name,  "0");
+		
+		initialState(name, "1");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_DTP_SPEC_THREE);
+		
+		addTransitions(name, "rcv_0", "1", "2", "4", "3");
+		addTransitions(name, "rcv_1", "4", "5", "1", "6");
+		
+		addTransitions(name, "passToHost", "2", "3", "5", "6");
+		
+		addTransitions(name, "sendAck_0", "3", "4");
+		addTransitions(name, "sendAck_1", "6", "1");
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private static void generateSystemDefault(String name) {

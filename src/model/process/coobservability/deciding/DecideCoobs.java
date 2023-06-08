@@ -95,12 +95,14 @@ public class DecideCoobs implements DecideCondition{
 		//System.out.println("--- Deciding Coobservability ---");
 		//System.out.println("--- Using: " + plants + ", " + specs + " ---");
 		TransitionSystem use = specs == null ? plants.get(0) : deriveTruePlant();
+		
 		if(use.getTransitionsWithAttribute(badTransRef).size() == 0) {
 			//System.out.println("Immediate bail");
 			return true;
 		}
+		
 		ustruct = new UStructure(use, attr, agents);
-		//ustruct.reserveTransitionSystem(use);
+		ustruct.reserveTransitionSystem(use);
 		//ustruct.reserveTransitionSystem(ustruct.getUStructure());
 		boolean out = decideResult();
 		ustruct.assignTestResult(out);
@@ -311,12 +313,12 @@ public class DecideCoobs implements DecideCondition{
 	}
 
 	private TransitionSystem parallelCompSpecs() {
-		return ProcessDES.parallelComposition(specs);
+		return specs.size() == 1 ? specs.get(0) : ProcessDES.parallelComposition(specs);
 	}
 	
 	private TransitionSystem parallelCompPlants() {
 		TransitionSystem use = null;
-		if(events != null && isSpecEventNoPlant()) {
+		if(events != null && !isSpecEventNoPlant()) {
 			//System.out.println("HERE: " + getRelevantEvents() + ", " + events);
 			use = generatePlantSigmaStarion(plants.get(0));
 			plants.add(use);

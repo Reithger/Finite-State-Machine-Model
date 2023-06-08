@@ -51,7 +51,7 @@ public class IllegalConfig {
 	
 	@Override
 	public String toString() {
-		return stateSet.toString() + ", " + stateSet.getEventPath() + ", " + event;
+		return stateSet.toString() + ", " + stateSet.getEventPath() + ", " + event + "\n" + observedPaths;
 	}
 	
 	private ArrayList<String> copy(ArrayList<String> in){
