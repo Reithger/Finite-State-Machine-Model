@@ -47,6 +47,8 @@ public class DecideCoobs implements DecideCondition{
 	
 	private int enableDisableMode;
 	
+	private TransitionSystem hold;
+	
 //---  Constructors   -------------------------------------------------------------------------
 	
 	public DecideCoobs() {
@@ -102,7 +104,7 @@ public class DecideCoobs implements DecideCondition{
 		}
 		
 		ustruct = new UStructure(use, attr, agents);
-		ustruct.reserveTransitionSystem(use);
+		ustruct.reserveTransitionSystem(hold);
 		//ustruct.reserveTransitionSystem(ustruct.getUStructure());
 		boolean out = decideResult();
 		ustruct.assignTestResult(out);
@@ -203,7 +205,7 @@ public class DecideCoobs implements DecideCondition{
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private TransitionSystem deriveTruePlant() {
-		//System.out.println("Deriving with: " + plants + ", " + specs);
+		System.out.println("Deriving with: " + plants + ", " + specs);
 
 		TransitionSystem ultSpec = parallelCompSpecs();
 		TransitionSystem ultPlant;
@@ -213,8 +215,13 @@ public class DecideCoobs implements DecideCondition{
 		}
 		else {
 			ultPlant = parallelCompPlants();
-			ultPlant = performPermissiveUnion(ultPlant, ultSpec);
 		}
+		
+		ultPlant = parallelCompAutomata(ultPlant, makeSpecPrime(ultSpec));
+		
+		System.out.println(ultPlant.getStateNames().size());
+		
+		hold = ultPlant.copy();
 		
 		LinkedList<StateSet> queue = new LinkedList<StateSet>();
 		HashSet<StateSet> visited = new HashSet<StateSet>();
@@ -254,7 +261,7 @@ public class DecideCoobs implements DecideCondition{
 				}
 			}
 		}
-		
+
 		// --- Experimental Solution ---
 		try {
 			ultPlant = ProcessDES.makeAccessible(ultPlant);
@@ -262,8 +269,25 @@ public class DecideCoobs implements DecideCondition{
 			e.printStackTrace();
 		}
 		// --- */
+
+		//hold = ultPlant;
+		
+		System.out.println(ultPlant.getStateNames().size());
 		
 		return ultPlant;
+	}
+	
+	private TransitionSystem makeSpecPrime(TransitionSystem in) {
+		TransitionSystem out = in.copy();
+		
+		for(String s : out.getStateNames()) {
+			for(String e : out.getEventNames()) {
+				if(!out.hasTransition(s, e))
+					out.addTransition(s, e, "trash");
+			}
+		}
+		
+		return out;
 	}
 	
 	private boolean cantPerform(TransitionSystem ultSpec, String specState, String e) {
@@ -328,6 +352,13 @@ public class DecideCoobs implements DecideCondition{
 			plants.remove(plants.size() - 1);
 		}
 		return hold;
+	}
+	
+	private TransitionSystem parallelCompAutomata(TransitionSystem p1, TransitionSystem p2) {
+		ArrayList<TransitionSystem> use = new ArrayList<TransitionSystem>();
+		use.add(p1);
+		use.add(p2);
+		return ProcessDES.parallelComposition(use);
 	}
 	
 	private TransitionSystem performPermissiveUnion(TransitionSystem pl, TransitionSystem sp) {

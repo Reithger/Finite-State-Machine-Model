@@ -327,6 +327,34 @@ public class SystemGeneration {
 		}
 	}
 	
+	public static void generateSystemSpecPrimeTestPlant(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 5);
+
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_SPEC_PRIME);
+		
+		addTransitions(name, "a", "0", "1");
+		addTransitions(name, "b", "0", "1", "1", "3");
+		addTransitions(name, "g", "1", "2", "3", "4");
+	}
+	
+	public static void generateSystemSpecPrimeTestSpec(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 5);
+
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_SPEC_PRIME);
+		
+		addTransitions(name, "a", "0", "2");
+		addTransitions(name, "b", "0", "1", "2", "4");
+		addTransitions(name, "g", "1", "3");
+	}
+	
 	//-- Poly System  -----------------------------------------
 	
 	public static void generateSystemSetA(ArrayList<String> name) {

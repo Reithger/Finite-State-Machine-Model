@@ -36,5 +36,7 @@ public class EventSets {
 	
 	public final static String[] EVENT_LIST_DTP_SPEC_THREE = new String[] {"rcv_0", "rcv_1", "sendAck_0", "sendAck_1", "passToHost"};
 	
+	public final static String[] EVENT_LIST_SPEC_PRIME = new String[] {"a", "b", "g"};
+	
 	
 }

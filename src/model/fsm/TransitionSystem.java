@@ -524,6 +524,10 @@ public class TransitionSystem {
 	
 	//-- Transition  ------------------------------------------
 
+	public boolean hasTransition(String state, String event) {
+		return transitions.getTransitionStates(state, event) != null;
+	}
+	
 	public boolean hasTransitionAttribute(String ref) {
 		return transitions.getAttributes().contains(ref);
 	}

@@ -444,7 +444,7 @@ public class ProcessOperation {
 			for(String s : events) {
 				ArrayList<String> inStates = in.getStateEventTransitionStates(stateA, s);
 				ArrayList<String> otherStates = other.getStateEventTransitionStates(stateB, s);
-				if(inStates != null && inStates.size() != 0 && otherStates != null && otherStates.size() != 0) {
+				if(inStates != null && inStates.size() != 0 && otherStates != null && otherStates.size() != 0) {	//if both states have a valid transition
 					for(String t : inStates) {
 						for(String u : otherStates) {
 							compileDestination(t, u, in.getStateComposition(t), other.getStateComposition(u), newString, s, out, use);
@@ -453,13 +453,20 @@ public class ProcessOperation {
 						}
 					}
 				}
-				else if(inStates != null && inStates.size() > 0) {
+				else if(inStates != null && inStates.size() > 0) {			//if only the first automaton has a valid transition
 					for(String t : inStates) {
 						compileDestination(t, stateB, in.getStateComposition(t), other.getStateComposition(stateB), newString, s, out, use);
 						thisNextString.add(t);
 						otherNextString.add(stateB);
 					}
 				}
+				/*else if(otherStates != null && otherStates.size() > 0) {
+					for(String u : otherStates) {
+						compileDestination(stateA, u, in.getStateComposition(stateA), other.getStateComposition(u), newString, s, out, use);
+						thisNextString.add(stateA);
+						otherNextString.add(u);
+					}
+				}*/
 			}
 		} // while there are more states connected to the 2-tuple of initial states
 		return out;

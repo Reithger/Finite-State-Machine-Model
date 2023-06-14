@@ -14,6 +14,7 @@ import java.util.Scanner;
 import controller.FiniteStateMachine;
 import controller.convert.FormatConversion;
 import model.Manager;
+import model.fsm.TransitionSystem;
 import model.process.coobservability.Incremental;
 import test.help.AgentChicanery;
 import test.help.EventSets;
@@ -123,10 +124,13 @@ public class TestFunctionality {
 			//makeImageDisplay(s, s);
 		}
 		
-		printIncrementalLabel("System DTP", false);
-		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
+		//printIncrementalLabel("System DTP", false);
+		//checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
 		System.out.println("Hey");
 		checkCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
+		pullReserveDisplay();
+
+		System.out.println("Done");
 		
 		/*
 		String prefix = "C:\\Users\\SirBo\\Documents\\GitHub\\Finite-State-Machine-Model\\Finite State Machine Model\\sources\\";
@@ -165,6 +169,37 @@ public class TestFunctionality {
 		//checkSystemBCoobservable();
 		//checkSystemBAltCoobservable();
 		//checkSystemFinnCoobservable();
+	}
+	
+	private static void makeSpecPrime(String in) {
+		
+		for(String s : model.getFSMStateList(in)) {
+			for(String e : model.getFSMEventList(in)) {
+				if(!model.transitionExists(in, s, e))
+					model.addTransition(in, s, e, "trash");
+			}
+		}
+		
+	}
+	
+	private static void confirmSpecPrimeWorks() {
+		SystemGeneration.generateSystemSpecPrimeTestPlant("plant");
+		SystemGeneration.generateSystemSpecPrimeTestSpec("spec");
+		
+		makeImageDisplay("plant", "plant");
+		makeImageDisplay("spec", "spec");
+		
+		makeSpecPrime("spec");
+		
+		makeImageDisplay("spec", "spec");
+		
+		ArrayList<String> use = new ArrayList<String>();
+		use.add("plant");
+		use.add("spec");
+		
+		String nom = model.performParallelComposition(use);
+		
+		makeImageDisplay(nom, nom);
 	}
 	
 //---  Automated Testing   --------------------------------------------------------------------

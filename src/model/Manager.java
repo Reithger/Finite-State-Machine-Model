@@ -241,12 +241,19 @@ public class Manager implements ReceiveMemoryMeasure{
 		}
 		return fsms.get(ref).stateExists(nom);
 	}
-	
+
 	public Boolean eventExists(String ref, String nom) {
 		if(bail(ref)) {
 			return null;
 		}
 		return fsms.get(ref).eventExists(nom);
+	}
+	
+	public Boolean transitionExists(String ref, String state, String event) {
+		if(bail(ref)) {
+			return null;
+		}
+		return fsms.get(ref).hasTransition(state, event);
 	}
 	
 	public Boolean isBlocking(String ref) throws Exception {
