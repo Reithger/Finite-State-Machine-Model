@@ -179,7 +179,7 @@ public class DataGathering {
 		
 		//Coobs and SB
 		int testNum = 0;
-		/*initializeTestFolder(f, TEST_NAMES[testNum]);
+		initializeTestFolder(f, TEST_NAMES[testNum]);
 		if(!testsCompleted(TEST_NAMES[testNum], ANALYSIS_COOBS, TEST_SIZES[testNum]) || runThrough) {
 			testBasicConfigOne(TEST_SIZES[testNum]);
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS, TEST_SIZES[testNum]);
@@ -206,7 +206,7 @@ public class DataGathering {
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS, TEST_SIZES[testNum]);
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB, TEST_SIZES[testNum]);
 		}
-		*/
+		
 		// SB and Inc
 		testNum = 4;
 		initializeTestFolder(f, TEST_NAMES[testNum]);

@@ -205,7 +205,7 @@ public class DecideCoobs implements DecideCondition{
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private TransitionSystem deriveTruePlant() {
-		System.out.println("Deriving with: " + plants + ", " + specs);
+		//System.out.println("Deriving with: " + plants + ", " + specs);
 
 		TransitionSystem ultSpec = parallelCompSpecs();
 		TransitionSystem ultPlant;
@@ -217,11 +217,15 @@ public class DecideCoobs implements DecideCondition{
 			ultPlant = parallelCompPlants();
 		}
 		
+		//System.out.println(ultPlant.getStateNames().size() + " " + ultSpec.getStateNames().size());
+		
+		//System.out.println(parallelCompAutomata(ultPlant, ultSpec).getStateNames().size());
+		
 		ultPlant = parallelCompAutomata(ultPlant, makeSpecPrime(ultSpec));
 		
-		System.out.println(ultPlant.getStateNames().size());
+		//System.out.println(ultPlant.getStateNames().size());
 		
-		hold = ultPlant.copy();
+		//hold = ultPlant.copy();
 		
 		LinkedList<StateSet> queue = new LinkedList<StateSet>();
 		HashSet<StateSet> visited = new HashSet<StateSet>();
@@ -270,9 +274,9 @@ public class DecideCoobs implements DecideCondition{
 		}
 		// --- */
 
-		//hold = ultPlant;
+		hold = ultPlant;
 		
-		System.out.println(ultPlant.getStateNames().size());
+		//System.out.println(ultPlant.getStateNames().size());
 		
 		return ultPlant;
 	}
@@ -280,9 +284,21 @@ public class DecideCoobs implements DecideCondition{
 	private TransitionSystem makeSpecPrime(TransitionSystem in) {
 		TransitionSystem out = in.copy();
 		
+		ArrayList<String> contr = new ArrayList<String>();
+		
+		for(String e : getRelevantEvents()) {
+			for(Agent a : agents) {
+				if(a.getEventAttribute(e, controllableRef)) {
+					contr.add(e);
+					break;
+				}
+			}
+		}
+
+		
 		for(String s : out.getStateNames()) {
 			for(String e : out.getEventNames()) {
-				if(!out.hasTransition(s, e))
+				if(!out.hasTransition(s, e) && contr.contains(e))
 					out.addTransition(s, e, "trash");
 			}
 		}

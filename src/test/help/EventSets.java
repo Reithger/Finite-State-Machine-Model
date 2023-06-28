@@ -32,7 +32,7 @@ public class EventSets {
 	
 	public final static String[] EVENT_LIST_DTP_SPEC_ONE = EVENT_LIST_DTP;
 	
-	public final static String[] EVENT_LIST_DTP_SPEC_TWO = new String[] {"getFrame", "loss", "send_0", "send_1", "rcvAck_1", "rcvAck_2"};
+	public final static String[] EVENT_LIST_DTP_SPEC_TWO = new String[] {"getFrame", "loss", "send_0", "send_1", "rcvAck_0", "rcvAck_1"};
 	
 	public final static String[] EVENT_LIST_DTP_SPEC_THREE = new String[] {"rcv_0", "rcv_1", "sendAck_0", "sendAck_1", "passToHost"};
 	

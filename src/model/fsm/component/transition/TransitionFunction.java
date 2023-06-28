@@ -269,7 +269,8 @@ public class TransitionFunction {
 			return out;
 		}
 		for(Transition t : transitions.get(state)) {
-			out.add(t.getEvent());
+			if(!out.contains(t.getEvent()))
+				out.add(t.getEvent());
 		}
 		return out;
 	}
@@ -288,7 +289,10 @@ public class TransitionFunction {
 			for(Transition transition : trans)
 				if(transition.getEvent().equals(event)) {
 					ArrayList<String> out = new ArrayList<String>();
-					out.addAll(transition.getStates());
+					for(String s : transition.getStates()) {
+						if(!out.contains(s))
+							out.add(s);
+					}
 					return out;
 				}
 		return null;

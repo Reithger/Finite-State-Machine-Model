@@ -125,7 +125,7 @@ public class TestFunctionality {
 		}
 		
 		//printIncrementalLabel("System DTP", false);
-		//checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
+		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
 		System.out.println("Hey");
 		checkCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
 		pullReserveDisplay();
