@@ -92,6 +92,8 @@ public class TransitionFunction {
 		}
 		else {
 			if(transitions.get(inState) == null) {
+				//if(inState.contains("trash"))
+					//System.out.println(transitions.size() + " " + inState);
 				transitions.put(inState, new ArrayList<Transition>());
 			}
 			transitions.get(inState).add(new Transition(event, outState));

@@ -4,16 +4,17 @@ digraph G {
 "n1"[label= <1> shape=circle color="black" style=wedged fillcolor="white" style=filled fontsize="28"];
 "n2"[label= <2> shape=circle color="black" style=wedged fillcolor="white" style=filled fontsize="28"];
 "n3"[label= <3> shape=circle color="black" style=wedged fillcolor="white" style=filled fontsize="28"];
+"n4"[label= <4> shape=circle color="black" style=wedged fillcolor="white" style=filled fontsize="28"];
+"n5"[label= <5> shape=circle color="black" style=wedged fillcolor="white" style=filled fontsize="28"];
 {"ArbitraryUnusedNameNoWorriesJustGrooving1"}->{"n0"};
-{"n0"}->{"n0"}[label = <c<sub>1</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n0"}->{"n2"}[label = <c<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n1"}->{"n1"}[label = <b<sub>2</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n2"}->{"n0"}[label = <b<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n2"}->{"n1"}[label = <b<sub>2</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n2"}->{"n3"}[label = <c<sub>1</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n3"}->{"n1"}[label = <c<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n3"}->{"n2"}[label = <c<sub>1</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n3"}->{"n2"}[label = <b<sub>2</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n3"}->{"n3"}[label = <a<sub>1</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
-{"n3"}->{"n1"}[label = <b<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n0"}->{"n2"}[label = <a<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n0"}->{"n4"}[label = <c<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n1"}->{"n3"}[label = <c<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n1"}->{"n5"}[label = <a<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n2"}->{"n5"}[label = <a<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n3"}->{"n2"}[label = <a<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n3"}->{"n3"}[label = <c<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n4"}->{"n3"}[label = <c<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n5"}->{"n1"}[label = <a<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
+{"n5"}->{"n1"}[label = <c<sub>0</sub>> color="black" arrowhead="normal" style="" fontsize="28"];
 }

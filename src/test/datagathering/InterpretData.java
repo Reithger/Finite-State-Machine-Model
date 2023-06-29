@@ -39,8 +39,18 @@ public class InterpretData {
 	
 	private String[] attributes;
 	
+	private int totalNumberTests;
+	
 	public InterpretData() {
 		data = new ArrayList<ArrayList<Double>>();
+	}
+	
+	public void assignTotalNumberTests(int in) {
+		totalNumberTests = in;
+	}
+	
+	public int getTotalNumberTests() {
+		return totalNumberTests;
 	}
 	
 	public void mergeData(InterpretData in) {
@@ -196,8 +206,8 @@ public class InterpretData {
 		return counter;
 	}
 	
-	public int getNumberDNF(int size) {
-		return size - pullColumn(0).size();
+	public int getNumberDNF() {
+		return getTotalNumberTests() - pullColumn(0).size();
 	}
 	
 	private ArrayList<Double> pullColumn(int column){

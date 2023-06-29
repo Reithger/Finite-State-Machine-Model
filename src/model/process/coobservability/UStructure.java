@@ -183,11 +183,13 @@ public class UStructure extends UStructMemoryMeasure{
 							}
 						}
 						
-						if(!isMeaninglessTransition(eventName)) {
+						//This condition may not be needed anymore, was having all-null issues before
+						if(!isMeaninglessTransition(stateSetStates, eventName, badTransitions)) {
 							AgentStates aS = stateSet.deriveChild(newSet, i, s);
 							handleNewTransition(aS, eventName, currState);
 							queue.add(aS);	//adds the guess transition to our queue
 						}
+
 					}
 				}
 				
@@ -208,7 +210,7 @@ public class UStructure extends UStructMemoryMeasure{
 					}
 				}
 				
-				if(!isMeaninglessTransition(eventName)) {
+				if(!isMeaninglessTransition(stateSetStates, eventName, badTransitions)) {
 					AgentStates aS = stateSet.deriveChild(newSet, canAct, s);
 					handleNewTransition(aS, eventName, currState);
 					queue.add(aS);		//adds the real event occurring transition to our queue
@@ -469,13 +471,28 @@ public class UStructure extends UStructMemoryMeasure{
 		return out;
 	}
 	
-	private boolean isMeaninglessTransition(String[] events) {
+	private boolean isMeaninglessTransition(String[] stateSetStates, String[] events, HashMap<String, HashSet<String>> badTransitions) {
+		
+		//First, did we somehow get an event sequence that doesn't have any events in it? Also gets the relevant event.
+		String event = null;
 		for(String s : events) {
 			if(s != null) {
-				return false;
+				event = s;
 			}
 		}
-		return true;
+		
+		if(event == null) {
+			return true;
+		}
+		
+		//Checks if any transition would lead through a bad transition to the 'trash' state
+		for(int i = 0; i < stateSetStates.length; i++) {
+			if(events[i] != null && badTransitions.get(stateSetStates[i]).contains(event)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	private ArrayList<String> filterEventPath(ArrayList<String> events, String contr, Agent age) {

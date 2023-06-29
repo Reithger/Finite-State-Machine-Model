@@ -211,7 +211,7 @@ public class DecideCoobs implements DecideCondition{
 		TransitionSystem ultPlant;
 		
 		if(plants == null) {
-			ultPlant = generateSigmaStarion(ultSpec);
+			ultPlant = generatePlantSigmaStarion(ultSpec);
 		}
 		else {
 			ultPlant = parallelCompPlants();
@@ -222,6 +222,8 @@ public class DecideCoobs implements DecideCondition{
 		//System.out.println(parallelCompAutomata(ultPlant, ultSpec).getStateNames().size());
 		
 		ultPlant = parallelCompAutomata(ultPlant, makeSpecPrime(ultSpec));
+		
+		//System.out.println(ultPlant.getStateNames());
 		
 		//System.out.println(ultPlant.getStateNames().size());
 		
@@ -275,7 +277,8 @@ public class DecideCoobs implements DecideCondition{
 		// --- */
 
 		hold = ultPlant;
-		
+
+		//System.out.println(ultPlant.getStateNames());
 		//System.out.println(ultPlant.getStateNames().size());
 		
 		return ultPlant;
