@@ -116,19 +116,19 @@ public class TestFunctionality {
 		*/
 		Incremental.assignIncrementalOptions(0, 1, 1);
 		
-		ArrayList<String> names = SystemGeneration.generateSystemSetDTP();
-		ArrayList<String> plant = new ArrayList<String>(names.subList(0, 3));
-		ArrayList<String> spec = new ArrayList<String>(names.subList(3, 6));
+		ArrayList<ArrayList<String>> names = SystemGeneration.generateSystemSetHISC();
+		ArrayList<String> plant = names.get(0);
+		ArrayList<String> spec = names.get(1);
 		
-		for(String s : names) {
-			//makeImageDisplay(s, s);
+		for(String s : spec) {
+			makeImageDisplay(s, s);
 		}
 		
 		//printIncrementalLabel("System DTP", false);
-		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
+		//checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
 		System.out.println("Hey");
-		checkCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
-		pullReserveDisplay();
+		//checkCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
+		//pullReserveDisplay();
 
 		System.out.println("Done");
 		

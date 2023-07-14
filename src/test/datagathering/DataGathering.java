@@ -107,7 +107,8 @@ public class DataGathering {
 															 "/Test Batch Random Inc 3",
 															 "/Test Batch Random Heuristic 1",
 															 "/Test Batch Random Heuristic 2",
-															 "/Test Batch Basic DTP",};
+															 "/Test Batch Basic DTP",
+															 "/Test Basic Batch HISC"};
 	private final int[] TEST_SIZES = new int[] {	   150,
 													   100,
 													   100,
@@ -116,7 +117,9 @@ public class DataGathering {
 													   125,
 													   75,
 													   200,
-													   200};
+													   200,
+													   NUMBER_EXISTING_TEST_RUNS,
+													   NUMBER_EXISTING_TEST_RUNS};
 	
 	
 	
@@ -180,7 +183,7 @@ public class DataGathering {
 	public void runTests(File f) throws Exception{
 		heuristics = false;
 		
-		boolean runThrough = true ;			//set true if you want to force it to go through and rewrite the analysis files/check for gaps
+		boolean runThrough = false ;			//set true if you want to force it to go through and rewrite the analysis files/check for gaps
 		
 		//resetDataGathered(f);
 		
@@ -188,12 +191,18 @@ public class DataGathering {
 		//Existing Tests
 		
 		initializeTestFolder(f, TEST_NAMES[9]);
-		if(!testsCompletedNonRandom(TEST_NAMES[9], ANALYSIS_COOBS, NUMBER_EXISTING_TEST_RUNS) || runThrough) {
+		if(!testsCompletedNonRandom(TEST_NAMES[9], ANALYSIS_COOBS, TEST_SIZES[9]) || runThrough) {
 			testBasicConfigDTP();
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS);
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
 		}
 		
+		initializeTestFolder(f, TEST_NAMES[10]);
+		if(!testsCompletedNonRandom(TEST_NAMES[10], ANALYSIS_COOBS, TEST_SIZES[9]) || runThrough) {
+			testBasicConfigHISC();
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
+		}
 		
 		//Coobs and SB
 		int testNum = 0;
@@ -680,6 +689,20 @@ public class DataGathering {
 			
 		}
 		});
+	}
+	
+	private void testBasicConfigHISC() throws Exception {
+		
+		ArrayList<ArrayList<String>> names = SystemGeneration.generateSystemSetHISC();
+		
+		testExistingSystem("Test Basic Config HISC", names.get(0), names.get(1), AgentChicanery.generateAgentsHISC(), new BatchSetup() {
+			
+			public void setUpSystem() {
+				SystemGeneration.generateSystemSetHISC();
+			}
+			
+		});
+		
 	}
 	
 	abstract class BatchSetup {

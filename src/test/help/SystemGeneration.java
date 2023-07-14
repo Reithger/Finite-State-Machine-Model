@@ -625,6 +625,457 @@ public class SystemGeneration {
 		addTransitions(name, "sendAck_1", "6", "1");
 	}
 	
+	public static ArrayList<ArrayList<String>> generateSystemSetHISC(){
+		ArrayList<ArrayList<String>> out = new ArrayList<ArrayList<String>>();
+		
+		ArrayList<String> plant = new ArrayList<String>();
+		plant.add("Packaging");
+		plant.add("Source");
+		plant.add("Sink");
+		plant.add("Test");
+		
+		generateHISCPackaging(plant.get(0));
+		generateHISCSource(plant.get(1));
+		generateHISCSink(plant.get(2));
+		generateHISCTest(plant.get(3));
+		
+		plant.addAll(generateHISCPath("Path"));
+		plant.addAll(generateHISCDefine("Define"));
+		plant.addAll(generateHISCPolishPart("Polish Part"));
+		plant.addAll(generateHISCAttachCase("Attach Case"));
+		plant.addAll(generateHISCAttachPart("Attach Part"));
+		
+		
+		ArrayList<String> spec = new ArrayList<String>();
+		spec.add("In Buffer");
+		spec.add("Out Buffer");
+		spec.add("Package");
+		spec.add("Ensure");
+		
+		generateHISCInBuff(spec.get(0));
+		generateHISCOutBuff(spec.get(1));
+		generateHISCPackage(spec.get(2));
+		generateHISCEnsure(spec.get(3));
+		
+		spec.addAll(generateHISCMoves("Moves"));
+		spec.addAll(generateHISCPolishSequence("Polish Sequence"));
+		spec.addAll(generateHISCAffix("Affix"));
+		spec.addAll(generateHISCG("G"));
+		spec.addAll(generateHISCSequence("Sequence"));
+		
+		out.add(plant);
+		out.add(spec);
+		
+		return out;
+	}
+	
+	private static String[] appendControlNumberEventSet(String[] in, int num) {
+		String[] out = new String[in.length];
+
+		for(int i = 0; i < out.length; i++) {
+			out[i] = appendControlNumber(in[i], num);
+		}
+		return out;
+	}
+	
+	private static String appendControlNumber(String in, int num) {
+		String attach = "";
+		for(int i = 0; i < num; i++) {
+			attach += "I";
+		}
+		return in + attach;
+	}
+	
+	//-- Plant Parts  -----------------------------------------
+	
+	public static void generateHISCPackaging(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 3);
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_HISC_PACK_SYS);
+		
+		addTransitions(name, "take_item", "0", "1");
+		addTransitions(name, "package", "1", "2");
+		addTransitions(name, "allow_exit", "2", "0");
+	}
+	
+	public static void generateHISCSource(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 1);
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_HISC_SOURCE);
+		
+		addTransitions(name, "new_part", "0", "0");
+	}
+	
+	public static void generateHISCSink(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 1);
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_HISC_SINK);
+		
+		addTransitions(name, "allow_exit", "0", "0");
+	}
+	
+	public static void generateHISCTest(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 4);
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_HISC_TEST);
+		
+		addTransitions(name, "part_f_obuff", "0", "1");
+		addTransitions(name, "part_passes", "1", "2");
+		addTransitions(name, "part_fails", "1", "3");
+		addTransitions(name, "ret_inbuff", "3", "0");
+		addTransitions(name, "deposit_part", "2", "0");
+	}
+	
+		//-- J Parts  -----------------------------------------
+	
+	public static ArrayList<String> generateHISCPath(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 10);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_PATH, i));
+			
+			addTransitions(name, appendControlNumber("part_ent-", i), "0", "1");
+			addTransitions(name, appendControlNumber("part_arr1-", i), "1", "2");
+			addTransitions(name, appendControlNumber("part_lv1-", i), "2", "3");
+			addTransitions(name, appendControlNumber("str_exit-", i), "3", "4");
+			addTransitions(name, appendControlNumber("fin_exit-", i), "4", "0");
+			addTransitions(name, appendControlNumber("partLvExit-", i), "3", "5");
+			
+			addTransitions(name, appendControlNumber("part_arr2-", i), "5", "6");
+			addTransitions(name, appendControlNumber("recog_A-", i), "6", "7");
+			addTransitions(name, appendControlNumber("recog_B-", i), "6", "7");
+			addTransitions(name, appendControlNumber("part_lv2-", i), "7", "8");
+			addTransitions(name, appendControlNumber("part_arr3-", i), "8", "9");
+			addTransitions(name, appendControlNumber("part_lv3-", i), "9", "1");
+		}
+		return out;
+	}
+	
+	public static ArrayList<String> generateHISCDefine(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 1);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_DEFINE, i));
+			
+			addTransitions(name, appendControlNumber("attch_ptA-", i), "0", "0");
+			addTransitions(name, appendControlNumber("attch_ptB-", i), "0", "0");
+			addTransitions(name, appendControlNumber("finA_attch-", i), "0", "0");
+			addTransitions(name, appendControlNumber("finB_attch-", i), "0", "0");
+		}
+		return out;
+	}
+	
+	public static ArrayList<String> generateHISCPolishPart(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 3);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_POLISH_PART, i));
+			
+			addTransitions(name, appendControlNumber("start_pol-", i), "0", "1");
+			addTransitions(name, appendControlNumber("dip_acid-", i), "1", "1");
+			addTransitions(name, appendControlNumber("polish-", i), "1", "1");
+			addTransitions(name, appendControlNumber("str_rlse-", i), "1", "2");
+			addTransitions(name, appendControlNumber("compl_pol-", i), "2", "0");
+		}
+		return out;
+	}
+	
+	public static ArrayList<String> generateHISCAttachCase(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 3);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_ATTACH_CASE, i));
+			
+			addTransitions(name, appendControlNumber("start_case-", i), "0", "1");
+			addTransitions(name, appendControlNumber("attch_case-", i), "1", "2");
+			addTransitions(name, appendControlNumber("compl_case-", i), "2", "0");
+		}
+		return out;
+	}
+	
+	public static ArrayList<String> generateHISCAttachPart(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 5);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_ATTACH_PART, i));
+			
+			addTransitions(name, appendControlNumber("take_pt-", i), "0", "1");
+			addTransitions(name, appendControlNumber("str_ptA-", i), "1", "2");
+			addTransitions(name, appendControlNumber("str_ptB-", i), "1", "3");
+			addTransitions(name, appendControlNumber("cmpl_A-", i), "2", "4");
+			addTransitions(name, appendControlNumber("cmpl_B-", i), "3", "4");
+			addTransitions(name, appendControlNumber("ret_pt-", i), "4", "0");
+		}
+		return out;
+	}
+	
+	//-- Spec Parts  ------------------------------------------
+	
+	public static void generateHISCInBuff(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 5);
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_HISC_INBUFF);
+		
+		addTransitions(name, "ret_inbuff", "0", "1", "1", "2", "2", "3", "3", "4");
+		addTransitions(name, "new_part", "0", "1", "1", "2", "2", "3", "3", "4");
+		
+		addTransitions(name, "part_ent-I", "4", "3", "3", "2", "2", "1", "1", "0");
+		addTransitions(name, "part_ent-II", "4", "3", "3", "2", "2", "1", "1", "0");
+		addTransitions(name, "part_ent-III", "4", "3", "3", "2", "2", "1", "1", "0");
+		
+	}
+	
+	public static void generateHISCOutBuff(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 5);
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_HISC_OUTBUFF);
+		
+		addTransitions(name, "part_ent-I", "0", "0", "1", "1");
+		addTransitions(name, "part_ent-II", "0", "0", "1", "1");
+		addTransitions(name, "part_ent-III", "0", "0", "1", "1");
+		
+		addTransitions(name, "fin_exit-I", "0", "1", "1", "2", "2", "3", "3", "4");
+		addTransitions(name, "fin_exit-II", "0", "1", "1", "2", "2", "3", "3", "4");
+		addTransitions(name, "fin_exit-III", "0", "1", "1", "2", "2", "3", "3", "4");
+		
+		addTransitions(name, "part_f_obuff", "4", "3", "3", "2", "2", "1", "1", "0");
+		
+	}
+	
+	public static void generateHISCPackage(String name) {
+		generateSystemDefault(name);
+		
+		model.addStates(name, 5);
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_HISC_PACKBUFF);
+		
+		addTransitions(name, "deposit_part", "0", "1", "1", "2", "2", "3", "3", "4");
+		addTransitions(name, "take_item", "4", "3", "3", "2", "2", "1", "1", "0");
+	}
+	
+	public static void generateHISCEnsure(String name) {
+
+		generateSystemDefault(name);
+		
+		model.addStates(name, 5);
+		
+		initialState(name, "0");
+		
+		initiateEvents(name, EventSets.EVENT_LIST_HISC_ENSURE);
+		
+		addTransitions(name, "new_part", "0", "1", "1", "2", "2", "3", "3", "4");
+		addTransitions(name, "part_passes", "4", "3", "3", "2", "2", "1", "1", "0");
+	}
+	
+	//-- J Parts  -----------------------------------------
+
+	public static ArrayList<String> generateHISCMoves(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 2);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_MOVE, i));
+			
+			addTransitions(name, appendControlNumber("part_ent-", i), "0", "1");
+			addTransitions(name, appendControlNumber("fin_exit-", i), "1", "0");
+		}
+		return out;
+		
+	}
+	
+	public static ArrayList<String> generateHISCPolishSequence(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 6);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_POLISH_SEQUENCE, i));
+			
+			addTransitions(name, appendControlNumber("start_pol-", i), "0", "1");
+			addTransitions(name, appendControlNumber("dip_acid-", i), "1", "2", "3", "4");
+			addTransitions(name, appendControlNumber("polish-", i), "2", "3", "4", "5");
+			addTransitions(name, appendControlNumber("str_rlse-", i), "5", "0");
+		}
+		return out;
+	}
+	
+	public static ArrayList<String> generateHISCAffix(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 11);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_AFFIX, i));
+			
+			addTransitions(name, appendControlNumber("str_ptA-", i), "7", "8");
+			addTransitions(name, appendControlNumber("str_ptB-", i), "2", "3");
+			addTransitions(name, appendControlNumber("attch_ptA-", i), "0", "6");
+			addTransitions(name, appendControlNumber("attch_ptB-", i), "0", "1");
+			addTransitions(name, appendControlNumber("cmpl_A-", i), "8", "9");
+			addTransitions(name, appendControlNumber("cmpl_B-", i), "3", "4");
+			addTransitions(name, appendControlNumber("finA_attch-", i), "10", "0");
+			addTransitions(name, appendControlNumber("finB_attch-", i), "5", "0");
+			addTransitions(name, appendControlNumber("take_pt-", i), "1", "2", "6", "7");
+			addTransitions(name, appendControlNumber("ret_pt-", i), "4", "5", "9", "10");
+		}
+		return out;
+	}
+	
+	public static ArrayList<String> generateHISCG(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 5);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_G, i));
+
+			addTransitions(name, appendControlNumber("start_pol-", i), "0", "1");
+			addTransitions(name, appendControlNumber("compl_pol-", i), "1", "0");
+			addTransitions(name, appendControlNumber("attch_ptA-", i), "0", "2");
+			addTransitions(name, appendControlNumber("finA_attch-", i), "2", "0");
+			addTransitions(name, appendControlNumber("attch_ptB-", i), "0", "3");
+			addTransitions(name, appendControlNumber("finB_attch-", i), "3", "0");
+			addTransitions(name, appendControlNumber("start_case-", i), "0", "4");
+			addTransitions(name, appendControlNumber("compl_case-", i), "4", "0");
+		}
+		return out;
+	}
+	
+	public static ArrayList<String> generateHISCSequence(String nameIn) {
+		ArrayList<String> out = new ArrayList<String>();
+		for(int i = 1; i < 4; i++) {
+			String name = nameIn + "_" + i;
+			out.add(name);
+			
+			generateSystemDefault(name);
+			
+			model.addStates(name, 17);
+			
+			initialState(name, "0");
+			
+			initiateEvents(name, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_SEQUENCE, i));
+
+			addTransitions(name, appendControlNumber("start_pol-", i), "2", "3");
+			addTransitions(name, appendControlNumber("compl_pol-", i), "3", "4");
+			addTransitions(name, appendControlNumber("start_case-", i), "12", "13");
+			addTransitions(name, appendControlNumber("compl_case-", i), "13", "14");
+			addTransitions(name, appendControlNumber("attch_ptA-", i), "6", "8");
+			addTransitions(name, appendControlNumber("attch_ptB-", i), "7", "9");
+			addTransitions(name, appendControlNumber("finA_attch-", i), "8", "10");
+			addTransitions(name, appendControlNumber("finB_attch-", i), "9", "10");
+			
+			addTransitions(name, appendControlNumber("fin_exit-", i), "0", "0");
+			addTransitions(name, appendControlNumber("part_ent-", i), "0", "1");
+			
+			addTransitions(name, appendControlNumber("recog_A-", i), "5", "6");
+			addTransitions(name, appendControlNumber("recog_B-", i), "5", "7");
+			
+			addTransitions(name, appendControlNumber("part_arr1-", i), "1", "2", "15", "16");
+			addTransitions(name, appendControlNumber("part_arr2-", i), "5", "5");
+			addTransitions(name, appendControlNumber("part_arr3-", i), "11", "12");
+
+			addTransitions(name, appendControlNumber("partLvExit-", i), "5", "5");
+			addTransitions(name, appendControlNumber("part_lv1-", i), "4", "5", "16", "16");
+			addTransitions(name, appendControlNumber("part_lv2-", i), "10", "11");
+			addTransitions(name, appendControlNumber("part_lv3-", i), "14", "15");
+			
+			addTransitions(name, appendControlNumber("str_exit-", i), "16", "0");
+		}
+		return out;
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
 	
 	private static void generateSystemDefault(String name) {
