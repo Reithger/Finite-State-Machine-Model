@@ -98,10 +98,10 @@ public class DecideCoobs implements DecideCondition{
 		//System.out.println("--- Using: " + plants + ", " + specs + " ---");
 		TransitionSystem use = specs == null ? plants.get(0) : deriveTruePlant();
 		
-		if(use.getTransitionsWithAttribute(badTransRef).size() == 0) {
+		/*if(use.getTransitionsWithAttribute(badTransRef).size() == 0) {
 			//System.out.println("Immediate bail");
 			return true;
-		}
+		}*/
 		
 		ustruct = new UStructure(use, attr, agents);
 		ustruct.reserveTransitionSystem(hold);
@@ -276,10 +276,12 @@ public class DecideCoobs implements DecideCondition{
 		}
 		// --- */
 
-		hold = ultPlant;
+		//hold = ultPlant;
 
 		//System.out.println(ultPlant.getStateNames());
 		//System.out.println(ultPlant.getStateNames().size());
+		
+		ultSpec = null;
 		
 		return ultPlant;
 	}

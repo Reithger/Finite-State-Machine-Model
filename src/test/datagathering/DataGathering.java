@@ -8,6 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -15,6 +16,7 @@ import controller.FiniteStateMachine;
 import controller.convert.FormatConversion;
 import model.Manager;
 import model.process.coobservability.Incremental;
+import test.help.AgentChicanery;
 import test.help.EventSets;
 import test.help.RandomGenStats;
 import test.help.RandomGeneration;
@@ -78,6 +80,8 @@ public class DataGathering {
 	
 	private final int NUMBER_REPEAT_TEST = 3;
 	
+	private final int NUMBER_EXISTING_TEST_RUNS = 50;
+	
 	private final int TEST_ALL = 0;
 	private final int TEST_BASIC = 1;
 	private final int TEST_INC = 2;
@@ -102,14 +106,15 @@ public class DataGathering {
 															 "/Test Batch Random Inc 2",
 															 "/Test Batch Random Inc 3",
 															 "/Test Batch Random Heuristic 1",
-															 "/Test Batch Random Heuristic 2"};
+															 "/Test Batch Random Heuristic 2",
+															 "/Test Batch Basic DTP",};
 	private final int[] TEST_SIZES = new int[] {	   150,
-													   75,
-													   50,
-													   40,
 													   100,
+													   100,
+													   100,
+													   150,
+													   125,
 													   75,
-													   50,
 													   200,
 													   200};
 	
@@ -175,7 +180,20 @@ public class DataGathering {
 	public void runTests(File f) throws Exception{
 		heuristics = false;
 		
-		boolean runThrough = false;			//set true if you want to force it to go through and rewrite the analysis files/check for gaps
+		boolean runThrough = true ;			//set true if you want to force it to go through and rewrite the analysis files/check for gaps
+		
+		//resetDataGathered(f);
+		
+		
+		//Existing Tests
+		
+		initializeTestFolder(f, TEST_NAMES[9]);
+		if(!testsCompletedNonRandom(TEST_NAMES[9], ANALYSIS_COOBS, NUMBER_EXISTING_TEST_RUNS) || runThrough) {
+			testBasicConfigDTP();
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
+		}
+		
 		
 		//Coobs and SB
 		int testNum = 0;
@@ -263,12 +281,24 @@ public class DataGathering {
 			System.out.println(testBatch + " in progress at: " + trueResults + " true outcomes of " + totalTests + " total tests.");
 			return false;
 		}
-		if(!checkTestVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize)) {
+		if(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize) != NUMBER_REPEAT_TEST) {
 			System.out.println(testBatch + " in progress at: " + trueResults + " true outcomes of " + totalTests + " total tests.");
 			return false;
 		}
 		System.out.println(testBatch + " already complete at: " + totalTests + " tests");
 		System.out.println(testBatch + " satisfies minimum true results: " + trueResults);
+		return true;
+	}
+	
+	private boolean testsCompletedNonRandom(String testBatch, String type, int maxSize) {
+		InterpretData d = generateInterpretDataSimple(defaultWritePath, type);
+		int totalTests = d.getTotalNumberTests();
+		if(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize) != NUMBER_REPEAT_TEST) {
+			System.out.println(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize));
+			System.out.println(defaultWritePath + "/" + TEST_NAME + "_" + maxSize);
+			return false;
+		}
+		System.out.println(testBatch + " already complete at: " + totalTests + " tests");
 		return true;
 	}
 	
@@ -297,12 +327,10 @@ public class DataGathering {
 	}
 		
 	private void generateRawDataFileSimple(String path, String type) {
-		int counter = 1;
+		int counter = 0;
 
 		int size = new File(path).list().length;
 		String[] attributes = null;
-		
-		System.out.println(size);
 		
 		File f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
 		File g = new File(path + "/" + RAW_DATA_FILE + type + ".txt");
@@ -333,6 +361,9 @@ public class DataGathering {
 					if(!skip) {
 						String line = raf.readLine();
 						String[] values = line.split(", ");
+						if(values[values.length - 1].equals("")) {
+							values = Arrays.copyOf(values, values.length - 2);
+						}
 						while(values != null) {
 							for(int i = 0; i < values.length; i++) {
 								values[i] = values[i].trim();
@@ -345,11 +376,14 @@ public class DataGathering {
 						//Should have some way to output general variance using interquartile range; or, for 3 averaged numbers, something else?
 						//System.out.println(hold.calculateInterquartileRange() + " " + hold.calculateFirstQuartile() + " " + hold.calculateThirdQuartile());
 						for(int i = 0; i < aver.size(); i++) {
-							rag.writeBytes((aver.get(i)+"") + (i + 1 == aver.size() ? "" : ", "));
+							rag.writeBytes((threeSig(aver.get(i))+"") + (i + 1 == aver.size() ? "" : ", "));
 						}
 						rag.writeBytes("\n");
 					}
 					raf.close();
+				}
+				else {
+					System.out.println(type + " " + counter);
 				}
 				f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
 			}
@@ -362,7 +396,7 @@ public class DataGathering {
 	}
 	
 	private InterpretData generateInterpretDataSimple(String path, String type) {
-		int counter = 1;
+		int counter = 0;
 
 		int size = new File(path).list().length;
 		
@@ -596,6 +630,93 @@ public class DataGathering {
 	
 	private void interpretTestBatchDataHeuristics(String path, String type, int size) {
 		
+	}
+	
+	private void resetDataGathered(File f) {
+		//Deletes all the result files but keeps the generated systems in place for a re-run
+		
+		for(String s : TEST_NAMES) {
+			int counter = 0;
+			
+			String path = f.getAbsolutePath() + "/" + s + "/";
+			System.out.println(path);
+			
+			if(!(new File(path).exists())) {
+				continue;
+			}
+			
+			int size = new File(path).list().length;
+			
+			while(counter < size + 1) {
+				
+				String outputFile = path + TEST_NAME + "_" + counter + "/" + RESULTS_FILE;
+				new File(outputFile).delete();
+				System.out.println(outputFile);
+				
+				for(String t : ANALYSIS_TYPES) {
+					outputFile = path + TEST_NAME + "_" + counter + "/" + ANALYSIS_FILE + t + ".txt";
+					new File(outputFile).delete();
+				}
+				
+				counter++;
+			}
+			
+		}
+		
+	}
+	
+	//-- Existing Tests  --------------------------------------
+	
+	private void testBasicConfigDTP() throws Exception {
+
+		ArrayList<String> names = SystemGeneration.generateSystemSetDTP();
+
+		ArrayList<String> plant = new ArrayList<String>(names.subList(0, 3));
+		ArrayList<String> spec = new ArrayList<String>(names.subList(3, 6));
+		
+		testExistingSystem("Test Basic Config DTP", plant, spec, AgentChicanery.generateAgentsDTP(), new BatchSetup(){
+			public void setUpSystem() {
+				SystemGeneration.generateSystemSetDTP();
+			
+		}
+		});
+	}
+	
+	abstract class BatchSetup {
+		
+		public abstract void setUpSystem();
+		
+	}
+	
+	private void testExistingSystem(String testBatchIn, ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, BatchSetup systemStart) throws Exception {
+		int counter = 0;
+
+		String testBatch = testBatchIn;
+		
+		
+		while(counter <= NUMBER_EXISTING_TEST_RUNS) {
+			System.out.println(testBatch + ": " + counter);
+			
+			String testName = TEST_NAME + "_" + counter;
+			
+			File f;
+			f = new File(defaultWritePath + "/" + testName);
+			f.mkdir();
+
+			writePath = defaultWritePath + "/" + testName;
+
+			int finished = checkTestNumberVerifiedComplete(writePath);
+			
+			while(finished < NUMBER_REPEAT_TEST) {
+				systemStart.setUpSystem();
+				autoTestSystemCoobsSB(testBatch + "_" + counter, plants, specs, agents);
+				resetModel();
+	
+				finished = checkTestNumberVerifiedComplete(writePath);
+			}
+
+			counter++;
+		}
 	}
 	
 	//-- Random Tests  ----------------------------------------
@@ -1053,6 +1174,33 @@ public class DataGathering {
 		return coobs;
 	}
 	
+	private void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception {
+
+		printCoobsLabel(prefixNom, false);
+		boolean coobs = checkCoobservable(plantNames, specNames, agents, false);
+		
+		printSBCoobsLabel(prefixNom);
+		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
+		
+		if(coobs && !sbCoobs) {
+			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
+		}
+		
+		boolean error = false;
+		
+		if(sbCoobs && !coobs) {
+			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
+			error = true;
+		}
+		if(error) {
+			throw new Exception("Logic Conflict in Data Output: " + prefixNom);
+		}
+		resetModel();
+		
+		confirmComplete();
+
+	}
+	
 	private boolean autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, int finishCount, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
 		boolean coobs = false;
 		if(contains(completedTests, ANALYSIS_COOBS) == finishCount && !memoryError.contains(ANALYSIS_COOBS)) {
@@ -1176,7 +1324,7 @@ public class DataGathering {
 		long t = System.currentTimeMillis();
 		long hold = getCurrentMemoryUsage();
 		assignAnalysisSubtype(TYPE_COOBS);
-		boolean result = inf ? model.isInferenceCoobservableUStruct(plants, specs, eventAtt, agents) : model.isCoobservableUStruct(plants, specs, eventAtt, agents);
+		Boolean result = inf ? model.isInferenceCoobservableUStruct(plants, specs, eventAtt, agents) : model.isCoobservableUStruct(plants, specs, eventAtt, agents);
 		handleOutData(t, hold);
 		printOut("\t\t\t\t" + (inf ? "Inferencing " : "" ) + "Coobservable: " + result);
 		garbageCollect();
@@ -1426,9 +1574,10 @@ public class DataGathering {
 				raf.writeBytes("\n");
 			}
 			raf.writeBytes(time + ", \t" + threeSig(overallMem) + ", \t");
-			for(Double d : vals) {
+			for(int i = 0; i < vals.size(); i++){
+				Double d = vals.get(i);
 				if(d != null)
-					raf.writeBytes(threeSig(d) + ", \t");
+					raf.writeBytes(threeSig(d) + (i + 1 < vals.size() ? ", \t" : ""));
 				else {
 					raf.writeBytes("\n,,\t\t\t");
 				}
@@ -1481,6 +1630,9 @@ public class DataGathering {
 	private ArrayList<Integer> checkForTermLinePositions(String path, String phrase){
 		ArrayList<Integer> out = new ArrayList<Integer>();
 		File g = new File(path);
+		if(!g.exists()) {
+			return out;
+		}
 		try {
 			RandomAccessFile raf = new RandomAccessFile(g, "r");
 			String line = raf.readLine();
