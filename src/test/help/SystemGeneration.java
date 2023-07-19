@@ -639,11 +639,11 @@ public class SystemGeneration {
 		generateHISCSink(plant.get(2));
 		generateHISCTest(plant.get(3));
 		
-		plant.addAll(generateHISCPath("Path"));
-		plant.addAll(generateHISCDefine("Define"));
-		plant.addAll(generateHISCPolishPart("Polish Part"));
-		plant.addAll(generateHISCAttachCase("Attach Case"));
-		plant.addAll(generateHISCAttachPart("Attach Part"));
+		plant.addAll(generateHISCPath("Path", 3));
+		plant.addAll(generateHISCDefine("Define", 3));
+		plant.addAll(generateHISCPolishPart("Polish Part", 3));
+		plant.addAll(generateHISCAttachCase("Attach Case", 3));
+		plant.addAll(generateHISCAttachPart("Attach Part", 3));
 		
 		
 		ArrayList<String> spec = new ArrayList<String>();
@@ -657,11 +657,68 @@ public class SystemGeneration {
 		generateHISCPackage(spec.get(2));
 		generateHISCEnsure(spec.get(3));
 		
-		spec.addAll(generateHISCMoves("Moves"));
-		spec.addAll(generateHISCPolishSequence("Polish Sequence"));
-		spec.addAll(generateHISCAffix("Affix"));
-		spec.addAll(generateHISCG("G"));
-		spec.addAll(generateHISCSequence("Sequence"));
+		spec.addAll(generateHISCMoves("Moves", 3));
+		spec.addAll(generateHISCPolishSequence("Polish Sequence", 3));
+		spec.addAll(generateHISCAffix("Affix", 3));
+		spec.addAll(generateHISCG("G", 3));
+		spec.addAll(generateHISCSequence("Sequence", 3));
+		
+		out.add(plant);
+		out.add(spec);
+		
+		return out;
+	}
+	
+	public static ArrayList<ArrayList<String>> generateSystemSetHISCHighLevel(){
+		ArrayList<ArrayList<String>> out = new ArrayList<ArrayList<String>>();
+		
+		ArrayList<String> plant = new ArrayList<String>();
+		plant.add("Packaging");
+		plant.add("Source");
+		plant.add("Sink");
+		plant.add("Test");
+		
+		generateHISCPackaging(plant.get(0));
+		generateHISCSource(plant.get(1));
+		generateHISCSink(plant.get(2));
+		generateHISCTest(plant.get(3));
+		
+		ArrayList<String> spec = new ArrayList<String>();
+		spec.add("In Buffer");
+		spec.add("Out Buffer");
+		spec.add("Package");
+		spec.add("Ensure");
+		
+		generateHISCInBuff(spec.get(0));
+		generateHISCOutBuff(spec.get(1));
+		generateHISCPackage(spec.get(2));
+		generateHISCEnsure(spec.get(3));
+		
+		out.add(plant);
+		out.add(spec);
+		
+		return out;
+	}
+	
+	public static ArrayList<ArrayList<String>> generateSystemSetHISCLowLevel(){
+		ArrayList<ArrayList<String>> out = new ArrayList<ArrayList<String>>();
+		
+		ArrayList<String> plant = new ArrayList<String>();
+
+		plant.addAll(generateHISCPath("Path", 1));
+		plant.addAll(generateHISCDefine("Define", 1));
+		plant.addAll(generateHISCPolishPart("Polish Part", 1));
+		plant.addAll(generateHISCAttachCase("Attach Case", 1));
+		plant.addAll(generateHISCAttachPart("Attach Part", 1));
+		
+		
+		ArrayList<String> spec = new ArrayList<String>();
+
+		//spec.addAll(generateHISCMoves("Moves", 1));
+		spec.addAll(generateHISCPolishSequence("Polish Sequence", 1));
+		spec.addAll(generateHISCAffix("Affix", 1));
+		spec.addAll(generateHISCG("G", 1));
+		spec.addAll(generateHISCSequence("Sequence", 1));
 		
 		out.add(plant);
 		out.add(spec);
@@ -744,9 +801,9 @@ public class SystemGeneration {
 	
 		//-- J Parts  -----------------------------------------
 	
-	public static ArrayList<String> generateHISCPath(String nameIn) {
+	public static ArrayList<String> generateHISCPath(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -775,9 +832,9 @@ public class SystemGeneration {
 		return out;
 	}
 	
-	public static ArrayList<String> generateHISCDefine(String nameIn) {
+	public static ArrayList<String> generateHISCDefine(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -797,9 +854,9 @@ public class SystemGeneration {
 		return out;
 	}
 	
-	public static ArrayList<String> generateHISCPolishPart(String nameIn) {
+	public static ArrayList<String> generateHISCPolishPart(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -820,9 +877,9 @@ public class SystemGeneration {
 		return out;
 	}
 	
-	public static ArrayList<String> generateHISCAttachCase(String nameIn) {
+	public static ArrayList<String> generateHISCAttachCase(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -841,9 +898,9 @@ public class SystemGeneration {
 		return out;
 	}
 	
-	public static ArrayList<String> generateHISCAttachPart(String nameIn) {
+	public static ArrayList<String> generateHISCAttachPart(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -935,10 +992,10 @@ public class SystemGeneration {
 	
 	//-- J Parts  -----------------------------------------
 
-	public static ArrayList<String> generateHISCMoves(String nameIn) {
+	public static ArrayList<String> generateHISCMoves(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
 		
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -957,9 +1014,9 @@ public class SystemGeneration {
 		
 	}
 	
-	public static ArrayList<String> generateHISCPolishSequence(String nameIn) {
+	public static ArrayList<String> generateHISCPolishSequence(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -979,9 +1036,9 @@ public class SystemGeneration {
 		return out;
 	}
 	
-	public static ArrayList<String> generateHISCAffix(String nameIn) {
+	public static ArrayList<String> generateHISCAffix(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -1007,9 +1064,9 @@ public class SystemGeneration {
 		return out;
 	}
 	
-	public static ArrayList<String> generateHISCG(String nameIn) {
+	public static ArrayList<String> generateHISCG(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			
@@ -1033,9 +1090,9 @@ public class SystemGeneration {
 		return out;
 	}
 	
-	public static ArrayList<String> generateHISCSequence(String nameIn) {
+	public static ArrayList<String> generateHISCSequence(String nameIn, int num) {
 		ArrayList<String> out = new ArrayList<String>();
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String name = nameIn + "_" + i;
 			out.add(name);
 			

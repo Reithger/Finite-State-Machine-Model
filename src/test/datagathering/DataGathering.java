@@ -24,9 +24,8 @@ import test.help.SystemGeneration;
 
 /**
  * 
- * Make a test batch keep going until minimum number of true/false are met (25 of each?)
  * 
- * Make each test occur 3 times to average results, and do general analysis of variance
+ * Pick out a subsystem to test of the HISC example
  * 
  * 
  * 
@@ -80,7 +79,7 @@ public class DataGathering {
 	
 	private final int NUMBER_REPEAT_TEST = 3;
 	
-	private final int NUMBER_EXISTING_TEST_RUNS = 50;
+	private final int NUMBER_EXISTING_TEST_RUNS = 10;
 	
 	private final int TEST_ALL = 0;
 	private final int TEST_BASIC = 1;
@@ -108,7 +107,13 @@ public class DataGathering {
 															 "/Test Batch Random Heuristic 1",
 															 "/Test Batch Random Heuristic 2",
 															 "/Test Batch Basic DTP",
-															 "/Test Basic Batch HISC"};
+															 "/Test Basic Batch HISC High",
+															 "/Test Basic Batch HISC Low",
+															 "/Test Batch Incremental DTP",
+															 "/Test Batch Incremental HISC High",
+															 "/Test Batch Incremental HISC Low",
+															 "/Test Batch Incremental HISC"};
+	
 	private final int[] TEST_SIZES = new int[] {	   150,
 													   100,
 													   100,
@@ -119,7 +124,14 @@ public class DataGathering {
 													   200,
 													   200,
 													   NUMBER_EXISTING_TEST_RUNS,
-													   NUMBER_EXISTING_TEST_RUNS};
+													   NUMBER_EXISTING_TEST_RUNS,
+													   NUMBER_EXISTING_TEST_RUNS,
+													   NUMBER_EXISTING_TEST_RUNS,
+													   NUMBER_EXISTING_TEST_RUNS,
+													   NUMBER_EXISTING_TEST_RUNS,
+													   NUMBER_EXISTING_TEST_RUNS,
+													   NUMBER_EXISTING_TEST_RUNS
+													   };
 	
 	
 	
@@ -147,16 +159,6 @@ public class DataGathering {
 		clock = inClock;
 	}
 
-	public void allInOneRunTests() throws Exception{
-		finished = false;
-		runTests(initializeDataGathering());
-		finished = true;
-	}
-	
-	public boolean getFinished() {
-		return finished;
-	}
-	
 	public File initializeDataGathering() {
 		FormatConversion.assignPaths(FiniteStateMachine.ADDRESS_IMAGES, FiniteStateMachine.ADDRESS_CONFIG);
 		FiniteStateMachine.fileConfiguration();
@@ -179,16 +181,32 @@ public class DataGathering {
 		
 		return f;
 	}
-	
+
+	private void initializeTestFolder(File f, String in) {
+		defaultWritePath = f.getAbsolutePath() + in;
+		File g = new File(defaultWritePath);
+		g.mkdir();
+	}
+
+//---  Operations   ---------------------------------------------------------------------------
+
+	public void allInOneRunTests() throws Exception{
+		finished = false;
+		runTests(initializeDataGathering());
+		finished = true;
+	}
+
 	public void runTests(File f) throws Exception{
 		heuristics = false;
 		
-		boolean runThrough = false ;			//set true if you want to force it to go through and rewrite the analysis files/check for gaps
+		boolean runThrough = true;			//set true if you want to force it to go through and rewrite the analysis files/check for gaps
 		
 		//resetDataGathered(f);
 		
 		
 		//Existing Tests
+
+		clock.resetClock();
 		
 		initializeTestFolder(f, TEST_NAMES[9]);
 		if(!testsCompletedNonRandom(TEST_NAMES[9], ANALYSIS_COOBS, TEST_SIZES[9]) || runThrough) {
@@ -197,12 +215,61 @@ public class DataGathering {
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
 		}
 		
+		clock.resetClock();
+		
 		initializeTestFolder(f, TEST_NAMES[10]);
-		if(!testsCompletedNonRandom(TEST_NAMES[10], ANALYSIS_COOBS, TEST_SIZES[9]) || runThrough) {
-			testBasicConfigHISC();
+		if(!testsCompletedNonRandom(TEST_NAMES[10], ANALYSIS_COOBS, TEST_SIZES[10]) || runThrough) {
+			testBasicConfigHISCHigh();
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS);
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
 		}
+		
+		clock.setTimeOutShort();
+		
+		initializeTestFolder(f, TEST_NAMES[11]);
+		if(!testsCompletedNonRandom(TEST_NAMES[11], ANALYSIS_COOBS, TEST_SIZES[11]) || runThrough) {
+			testBasicConfigHISCLow();
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_COOBS);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
+		}
+		
+		initializeTestFolder(f, TEST_NAMES[12]);
+		if(!testsCompletedNonRandom(TEST_NAMES[12], ANALYSIS_COOBS, TEST_SIZES[12]) || runThrough) {
+			testIncrementalConfigDTP();
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB);
+		}
+		clock.resetClock();
+
+		initializeTestFolder(f, TEST_NAMES[13]);
+		if(!testsCompletedNonRandom(TEST_NAMES[13], ANALYSIS_COOBS, TEST_SIZES[13]) || runThrough) {
+			testIncrementalConfigHISCHigh();
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB);
+		}
+		clock.resetClock();
+
+		initializeTestFolder(f, TEST_NAMES[14]);
+		if(!testsCompletedNonRandom(TEST_NAMES[14], ANALYSIS_COOBS, TEST_SIZES[14]) || runThrough) {
+			testIncrementalConfigHISCLow();
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB);
+		}
+		clock.resetClock();
+
+		initializeTestFolder(f, TEST_NAMES[15]);
+		if(!testsCompletedNonRandom(TEST_NAMES[15], ANALYSIS_COOBS, TEST_SIZES[15]) || runThrough) {
+			testIncrementalConfigHISC();
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS);
+			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB);
+		}
+		clock.resetClock();
+		
+		clock.setTimeOutShort();
 		
 		//Coobs and SB
 		int testNum = 0;
@@ -241,7 +308,7 @@ public class DataGathering {
 			testIncConfigOne(TEST_SIZES[testNum]);
 			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS);
 			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB);
-			interpretTestBatchDataSimple(f.getAbsolutePath() + "/" + TEST_NAMES[testNum], ANALYSIS_SB);
+			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
 		}
 		testNum = 5;
 		initializeTestFolder(f, TEST_NAMES[testNum]);
@@ -276,65 +343,51 @@ public class DataGathering {
 		
 	}
 	
-	private void initializeTestFolder(File f, String in) {
-		defaultWritePath = f.getAbsolutePath() + in;
-		File g = new File(defaultWritePath);
-		g.mkdir();
-	}
-	
-	private boolean testsCompleted(String testBatch, String type, int maxSize) {
-		InterpretData d = generateInterpretDataSimple(defaultWritePath, type);
-		int totalTests = d.getTotalNumberTests();
-		int trueResults = d.getNumberTrueResults();
-		if(!(trueResults >= MINIMUM_TRUE_RESULTS)) {
-			System.out.println(testBatch + " in progress at: " + trueResults + " true outcomes of " + totalTests + " total tests.");
-			return false;
+	private void resetDataGathered(File f) {
+		//Deletes all the result files but keeps the generated systems in place for a re-run
+		
+		for(String s : TEST_NAMES) {
+			int counter = 0;
+			
+			String path = f.getAbsolutePath() + "/" + s + "/";
+			
+			if(!(new File(path).exists())) {
+				continue;
+			}
+			
+			int size = new File(path).list().length;
+			
+			while(counter < size + 1) {
+				
+				String outputFile = path + TEST_NAME + "_" + counter + "/" + RESULTS_FILE;
+				new File(outputFile).delete();
+				System.out.println(outputFile);
+				
+				for(String t : ANALYSIS_TYPES) {
+					outputFile = path + TEST_NAME + "_" + counter + "/" + ANALYSIS_FILE + t + ".txt";
+					new File(outputFile).delete();
+				}
+				
+				counter++;
+			}
+			
 		}
-		if(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize) != NUMBER_REPEAT_TEST) {
-			System.out.println(testBatch + " in progress at: " + trueResults + " true outcomes of " + totalTests + " total tests.");
-			return false;
-		}
-		System.out.println(testBatch + " already complete at: " + totalTests + " tests");
-		System.out.println(testBatch + " satisfies minimum true results: " + trueResults);
-		return true;
+		
 	}
-	
-	private boolean testsCompletedNonRandom(String testBatch, String type, int maxSize) {
-		InterpretData d = generateInterpretDataSimple(defaultWritePath, type);
-		int totalTests = d.getTotalNumberTests();
-		if(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize) != NUMBER_REPEAT_TEST) {
-			System.out.println(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize));
-			System.out.println(defaultWritePath + "/" + TEST_NAME + "_" + maxSize);
-			return false;
-		}
-		System.out.println(testBatch + " already complete at: " + totalTests + " tests");
-		return true;
-	}
-	
-//---  Operations   ---------------------------------------------------------------------------
-	
-	//-- Test Data Interpretation  ----------------------------
+
+	//-- Test Data Interpretation Simple  ---------------------
 	
 	private void interpretTestBatchDataSimple(String path, String type) {
 		generateRawDataFileSimple(path, type);
-		outputInterpretDataSimple(generateInterpretDataSimple(path, type), path, type);
+		InterpretData hold = generateInterpretDataSimple(path, type);
+		outputInterpretDataSimple(hold, path, type, "");
+		hold.setColumnFilter(2);
+		hold.setFilterValue(1.0);
+		outputInterpretDataSimple(hold, path, type, "true");
+		hold.setFilterValue(0.0);
+		outputInterpretDataSimple(hold, path, type, "false");
 	}
 	
-	private int getTotalNumberTests(String path) {
-		int validTests = 0;
-		int counter = 0;
-
-		int size = new File(path).list().length;
-		while(counter <= size + 1) {
-			File g = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + RESULTS_FILE);
-			if(g.exists()) {
-				validTests++;
-			}
-		}
-		
-		return validTests;
-	}
-		
 	private void generateRawDataFileSimple(String path, String type) {
 		int counter = 0;
 
@@ -366,7 +419,6 @@ public class DataGathering {
 						raf.readLine();
 					}
 					InterpretData hold = new InterpretData();
-					//TODO: Need to create the raw file that averages the numbers then read the raw file into this
 					if(!skip) {
 						String line = raf.readLine();
 						String[] values = line.split(", ");
@@ -377,12 +429,12 @@ public class DataGathering {
 							for(int i = 0; i < values.length; i++) {
 								values[i] = values[i].trim();
 							}
-							hold.addDataRow(values);
+							if(!values[0].equals(""))
+								hold.addDataRow(values);
 							String next = raf.readLine();
 							values = next == null ? null : next.split(", ");
 						}
 						ArrayList<Double> aver = hold.calculateAverages();
-						//Should have some way to output general variance using interquartile range; or, for 3 averaged numbers, something else?
 						//System.out.println(hold.calculateInterquartileRange() + " " + hold.calculateFirstQuartile() + " " + hold.calculateThirdQuartile());
 						for(int i = 0; i < aver.size(); i++) {
 							rag.writeBytes((threeSig(aver.get(i))+"") + (i + 1 == aver.size() ? "" : ", "));
@@ -390,9 +442,6 @@ public class DataGathering {
 						rag.writeBytes("\n");
 					}
 					raf.close();
-				}
-				else {
-					System.out.println(type + " " + counter);
 				}
 				f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
 			}
@@ -405,45 +454,32 @@ public class DataGathering {
 	}
 	
 	private InterpretData generateInterpretDataSimple(String path, String type) {
-		int counter = 0;
-
-		int size = new File(path).list().length;
-		
 		InterpretData hold = new InterpretData();
 		hold.assignTotalNumberTests(getTotalNumberTests(path));
 		
 		String[] attributes = null;
-		File f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + RAW_DATA_FILE + type + ".txt");
-
+		File f = new File(path + "/" + RAW_DATA_FILE + type + ".txt");
+		
 		try {
 			RandomAccessFile raf;
-			while(counter <= size+1) {
-				if(f.exists()) {
-					raf = new RandomAccessFile(f, "rw");
-					boolean skip = false;
-					if(attributes == null) {
-						String line = raf.readLine();
-						if(line != null) {
-							attributes = line.split(", ");
-							hold.assignAttributes(attributes);
-						}
-						else
-							skip = true;
+			if(f.exists()) {
+				raf = new RandomAccessFile(f, "rw");
+				String line = raf.readLine();
+				attributes = line.split(", ");
+				hold.assignAttributes(attributes);
+
+				line = raf.readLine();
+				
+				while(line != null) {
+					String[] values = line.split(", ");
+					for(int i = 0; i < values.length; i++) {
+						values[i] = values[i].trim();
 					}
-					else {
-						raf.readLine();
-					}
-					if(!skip) {
-						String line = raf.readLine();
-						String[] values = line.split(", ");
-						for(int i = 0; i < values.length; i++) {
-							values[i] = values[i].trim();
-						}
-						hold.addDataRow(values);
-					}
-					raf.close();
+					hold.addDataRow(values);
+					line = raf.readLine();
 				}
-				f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
+				
+				raf.close();
 			}
 		}
 		catch(Exception e) {
@@ -453,72 +489,94 @@ public class DataGathering {
 		return hold;
 	}
 		
-	private void outputInterpretDataSimple(InterpretData hold, String path, String type) {
-		String[] attributes = hold.getAttributes();
-
-		File f = new File(path + "/" + PROCESS_FILE + type + ".txt");
+	private void outputInterpretDataSimple(InterpretData hold, String path, String type, String suffix) {
+		File f = new File(path + "/" + PROCESS_FILE + type + "_" + suffix + ".txt");
 		f.delete();
 		try {
 			RandomAccessFile raf = new RandomAccessFile(f, "rw");
-			raf.writeBytes("\t\t\t\t\t\t");
-			for(String s : attributes) {
-				raf.writeBytes(s + ", ");
-			}
-			raf.writeBytes("\nAverage: \t\t\t\t");
-			for(double v : hold.calculateAverages()) {
-				raf.writeBytes(threeSig(v) + ", \t");
-			}
-			raf.writeBytes("\nMinimum: \t\t\t\t");
-			for(double v : hold.calculateMinimums()) {
-				raf.writeBytes(threeSig(v) + ", \t");
-			}
-			raf.writeBytes("\nMaximum: \t\t\t\t");
-			for(double v : hold.calculateMaximums()) {
-				raf.writeBytes(threeSig(v) + ", \t");
-			}
-			raf.writeBytes("\nMedian: \t\t\t\t");
-			for(double v : hold.calculateMedians()) {
-				raf.writeBytes(threeSig(v) + ", \t");
-			}
-			raf.writeBytes("\nInter Quart Range:\t\t");
-			for(double v : hold.calculateInterquartileRange()) {
-				raf.writeBytes(threeSig(v) + ", \t");
-			}
-			raf.writeBytes("\nNumber Valid Tests:\t\t");
-			for(Integer v : hold.getColumnSizes()) {
-				raf.writeBytes(v + ", \t");
-			}
-			raf.writeBytes("\n\nNumber True Results:\t" + hold.getNumberTrueResults());
-			raf.writeBytes("\nNumber False Results:\t" + hold.getNumberFalseResults());
-			raf.writeBytes("\nNumber of DNFs:\t\t\t" + hold.getNumberDNF());
+			fileWriteInterpretDataGeneral(hold, raf);
 			raf.close();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("Done");
 	}
 	
+	private void fileWriteInterpretDataGeneral(InterpretData hold, RandomAccessFile raf) throws Exception {
+		String[] attributes = hold.getAttributes();
+		
+		raf.writeBytes("\t\t\t\t\t\t");
+		for(String s : attributes) {
+			raf.writeBytes(s + ", ");
+		}
+		raf.writeBytes("\nAverage: \t\t\t\t");
+		for(double v : hold.calculateAverages()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nMinimum: \t\t\t\t");
+		for(double v : hold.calculateMinimums()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nMaximum: \t\t\t\t");
+		for(double v : hold.calculateMaximums()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nMedian: \t\t\t\t");
+		for(double v : hold.calculateMedians()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nFirst Quartile:\t\t\t");
+		for(double v : hold.calculateFirstQuartile()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nThird Quartile:\t\t\t");
+		for(double v : hold.calculateThirdQuartile()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nInter Quart Range:\t\t");
+		for(double v : hold.calculateInterquartileRange()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nNumber Valid Tests:\t\t");
+		for(Integer v : hold.getColumnSizes()) {
+			raf.writeBytes(v + ", \t\t");
+		}
+		raf.writeBytes("\n\nNumber True Results:\t" + hold.getNumberTrueResults());
+		raf.writeBytes("\nNumber False Results:\t" + hold.getNumberFalseResults());
+		raf.writeBytes("\nNumber of DNFs:\t\t\t" + hold.getNumberDNF());
+	}
+	
+	//-- Test Data Interpretation Incremental  ----------------
+	
 	private void interpretTestBatchDataIncremental(String path, String type) {
-		int counter = 1;
-		
+		generateRawDataFileIncremental(path, type);
+		InterpretDataNested hold = generateInterpretDataIncremental(path, type);
+		outputInterpretDataIncremental(hold, path, type, "");
+		hold.setColumnFilter(2);
+		hold.setFilterValue(1.0);
+		outputInterpretDataIncremental(hold, path, type, "true");
+		hold.setFilterValue(0.0);
+		outputInterpretDataIncremental(hold, path, type, "false");
+	}
+
+	private void generateRawDataFileIncremental(String path, String type) {
+		int counter = 0;
+
 		int size = new File(path).list().length;
-		
-		InterpretDataNested hold = new InterpretDataNested();
 		String[] attributes = null;
+		
 		File f = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + ANALYSIS_FILE + type + ".txt");
 		File g = new File(path + "/" + RAW_DATA_FILE + type + ".txt");
 
+		
 		try {
 			RandomAccessFile raf;
 			RandomAccessFile rag = new RandomAccessFile(g, "rw");
 			while(counter <= size+1) {
+
 				if(f.exists()) {
 					raf = new RandomAccessFile(f, "rw");
 					boolean skip = false;
-					
-					//First get ahold of our attribute list if not done so yet; perform check for if it's a dead file
-					
 					if(attributes == null) {
 						String line = raf.readLine();
 						if(line != null) {
@@ -528,38 +586,42 @@ public class DataGathering {
 						else
 							skip = true;
 					}
-					else if(raf.readLine() == null){
-						skip = true;
+					else {
+						raf.readLine();
 					}
-					
-					//If file exists with information, start pulling data from it; here, first line is regular InterpretData, following lines go in nested
-					
+					InterpretData holdOverall = new InterpretData();
+					InterpretData holdSub = new InterpretData();
 					if(!skip) {
 						String line = raf.readLine();
 						String[] values = line.split(", ");
-						rag.writeBytes(line + "\n");
-						boolean proceeding = false;
+						if(values[values.length - 1].equals("")) {
+							values = Arrays.copyOf(values, values.length - 2);
+						}
 						while(values != null) {
 							for(int i = 0; i < values.length; i++) {
 								values[i] = values[i].trim();
 							}
-							if(!proceeding) {
-								hold.addDataRow(values);
-								proceeding = true;
+							if(!values[0].equals("")) {
+								holdOverall.addDataRow(values);
 							}
 							else {
-								hold.addAssociatedDataRow(values);
+								values = Arrays.copyOfRange(values, 2, values.length - 1);
+								holdSub.addDataRow(values);
 							}
-							
 							String next = raf.readLine();
-							if(next != null) {
-								values = next.split(",");
-								rag.writeBytes(next + "\n");
-							}
-							else {
-								values = null;
-							}
+							values = next == null ? null : next.split(", ");
 						}
+						ArrayList<Double> averOverall = holdOverall.calculateAverages();
+						ArrayList<Double> averSub = holdSub.calculateAverages();
+						//System.out.println(hold.calculateInterquartileRange() + " " + hold.calculateFirstQuartile() + " " + hold.calculateThirdQuartile());
+						for(int i = 0; i < averOverall.size(); i++) {
+							rag.writeBytes((threeSig(averOverall.get(i))+"") + (i + 1 == averOverall.size() ? "" : ", "));
+						}
+						rag.writeBytes("\n, , ");
+						for(int i = 0; i < averSub.size(); i++) {
+							rag.writeBytes((threeSig(averSub.get(i))+"") + (i + 1 == averSub.size() ? "" : ", "));
+						}
+						rag.writeBytes("\n");
 					}
 					raf.close();
 				}
@@ -571,110 +633,133 @@ public class DataGathering {
 			System.out.println(f.getAbsolutePath());
 			e.printStackTrace();
 		}
-		
-		//Now we use the gathered data in InterpretData to do some varying analysis of it for the overall incremental performances
-		
-		f = new File(path + "/" + PROCESS_FILE + type + ".txt");
-		f.delete();
-		try {
-			RandomAccessFile raf = new RandomAccessFile(f, "rw");
-			fileWriteInterpretDataGeneral(hold, raf, attributes);
-			raf.writeBytes("\nNumber of DNFs:\t\t\t" + hold.getNumberDNF());
-			raf.close();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		InterpretData other = hold.getAssociatedData();
-		
-		//Now we use the subsystem record data in InterpretDataNested to do general and specific analysis
-		
-		f = new File(path + "/" + PROCESS_FILE + type + "_subsystems.txt");
-		f.delete();
-		try {
-			RandomAccessFile raf = new RandomAccessFile(f, "rw");
-			fileWriteInterpretDataGeneral(other, raf, attributes);
-			raf.close();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("Done");
 	}
 	
-	private void fileWriteInterpretDataGeneral(InterpretData hold, RandomAccessFile raf, String[] attributes) throws Exception {
-		raf.writeBytes("\t\t\t\t\t\t");
-		for(String s : attributes) {
-			raf.writeBytes(s + ", ");
+	private InterpretDataNested generateInterpretDataIncremental(String path, String type) {
+		InterpretDataNested hold = new InterpretDataNested();
+		hold.assignTotalNumberTests(getTotalNumberTests(path));
+		
+		String[] attributes = null;
+		File f = new File(path + "/" + RAW_DATA_FILE + type + ".txt");
+		int counter = 0;
+		try {
+			RandomAccessFile raf;
+			if(f.exists()) {
+				raf = new RandomAccessFile(f, "rw");
+				String line = raf.readLine();
+				attributes = line.split(", ");
+				hold.assignAttributes(attributes);
+					
+				line = raf.readLine();
+				
+				String[] values;
+				
+				while(line != null) {
+					values = line.split(", ");
+					for(int i = 0; i < values.length; i++) {
+						values[i] = values[i].trim();
+					}
+					if(!values[0].equals("")) {
+						hold.addDataRow(values);
+					}
+					else {
+						hold.addAssociatedDataRow(values);
+						counter++;
+					}
+					line = raf.readLine();
+				}
+				
+				raf.close();
+			}
 		}
+		catch(Exception e) {
+			System.out.println(f.getAbsolutePath());
+			e.printStackTrace();
+		}
+		hold.assignTotalNumberTestsNested(counter);
+		return hold;
+	}
+	
+	private void outputInterpretDataIncremental(InterpretDataNested hold, String path, String type, String suffix) {
+		File f = new File(path + "/" + PROCESS_FILE + type + "_" + suffix + ".txt");
+		f.delete();
+		try {
+			RandomAccessFile raf = new RandomAccessFile(f, "rw");
+			fileWriteInterpretDataGeneral(hold, raf);
+			raf.writeBytes("\n\nAnalysis of Incremental Subsystems\n");
+			fileWriteInterpretDataIncremental(hold, raf);
+			raf.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void fileWriteInterpretDataIncremental(InterpretDataNested holdIn, RandomAccessFile raf) throws Exception {
+		String[] attributes = holdIn.getAttributes();
+		
+		raf.writeBytes("\t\t\t\t\t\t");
+		for(int i = 3; i < attributes.length; i++) {
+			raf.writeBytes(attributes[i] + ", ");
+		}
+		InterpretData hold = holdIn.getAssociatedData().copy();
+		int numTrue = hold.getNumberTrueResults();
+		int numFalse = hold.getNumberFalseResults();
+		int numDNF = hold.getNumberDNF();
+		hold.deleteFirstValue();
+		hold.deleteFirstValue();
+		hold.deleteFirstValue();
 		raf.writeBytes("\nAverage: \t\t\t\t");
 		for(double v : hold.calculateAverages()) {
-			raf.writeBytes(threeSig(v) + ", \t");
+			raf.writeBytes(threeSig(v) + ", \t\t");
 		}
 		raf.writeBytes("\nMinimum: \t\t\t\t");
 		for(double v : hold.calculateMinimums()) {
-			raf.writeBytes(threeSig(v) + ", \t");
+			raf.writeBytes(threeSig(v) + ", \t\t");
 		}
 		raf.writeBytes("\nMaximum: \t\t\t\t");
 		for(double v : hold.calculateMaximums()) {
-			raf.writeBytes(threeSig(v) + ", \t");
+			raf.writeBytes(threeSig(v) + ", \t\t");
 		}
 		raf.writeBytes("\nMedian: \t\t\t\t");
 		for(double v : hold.calculateMedians()) {
-			raf.writeBytes(threeSig(v) + ", \t");
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nFirst Quartile:\t\t\t");
+		for(double v : hold.calculateFirstQuartile()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
+		}
+		raf.writeBytes("\nThird Quartile:\t\t\t");
+		for(double v : hold.calculateThirdQuartile()) {
+			raf.writeBytes(threeSig(v) + ", \t\t");
 		}
 		raf.writeBytes("\nInter Quart Range:\t\t");
 		for(double v : hold.calculateInterquartileRange()) {
-			raf.writeBytes(threeSig(v) + ", \t");
+			raf.writeBytes(threeSig(v) + ", \t\t");
 		}
-		raf.writeBytes("\nNumber Valid Tests:\t\t");
+		raf.writeBytes("\nNumber Total Subsys:\t");
 		for(Integer v : hold.getColumnSizes()) {
-			raf.writeBytes(v + ", \t");
+			raf.writeBytes(v + ", \t\t");
 		}
-		raf.writeBytes("\n\nNumber True Results:\t" + hold.getNumberTrueResults());
-		raf.writeBytes("\nNumber False Results:\t" + hold.getNumberFalseResults());
+
+		raf.writeBytes("\n\nNumber True Results:\t" + numTrue);
+		raf.writeBytes("\nNumber False Results:\t" + numFalse);
+		raf.writeBytes("\nNumber of DNFs:\t\t\t" + numDNF);
 	}
+	
+	//-- Test Data Interpretation Heuristics  -----------------
 	
 	private void interpretTestBatchDataHeuristics(String path, String type, int size) {
 		
 	}
+
+	//-- Existing Tests  --------------------------------------
 	
-	private void resetDataGathered(File f) {
-		//Deletes all the result files but keeps the generated systems in place for a re-run
+	abstract class BatchSetup {
 		
-		for(String s : TEST_NAMES) {
-			int counter = 0;
-			
-			String path = f.getAbsolutePath() + "/" + s + "/";
-			System.out.println(path);
-			
-			if(!(new File(path).exists())) {
-				continue;
-			}
-			
-			int size = new File(path).list().length;
-			
-			while(counter < size + 1) {
-				
-				String outputFile = path + TEST_NAME + "_" + counter + "/" + RESULTS_FILE;
-				new File(outputFile).delete();
-				System.out.println(outputFile);
-				
-				for(String t : ANALYSIS_TYPES) {
-					outputFile = path + TEST_NAME + "_" + counter + "/" + ANALYSIS_FILE + t + ".txt";
-					new File(outputFile).delete();
-				}
-				
-				counter++;
-			}
-			
-		}
+		public abstract void setUpSystem();
 		
 	}
-	
-	//-- Existing Tests  --------------------------------------
 	
 	private void testBasicConfigDTP() throws Exception {
 
@@ -688,34 +773,97 @@ public class DataGathering {
 				SystemGeneration.generateSystemSetDTP();
 			
 		}
-		});
+		}, TEST_BASIC);
 	}
 	
-	private void testBasicConfigHISC() throws Exception {
+	private void testBasicConfigHISCHigh() throws Exception {
+		
+		ArrayList<ArrayList<String>> names = SystemGeneration.generateSystemSetHISCHighLevel();
+		
+		testExistingSystem("Test Basic Config HISC High Level", names.get(0), names.get(1), AgentChicanery.generateAgentsHISC(0), new BatchSetup() {
+			
+			public void setUpSystem() {
+				SystemGeneration.generateSystemSetHISCHighLevel();
+			}
+			
+		}, TEST_BASIC);
+		
+	}
+	
+	private void testBasicConfigHISCLow() throws Exception {
+		
+		ArrayList<ArrayList<String>> names = SystemGeneration.generateSystemSetHISCLowLevel();
+		
+		testExistingSystem("Test Basic Config HISC Low Level", names.get(0), names.get(1), AgentChicanery.generateAgentsHISC(1), new BatchSetup() {
+			
+			public void setUpSystem() {
+				SystemGeneration.generateSystemSetHISCLowLevel();
+			}
+			
+		}, TEST_BASIC);
+		
+	}
+	
+	private void testIncrementalConfigDTP() throws Exception {
+		
+		ArrayList<String> names = SystemGeneration.generateSystemSetDTP();
+
+		ArrayList<String> plant = new ArrayList<String>(names.subList(0, 3));
+		ArrayList<String> spec = new ArrayList<String>(names.subList(3, 6));
+		
+		testExistingSystem("Test Incremental Config DTP", plant, spec, AgentChicanery.generateAgentsDTP(), new BatchSetup(){
+			public void setUpSystem() {
+				SystemGeneration.generateSystemSetDTP();
+			
+		}
+		}, TEST_INC);
+		
+	}
+	
+	private void testIncrementalConfigHISC() throws Exception {
 		
 		ArrayList<ArrayList<String>> names = SystemGeneration.generateSystemSetHISC();
 		
-		testExistingSystem("Test Basic Config HISC", names.get(0), names.get(1), AgentChicanery.generateAgentsHISC(), new BatchSetup() {
+		testExistingSystem("Test Incremental Config HISC", names.get(0), names.get(1), AgentChicanery.generateAgentsHISC(3), new BatchSetup() {
 			
 			public void setUpSystem() {
 				SystemGeneration.generateSystemSetHISC();
 			}
 			
-		});
+		}, TEST_INC);
 		
 	}
 	
-	abstract class BatchSetup {
+	private void testIncrementalConfigHISCHigh() throws Exception {
 		
-		public abstract void setUpSystem();
+		ArrayList<ArrayList<String>> names = SystemGeneration.generateSystemSetHISCHighLevel();
+		
+		testExistingSystem("Test Incremental Config HISC High Level", names.get(0), names.get(1), AgentChicanery.generateAgentsHISC(0), new BatchSetup() {
+			
+			public void setUpSystem() {
+				SystemGeneration.generateSystemSetHISCHighLevel();
+			}
+			
+		}, TEST_INC);
 		
 	}
 	
-	private void testExistingSystem(String testBatchIn, ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, BatchSetup systemStart) throws Exception {
+	private void testIncrementalConfigHISCLow() throws Exception {
+		
+		ArrayList<ArrayList<String>> names = SystemGeneration.generateSystemSetHISCLowLevel();
+		
+		testExistingSystem("Test Incremental Config HISC Low Level", names.get(0), names.get(1), AgentChicanery.generateAgentsHISC(1), new BatchSetup() {
+			
+			public void setUpSystem() {
+				SystemGeneration.generateSystemSetHISCLowLevel();
+			}
+			
+		}, TEST_INC);
+		
+	}
+	
+	private void testExistingSystem(String testBatch, ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, BatchSetup systemStart, int testChoice) throws Exception {
 		int counter = 0;
-
-		String testBatch = testBatchIn;
-		
 		
 		while(counter <= NUMBER_EXISTING_TEST_RUNS) {
 			System.out.println(testBatch + ": " + counter);
@@ -732,7 +880,29 @@ public class DataGathering {
 			
 			while(finished < NUMBER_REPEAT_TEST) {
 				systemStart.setUpSystem();
-				autoTestSystemCoobsSB(testBatch + "_" + counter, plants, specs, agents);
+				
+				ArrayList<String> completeTests = checkTestsCompleted(writePath);
+				ArrayList<String> memoryError = checkTestTypesVerifiedMemoryError(writePath);
+		
+				
+				switch(testChoice) {
+					case TEST_ALL:
+						autoTestSystemFull(testName, plants, specs, agents);
+						break;
+					case TEST_BASIC:
+						autoTestSystemCoobsSB(testName, plants, specs, agents, finished, completeTests, memoryError);
+						break;
+					case TEST_INC:
+						autoTestSystemIncr(testName, plants, specs, agents, finished, completeTests, memoryError);
+						break;
+					case TEST_HEUR:
+						autoTestHeuristics(testName, plants, specs, agents, completeTests, memoryError);
+						break;
+					default:
+						break;
+				}
+				
+				confirmComplete();
 				resetModel();
 	
 				finished = checkTestNumberVerifiedComplete(writePath);
@@ -1001,8 +1171,6 @@ public class DataGathering {
 		}
 	}
 
-  //-- Specific Tests  ----------------------------------------
-	
 //---  System Testing   -----------------------------------------------------------------------
 
 	public void markTestUnfinished() {
@@ -1078,15 +1246,7 @@ public class DataGathering {
 
 		return out == null ? false : out;
 	}
-	
-	private int contains(ArrayList<String> list, String find) {
-		int out = 0;
-		for(String s : list) {
-			out += (s.equals(find) ? 1 : 0);
-		}
-		return out;
-	}
-	
+
 	private void readInOldSystem(String prefixNom) throws FileNotFoundException {
 		String path = writePath;
 		ArrayList<String> plants = new ArrayList<String>();
@@ -1196,34 +1356,7 @@ public class DataGathering {
 		resetModel();
 		return coobs;
 	}
-	
-	private void autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception {
 
-		printCoobsLabel(prefixNom, false);
-		boolean coobs = checkCoobservable(plantNames, specNames, agents, false);
-		
-		printSBCoobsLabel(prefixNom);
-		boolean sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
-		
-		if(coobs && !sbCoobs) {
-			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
-		}
-		
-		boolean error = false;
-		
-		if(sbCoobs && !coobs) {
-			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
-			error = true;
-		}
-		if(error) {
-			throw new Exception("Logic Conflict in Data Output: " + prefixNom);
-		}
-		resetModel();
-		
-		confirmComplete();
-
-	}
-	
 	private boolean autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, int finishCount, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
 		boolean coobs = false;
 		if(contains(completedTests, ANALYSIS_COOBS) == finishCount && !memoryError.contains(ANALYSIS_COOBS)) {
@@ -1331,17 +1464,8 @@ public class DataGathering {
 		resetModel();
 		return expected;
 	}
-	
-	private int indexOf(int[] arr, int key) {
-		for(int i = 0; i < arr.length; i++) {
-			if(arr[i] == key) {
-				return i;
-			}
-		}
-		return -1;
-	}
 
-//---  Coobservability Testing   --------------------------------------------------------------
+	//-- Coobservability Testing  -----------------------------
 
 	private boolean checkCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf)throws Exception {
 		long t = System.currentTimeMillis();
@@ -1358,7 +1482,7 @@ public class DataGathering {
 		printOut(system + " " + (type ? "Inference Coobservability:" : "Coobservability:") + " \t");
 	}
 	
-//---  SB Coobservability Testing   -----------------------------------------------------------
+	//-- SB Coobservability Testing  --------------------------
 
 	private boolean checkSBCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		long t = System.currentTimeMillis();
@@ -1375,7 +1499,7 @@ public class DataGathering {
 		printOut(system + " SB Coobservability: \t");
 	}
 
-//---  Incremental Testing   ------------------------------------------------------------------
+	//-- Incremental Testing  ---------------------------------
 	
 	private boolean checkIncrementalCoobservable(ArrayList<String> plants, ArrayList<String> specs, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, boolean inf) throws Exception{
 		long t = System.currentTimeMillis();
@@ -1407,7 +1531,30 @@ public class DataGathering {
 		printOut(system + " Incremental SB Coobservability: \t");
 	}
 	
+//---  Getter Methods   -----------------------------------------------------------------------
+	
+	public boolean getFinished() {
+		return finished;
+	}
+	
 //---  Support Methods   ----------------------------------------------------------------------
+	
+	private int indexOf(int[] arr, int key) {
+		for(int i = 0; i < arr.length; i++) {
+			if(arr[i] == key) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private int contains(ArrayList<String> list, String find) {
+		int out = 0;
+		for(String s : list) {
+			out += (s.equals(find) ? 1 : 0);
+		}
+		return out;
+	}
 	
 	private void assignAnalysisSubtype(int in) {
 		switch(in) {
@@ -1436,33 +1583,15 @@ public class DataGathering {
 	private String generateHeuristicsPostscript(int a, int b, int c) {
 		return "_" + a + "_" + b + "_" + c;
 	}
-	
-	private boolean checkTestVerifiedComplete(String path) {
-		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_TEST);
-	}
+
+	//-- Batch Progress Analysis  -----------------------------
 	
 	private int checkTestNumberVerifiedComplete(String path) {
 		return checkForTermLinePositions(path + "/" + RESULTS_FILE, VERIFY_COMPLETE_TEST).size();
 	}
-	
-	private boolean checkTestDeclaredMemoryError(String path) {
-		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR);
-	}
-	
+
 	private boolean checkTestDeclaredTypeMemoryError(String path) {
 		return checkForTerm(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR + analysisSubtype);
-	}
-	
-	private int checkTestNumberDeclaredMemoryError(String path) {
-		return checkForTermLinePositions(path + "/" + RESULTS_FILE, DECLARE_MEMORY_ERROR).size();
-	}
-	
-	private boolean checkTestVerifiedMemoryError(String path) {
-		return checkForTerm(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR);
-	}
-	
-	private int checkTestNumberVerifiedMemoryError(String path) {
-		return checkForTermLinePositions(path + "/" + RESULTS_FILE, VERIFY_MEMORY_ERROR).size();
 	}
 
 	private ArrayList<String> checkTestTypesVerifiedMemoryError(String path){
@@ -1518,6 +1647,49 @@ public class DataGathering {
 			}
 		}
 		return out;
+	}
+	
+	private int getTotalNumberTests(String path) {
+		int validTests = 0;
+		int counter = 0;
+
+		int size = new File(path).list().length;
+		while(counter <= size + 5) {
+			File g = new File(path + "/" + TEST_NAME + "_" + counter++ + "/" + RESULTS_FILE);
+			if(g.exists()) {
+				validTests++;
+			}
+		}
+		return validTests;
+	}
+	
+	private boolean testsCompleted(String testBatch, String type, int maxSize) {
+		InterpretData d = generateInterpretDataSimple(defaultWritePath, type);
+		int totalTests = d.getTotalNumberTests();
+		int trueResults = d.getNumberTrueResults();
+		if(!(trueResults >= MINIMUM_TRUE_RESULTS)) {
+			System.out.println(testBatch + " in progress at: " + trueResults + " true outcomes of " + totalTests + " total tests.");
+			return false;
+		}
+		if(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize) != NUMBER_REPEAT_TEST) {
+			System.out.println(testBatch + " in progress at: " + trueResults + " true outcomes of " + totalTests + " total tests.");
+			return false;
+		}
+		System.out.println(testBatch + " already complete at: " + totalTests + " tests");
+		System.out.println(testBatch + " satisfies minimum true results: " + trueResults);
+		return true;
+	}
+	
+	private boolean testsCompletedNonRandom(String testBatch, String type, int maxSize) {
+		InterpretData d = generateInterpretDataSimple(defaultWritePath, type);
+		int totalTests = d.getTotalNumberTests();
+		if(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize) != NUMBER_REPEAT_TEST) {
+			System.out.println(checkTestNumberVerifiedComplete(defaultWritePath + "/" + TEST_NAME + "_" + maxSize));
+			System.out.println(defaultWritePath + "/" + TEST_NAME + "_" + maxSize);
+			return false;
+		}
+		System.out.println(testBatch + " already complete at: " + totalTests + " tests");
+		return true;
 	}
 	
 	//-- Data Output Gathering  -------------------------------
@@ -1602,7 +1774,7 @@ public class DataGathering {
 				if(d != null)
 					raf.writeBytes(threeSig(d) + (i + 1 < vals.size() ? ", \t" : ""));
 				else {
-					raf.writeBytes("\n,,\t\t\t");
+					raf.writeBytes("\n, , \t\t\t");
 				}
 			}
 			raf.writeBytes("\n");

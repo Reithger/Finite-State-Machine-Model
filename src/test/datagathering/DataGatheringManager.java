@@ -5,16 +5,20 @@ import java.util.TimerTask;
 
 public class DataGatheringManager implements TestReset{
 
-	private static long TIME_OUT = 120000L;
+	private static long TIME_OUT_LONG = 240000L;
+	private static long TIME_OUT_SHORT = 120000L;
 	
 	private Timer clockTimer;
 	private TestTimer clock;
 	private TestRunner thread;
 	
+	private volatile long timeOutPeriod;
+	
 	public static volatile boolean check;
 	
 	public void runTest() throws Exception{
 		clockTimer = new Timer();
+		setTimeOutShort();
 		Timer timer = new Timer();
 		DataGathering data = null;
 		while(data == null || !data.getFinished()) {
@@ -35,11 +39,23 @@ public class DataGatheringManager implements TestReset{
 		}
 	}
 	
+	public void resetTests() {
+		check = false;
+	}
+	
 	public void resetClock() {
 		if(clock != null)
 			clock.cancel();
 		clock = new TestTimer();
-		clockTimer.schedule(clock,  TIME_OUT);
+		clockTimer.schedule(clock,  timeOutPeriod);
+	}
+	
+	public void setTimeOutShort() {
+		timeOutPeriod = TIME_OUT_SHORT;
+	}
+	
+	public void setTimeOutLong() {
+		timeOutPeriod = TIME_OUT_LONG;
 	}
 	
 	class TestRunner extends TimerTask{

@@ -41,9 +41,10 @@ public class EventSets {
 	
 	
 	public final static String[] EVENT_LIST_HISC = new String[] {"take_item", "package", "allow_exit", "new_part", "part_f_obuff", "part_passes",
-																 "part_fails", "ret_inbuff", "deposit_part"};
+																 "part_fails", "ret_inbuff", "deposit_part", "part_ent-I", "part_ent-II", "part_ent-III",
+																 "fin_exit-I", "fin_exit-II", "fin_exit-III"};
 	
-	public final static String[] EVENT_LIST_HISC_J = new String[] {"fin_exit-", "part_ent-", "part_arr1-", "start_pol-", "compl_pol-", "part_lv1-",
+	public final static String[] EVENT_LIST_HISC_J = new String[] {"part_arr1-", "start_pol-", "compl_pol-", "part_lv1-",
 															     "part_arr2-", "partLvExit-", "recog_A-", "recog_B-", "attch_ptA-", "attch_ptB-",
 															     "finA_attch-", "finB_attch-", "part_lv2-", "part_arr3-", "start_case-", "compl_case-",
 															     "part_lv3-", "str_exit-", "take_pt-", "str_ptA-", "str_ptB-", "cmpl_A-", "cmpl_B-",

@@ -8,8 +8,6 @@ import model.process.memory.ConcreteMemoryMeasure;
 /**
  * 
  * 
- * Run same example 5-10 times and calculate average result for standardized average performance?
- * 
  * Deviance over multiple runnings? Make sure standardized over loading-in from memory or generation.
  *  - Generate all my examples ahead of time, then on a fresh run calculate multiple times.
  *  - # transitions, state space data as well
@@ -35,38 +33,55 @@ import model.process.memory.ConcreteMemoryMeasure;
 
 public class InterpretData {
 	
+//---  Instance Variables   -------------------------------------------------------------------
+	
 	private ArrayList<ArrayList<Double>> data;
 	
 	private String[] attributes;
 	
 	private int totalNumberTests;
 	
+	private Integer filterColumn;
+	
+	private Double filterValue;
+	
+//---  Constructors   -------------------------------------------------------------------------
+	
 	public InterpretData() {
 		data = new ArrayList<ArrayList<Double>>();
 	}
 	
-	public void assignTotalNumberTests(int in) {
-		totalNumberTests = in;
+//---  Operations   ---------------------------------------------------------------------------
+	
+	public InterpretData copy() {
+		InterpretData out = new InterpretData();
+		
+		for(ArrayList<Double> d : data) {
+			ArrayList<Double> newD = new ArrayList<Double>();
+			for(Double v : d) {
+				newD.add(v);
+			}
+			out.addDataRow(newD);
+		}
+		
+		out.assignAttributes(getAttributes());
+		
+		out.assignTotalNumberTests(getTotalNumberTests());
+		
+		out.setFilterValue(filterValue);
+		out.setColumnFilter(filterColumn);
+		
+		return out;
 	}
 	
-	public int getTotalNumberTests() {
-		return totalNumberTests;
+	public void deleteFirstValue() {
+		for(ArrayList<Double> d : data) {
+			d.remove(0);
+		}
 	}
 	
 	public void mergeData(InterpretData in) {
 		data.addAll(in.getData());
-	}
-	
-	public void assignAttributes(String[] in) {
-		attributes = in;
-	}
-	
-	public String[] getAttributes() {
-		return attributes;
-	}
-	
-	protected ArrayList<ArrayList<Double>> getData(){
-		return data;
 	}
 	
 	public void addDataRow(String[] inData) {
@@ -79,6 +94,13 @@ public class InterpretData {
 			}
 		}
 		data.add(hold);
+	}
+
+	public void addDataRow(ArrayList<Double> inData) {
+		if(data == null) {
+			data = new ArrayList<ArrayList<Double>>();
+		}
+		data.add(inData);
 	}
 	
 	public ArrayList<Double> calculateAverages() {
@@ -129,16 +151,17 @@ public class InterpretData {
 		ArrayList<Double> out = new ArrayList<Double>();
 		for(int i = 0; i < data.get(0).size(); i++) {
 			ArrayList<Double> column = pullColumn(i);
-			int pos1 = column.size() / 4;
-			int pos2 = column.size() / 4 + 1;
-			if(pos2 >= column.size()) {
-				pos2 -= 1;
+			int upperBound = column.size() / 2;
+			
+			if(column.size() % 2 != 0) {
+				upperBound--;
 			}
-			if((column.size() / 2) % 2 == 0){
-				out.add((column.get(pos1) + (column.get(pos2) / 2)));
+			
+			if(upperBound % 2 == 0) {
+				out.add((column.get(upperBound / 2) + column.get(upperBound / 2 + 1)) / 2);
 			}
 			else {
-				out.add(column.get(pos2));
+				out.add(column.get(upperBound / 2));
 			}
 		}
 		return out;
@@ -153,17 +176,21 @@ public class InterpretData {
 		ArrayList<Double> out = new ArrayList<Double>();
 		for(int i = 0; i < data.get(0).size(); i++) {
 			ArrayList<Double> column = pullColumn(i);
-			int pos1 = column.size() * 3 / 4;
-			int pos2 = column.size() * 3 / 4 + 1;
-			if(pos2 >= column.size()) {
-				pos2 -= 1;
+			int lowerBound = column.size() / 2;
+			
+			if(column.size() % 2 != 0 && column.size() > 1) {
+				lowerBound++;
 			}
-			if((column.size() - column.size() / 2) % 2 == 0) {
-				out.add((column.get(pos1) + column.get(pos2)) / 2);
+			
+			if((column.size() - lowerBound % 2) == 0) {
+				double val1 = column.get((lowerBound + column.size()) / 2);
+				double val2 = column.get((lowerBound + column.size()) / 2 - 1);
+				out.add((val1 + val2) / 2);
 			}
 			else {
-				out.add((column.get(pos1)));
+				out.add(column.get((lowerBound + column.size()) / 2));
 			}
+
 		}
 		return out;
 	}
@@ -178,6 +205,57 @@ public class InterpretData {
 		return out;
 	}
 	
+	private ArrayList<Double> pullColumn(int column){
+		ArrayList<Double> out = new ArrayList<Double>();
+		for(int i = 0; i < data.size(); i++) {
+			if(data.get(i).size() > column) {
+				if((filterColumn == null || filterValue == null) || (data.get(i).get(filterColumn).equals(filterValue))) {
+					Double val = data.get(i).get(column);
+					if(val != null) {
+						out.add(val);
+					}
+				}
+			}
+		}
+		Collections.sort(out);
+		if(out.size() == 0) {
+			out.add(-1.0);
+		}
+		return out;
+	}
+	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
+	public void setColumnFilter(Integer in) {
+		filterColumn = in;
+	}
+	
+	public void setFilterValue(Double in) {
+		filterValue = in;
+	}
+	
+	public void assignTotalNumberTests(int in) {
+		totalNumberTests = in;
+	}
+	
+	public void assignAttributes(String[] in) {
+		attributes = in;
+	}
+	
+//---  Getter Methods   -----------------------------------------------------------------------
+	
+	public int getTotalNumberTests() {
+		return totalNumberTests;
+	}
+
+	public String[] getAttributes() {
+		return attributes;
+	}
+	
+	protected ArrayList<ArrayList<Double>> getData(){
+		return data;
+	}
+
 	public ArrayList<Integer> getColumnSizes(){
 		ArrayList<Integer> out = new ArrayList<Integer>();
 		for(int i = 0; i < data.get(0).size(); i++) {
@@ -207,23 +285,7 @@ public class InterpretData {
 	}
 	
 	public int getNumberDNF() {
-		return getTotalNumberTests() - pullColumn(0).size();
+		return getTotalNumberTests() - (getNumberTrueResults() + getNumberFalseResults());
 	}
-	
-	private ArrayList<Double> pullColumn(int column){
-		ArrayList<Double> out = new ArrayList<Double>();
-		for(int i = 0; i < data.size(); i++) {
-			if(data.get(i).size() > column) {
-				Double val = data.get(i).get(column);
-				if(val != null)
-					out.add(val);
-			}
-		}
-		Collections.sort(out);
-		if(out.size() == 0) {
-			out.add(-1.0);
-		}
-		return out;
-	}
-	
+
 }

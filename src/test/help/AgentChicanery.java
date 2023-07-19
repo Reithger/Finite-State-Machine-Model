@@ -242,18 +242,18 @@ public class AgentChicanery {
 		return generateAgentSet(agentInfo, EventSets.EVENT_LIST_DTP);
 	}
 	
-	public static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsHISC(){
-		String[] events = new String[EventSets.EVENT_LIST_HISC.length + 3 * EventSets.EVENT_LIST_HISC_J.length];
+	public static ArrayList<HashMap<String, ArrayList<Boolean>>> generateAgentsHISC(int num){
+		String[] events = new String[EventSets.EVENT_LIST_HISC.length + num * EventSets.EVENT_LIST_HISC_J.length];
 		for(int i = 0; i < EventSets.EVENT_LIST_HISC.length; i++) {
 			events[i] = EventSets.EVENT_LIST_HISC[i];
 		}
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			String[] hold = appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_J, i);
 			for(int j = 0; j < hold.length; j++) {
 				events[EventSets.EVENT_LIST_HISC.length + (i - 1) * EventSets.EVENT_LIST_HISC_J.length + j] = hold[j];
 			}
 		}
-		boolean[][][] agentInfo = makeDefaultAgentArray(events, 4);
+		boolean[][][] agentInfo = makeDefaultAgentArray(events, num + 1);
 		
 		assignEventAgentInfo(agentInfo, events, 0, OBS, "take_item", "package", "allow_exit", "new_part", "part_f_obuff", "part_passes",
 														 "part_fails", "ret_inbuff", "deposit_part", "part_ent-I", "fin_exit-I", "part_ent-II",
@@ -262,7 +262,7 @@ public class AgentChicanery {
 		assignEventAgentInfo(agentInfo, events, 0, CTR, "take_item", "allow_exit", "new_part", "part_f_obuff", "part_passes", "ret_inbuff", "deposit_part",
 														"part_ent-I",  "part_ent-II", "part_ent-III");
 
-		for(int i = 1; i < 4; i++) {
+		for(int i = 1; i < num + 1; i++) {
 			assignEventAgentInfo(agentInfo, events, i, OBS, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_J, i));
 			assignEventAgentInfo(agentInfo, events, i, CTR, appendControlNumberEventSet(EventSets.EVENT_LIST_HISC_J2, i));
 		}
