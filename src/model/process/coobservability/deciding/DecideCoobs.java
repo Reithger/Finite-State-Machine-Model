@@ -96,6 +96,7 @@ public class DecideCoobs implements DecideCondition{
 	public boolean decideCondition() throws Exception{
 		//System.out.println("--- Deciding Coobservability ---");
 		//System.out.println("--- Using: " + plants + ", " + specs + " ---");
+		Long memory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		TransitionSystem use = specs == null ? plants.get(0) : deriveTruePlant();
 		
 		/*if(use.getTransitionsWithAttribute(badTransRef).size() == 0) {
@@ -108,6 +109,7 @@ public class DecideCoobs implements DecideCondition{
 		//ustruct.reserveTransitionSystem(ustruct.getUStructure());
 		boolean out = decideResult();
 		ustruct.assignTestResult(out);
+		ustruct.setStartingMemory(memory);
 		//if(!out)
 			//System.out.println("--- " + use.getId() + " - Counterexamples: " + getCounterExamples().iterator().next());
 		return out;

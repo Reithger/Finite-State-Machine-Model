@@ -79,7 +79,7 @@ public class DataGathering {
 	
 	private final int NUMBER_REPEAT_TEST = 3;
 	
-	private final int NUMBER_EXISTING_TEST_RUNS = 10;
+	private final int NUMBER_EXISTING_TEST_RUNS = 99;
 	
 	private final int TEST_ALL = 0;
 	private final int TEST_BASIC = 1;
@@ -260,14 +260,14 @@ public class DataGathering {
 		}
 		clock.resetClock();
 
-		initializeTestFolder(f, TEST_NAMES[15]);
+		/*initializeTestFolder(f, TEST_NAMES[15]);
 		if(!testsCompletedNonRandom(TEST_NAMES[15], ANALYSIS_COOBS, TEST_SIZES[15]) || runThrough) {
 			testIncrementalConfigHISC();
 			interpretTestBatchDataSimple(defaultWritePath, ANALYSIS_SB);
 			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_COOBS);
 			interpretTestBatchDataIncremental(defaultWritePath, ANALYSIS_INC_SB);
 		}
-		clock.resetClock();
+		clock.resetClock();*/
 		
 		clock.setTimeOutShort();
 		
@@ -495,6 +495,8 @@ public class DataGathering {
 		try {
 			RandomAccessFile raf = new RandomAccessFile(f, "rw");
 			fileWriteInterpretDataGeneral(hold, raf);
+			raf.writeBytes("\n\n");
+			fileWriteInterpretDataOverleafTableGeneral(hold, raf);
 			raf.close();
 		}
 		catch(Exception e) {
@@ -688,6 +690,10 @@ public class DataGathering {
 			fileWriteInterpretDataGeneral(hold, raf);
 			raf.writeBytes("\n\nAnalysis of Incremental Subsystems\n");
 			fileWriteInterpretDataIncremental(hold, raf);
+
+			raf.writeBytes("\n\n");
+			fileWriteInterpretDataOverleafTableGeneral(hold, raf);
+			
 			raf.close();
 		}
 		catch(Exception e) {
@@ -745,6 +751,62 @@ public class DataGathering {
 		raf.writeBytes("\n\nNumber True Results:\t" + numTrue);
 		raf.writeBytes("\nNumber False Results:\t" + numFalse);
 		raf.writeBytes("\nNumber of DNFs:\t\t\t" + numDNF);
+	}
+	
+	private void fileWriteInterpretDataOverleafTableGeneral(InterpretData holdIn, RandomAccessFile raf) throws Exception {
+		String[] attributes = holdIn.getAttributes();
+		
+		String part = "{|";
+		
+		for(int i = 0; i < attributes.length; i++) {
+			part += "c|";
+		}
+		
+		part += "}";
+		
+		raf.writeBytes("\\begin{table}[H]\r\n"
+				+ "\\begin{center}\r\n"
+				+ "\\begin{footnotesize}\r\n"
+				+ "    \\begin{tabular}" + part + "\r\n"
+				+ "    \\hline\n\t");
+		for(String s : attributes) {
+			raf.writeBytes(" & " + s);
+		}
+		raf.writeBytes("\\\\\n\t\\hline\n\tAverage");
+		for(double v : holdIn.calculateAverages()) {
+			raf.writeBytes(" & " + threeSig(v));
+		}
+		raf.writeBytes("\\\\\n\t\\hline\n\tMinimum");
+		for(double v : holdIn.calculateMinimums()) {
+			raf.writeBytes(" & " + threeSig(v));
+		}
+		raf.writeBytes("\\\\\n\t\\hline\n\tMaximum");
+		for(double v : holdIn.calculateMaximums()) {
+			raf.writeBytes(" & " + threeSig(v));
+		}
+		raf.writeBytes("\\\\\n\t\\hline\n\tMedian");
+		for(double v : holdIn.calculateMedians()) {
+			raf.writeBytes(" & " + threeSig(v));
+		}
+		raf.writeBytes("\\\\\n\t\\hline\n\t$Q_1$");
+		for(double v : holdIn.calculateFirstQuartile()) {
+			raf.writeBytes(" & " + threeSig(v));
+		}
+		raf.writeBytes("\\\\\n\t\\hline\n\t$Q_3$");
+		for(double v : holdIn.calculateThirdQuartile()) {
+			raf.writeBytes(" & " + threeSig(v));
+		}
+		raf.writeBytes("\\\\\n\t\\hline\n\tIQR");
+		for(double v : holdIn.calculateInterquartileRange()) {
+			raf.writeBytes(" & " + threeSig(v));
+		}
+		
+		raf.writeBytes("\\\\\n\t\\hline\r\n"
+				+ "    \\end{tabular}\r\n"
+				+ "\\end{footnotesize}\r\n"
+				+ "\\caption{Test results for ...}\r\n"
+				+ "\\end{center}\r\n"
+				+ "\\end{table}");
 	}
 	
 	//-- Test Data Interpretation Heuristics  -----------------
@@ -1358,25 +1420,25 @@ public class DataGathering {
 	}
 
 	private boolean autoTestSystemCoobsSB(String prefixNom, ArrayList<String> plantNames, ArrayList<String> specNames, ArrayList<HashMap<String, ArrayList<Boolean>>> agents, int finishCount, ArrayList<String> completedTests, ArrayList<String> memoryError) throws Exception{
-		boolean coobs = false;
+		Boolean coobs = null;
 		if(contains(completedTests, ANALYSIS_COOBS) == finishCount && !memoryError.contains(ANALYSIS_COOBS)) {
 			printCoobsLabel(prefixNom, false);
 			coobs = checkCoobservable(plantNames, specNames, agents, false);
 		}
 
-		boolean sbCoobs = false;
+		Boolean sbCoobs = null;
 		if(contains(completedTests, ANALYSIS_SB) == finishCount && !memoryError.contains(ANALYSIS_SB)) {
 			printSBCoobsLabel(prefixNom);
 			sbCoobs = checkSBCoobservable(plantNames, specNames, agents);
 		}
 		
-		if(memoryError.isEmpty() && (coobs && !sbCoobs)) {
+		if(memoryError.isEmpty() && coobs != null && sbCoobs != null && (coobs && !sbCoobs)) {
 			printOut("---\nOf note, State Based Algo. returned False while Coobs. Algo. returned True\n---");
 		}
 		
 		boolean error = false;
 		
-		if(memoryError.isEmpty() && (sbCoobs && !coobs)) {
+		if(memoryError.isEmpty() && coobs != null && sbCoobs != null && (sbCoobs && !coobs)) {
 			printOut("~~~\nError!!! : State Based Algo. claimed True while Coobs. Algo. claimed False\n~~~");
 			error = true;
 		}

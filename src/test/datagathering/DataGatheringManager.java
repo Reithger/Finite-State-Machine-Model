@@ -47,6 +47,8 @@ public class DataGatheringManager implements TestReset{
 		if(clock != null)
 			clock.cancel();
 		clock = new TestTimer();
+		System.gc();
+		Runtime.getRuntime().gc();
 		clockTimer.schedule(clock,  timeOutPeriod);
 	}
 	

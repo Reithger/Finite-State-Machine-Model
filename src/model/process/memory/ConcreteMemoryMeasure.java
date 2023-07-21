@@ -32,7 +32,7 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 //---  Operations   ---------------------------------------------------------------------------
 	
 	public void logMemoryUsage() throws Exception{
-		spaceUsage.add(getMemoryUsage() - startingMemory);
+		spaceUsage.add(getMemoryUsage());
 		if(DataGatheringManager.check) {
 			throw new Exception("Time Ran Out Error, Throw Exception Back To Thread Timer");
 		}
@@ -56,6 +56,10 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 		testResult = in;
 	}
 	
+	public void setStartingMemory(long l) {
+		startingMemory = l;
+	}
+	
 //---  Getter Methods   -----------------------------------------------------------------------
 	
 	@Override
@@ -70,19 +74,19 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 	public double getAverageMemoryUsage() {
 		long add = 0;
 		for(Long l : spaceUsage) {
-			add += l;
+			add += l - startingMemory;
 		}
 		if(spaceUsage.size() == 0) {
 			spaceUsage.add(0L);
 		}
-		return threeSig(inMB((add / spaceUsage.size())));
+		return threeSig(inMB((add /spaceUsage.size())));
 	}
 	
 	public double getMaximumMemoryUsage() {
 		long max = 0;
 		for(Long l : spaceUsage) {
-			if(l > max) {
-				max = l;
+			if(l - startingMemory > max) {
+				max = l - startingMemory;
 			}
 		}
 		return threeSig(inMB(max));
@@ -95,7 +99,7 @@ public class ConcreteMemoryMeasure implements MemoryMeasure {
 //---  Support Methods   ----------------------------------------------------------------------	
 
 	private static double inMB(long in) {
-		return (double)in / 1000000;
+		return ((double)in) / 1000000.0;
 	}
 	
 	protected static Double threeSig(double in) {
