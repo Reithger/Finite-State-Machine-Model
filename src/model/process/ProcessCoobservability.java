@@ -37,6 +37,10 @@ public class ProcessCoobservability {
 		Incremental.assignIncrementalOptions(a, b, c);
 	}
 
+	public static void assignEndAtFirstCounterexample(boolean in) {
+		DecideCoobs.assignEndAtFirstCounterexample(in);
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
 	
 	//-- Coobservable  ----------------------------------------

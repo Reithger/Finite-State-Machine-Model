@@ -120,12 +120,14 @@ public class TestFunctionality {
 		ArrayList<String> plant = names.get(0);
 		ArrayList<String> spec = names.get(1);
 		
-		for(String s : spec) {
+		/*for(String s : spec) {
 			makeImageDisplay(s, s);
-		}
+		}*/
+		
+		Manager.assignEndAtFirstCounterexample(true);
 		
 		//printIncrementalLabel("System DTP", false);
-		//checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
+		checkIncrementalCoobservable(plant, spec, AgentChicanery.generateAgentsHISC(3), false);
 		System.out.println("Hey");
 		//checkCoobservable(plant, spec, AgentChicanery.generateAgentsDTP(), false);
 		//pullReserveDisplay();

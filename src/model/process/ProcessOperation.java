@@ -15,13 +15,16 @@ public class ProcessOperation {
 	public static String attributeObservableRef;
 	public static String attributeInitialRef;
 	
-//---  Operations   ---------------------------------------------------------------------------
+	
+//---  Static Assignments   -------------------------------------------------------------------
 	
 	public static void assignAttributeReferences(String init, String obs) {
 		attributeInitialRef = init;
 		attributeObservableRef = obs;
 	}
 	
+//---  Operations   ---------------------------------------------------------------------------
+
 	/**
 	 * This method creates a modified TransitionSystem or Modal Specification derived from the calling object by removing Observable Events
 	 * and enforcing a Determinized status.

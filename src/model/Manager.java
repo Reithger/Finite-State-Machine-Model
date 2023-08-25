@@ -44,6 +44,10 @@ public class Manager implements ReceiveMemoryMeasure{
 		ProcessDES.assignReferences(this, AttributeList.ATTRIBUTE_INITIAL, AttributeList.ATTRIBUTE_MARKED, AttributeList.ATTRIBUTE_PRIVATE, AttributeList.ATTRIBUTE_OBSERVABLE, AttributeList.ATTRIBUTE_CONTROLLABLE, AttributeList.ATTRIBUTE_BAD, AttributeList.ATTRIBUTE_GOOD);
 	}
 	
+	public static void assignEndAtFirstCounterexample(boolean in) {
+		ProcessDES.assignEndAtFirstCounterexample(in);
+	}
+	
 	//-- File Meta  -------------------------------------------
 	
 	public String generateFSMDot(String ref) {

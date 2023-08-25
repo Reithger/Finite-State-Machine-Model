@@ -39,6 +39,8 @@ public class UStructure extends UStructMemoryMeasure{
 	
 	private Agent[] agents;
 	
+	private static boolean endAtFirstCounterexample;
+	
 //---  Constructors   -------------------------------------------------------------------------
 
 	public UStructure(TransitionSystem thePlant, ArrayList<String> attr, ArrayList<Agent> theAgents) throws Exception{
@@ -51,7 +53,7 @@ public class UStructure extends UStructMemoryMeasure{
 		badGoodStates = new HashSet<IllegalConfig>();
 		objectMap = new HashMap<String, AgentStates>();
 		eventNameMap = new HashMap<String, String[]>();
-		createUStructure(thePlant, badTransitions, agents);
+		createUStructure(thePlant, badTransitions, agents, endAtFirstCounterexample);
 	}
 
 	private HashMap<String, HashSet<String>> initializeBadTransitions(TransitionSystem thePlant){
@@ -101,9 +103,13 @@ public class UStructure extends UStructMemoryMeasure{
 		attributeGoodRef = good;
 	}
 	
+	public static void setEndAtFirstCounterexample(boolean in) {
+		endAtFirstCounterexample = in;
+	}
+	
 //---  Operations   ---------------------------------------------------------------------------
 
-	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents) throws Exception{
+	public void createUStructure(TransitionSystem plant, HashMap<String, HashSet<String>> badTransitions, Agent[] agents, boolean endAtFirstCounterexample) throws Exception{
 		uStructure = initializeUStructure(plant);
 		uStructure.setId("U-Struct - " + plant.getId());
 		
@@ -238,6 +244,13 @@ public class UStructure extends UStructMemoryMeasure{
 					  }
 					  else {
 						  badGoodStates.add(new IllegalConfig(stateSet, observed, s));
+					  }
+					  if(endAtFirstCounterexample) {
+							assignStateSize(uStructure.getStateNames().size());
+							assignTransitionSize(uStructure.getNumberTransitions());
+							
+							uStructure.overwriteEventAttributes(new ArrayList<String>());
+							return;
 					  }
 					}
 				}

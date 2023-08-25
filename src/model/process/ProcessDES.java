@@ -7,7 +7,20 @@ import model.fsm.TransitionSystem;
 import model.process.memory.ReceiveMemoryMeasure;
 
 public class ProcessDES {
-
+	
+//---  Static Assignments   -------------------------------------------------------------------
+	
+	public static void assignReferences(ReceiveMemoryMeasure rmm, String init, String mark, String priv, String obs, String cont, String bad, String good) {
+		ProcessAnalysis.assignAttributeReferences(priv, init);
+		ProcessOperation.assignAttributeReferences(init, obs);
+		ProcessClean.assignAttributeReferences(init, mark);
+		ProcessCoobservability.assignReferences(rmm, cont, obs, init, bad, good);
+	}
+	
+	public static void assignEndAtFirstCounterexample(boolean in) {
+		ProcessCoobservability.assignEndAtFirstCounterexample(in);
+	}
+		
 //---  Operations   ---------------------------------------------------------------------------
 
 	//-- Operation  -------------------------------------------
@@ -113,14 +126,5 @@ public class ProcessDES {
 	public static ArrayList<TransitionSystem> buildUStructureCrush(ArrayList<TransitionSystem> plants, ArrayList<TransitionSystem> specs, ArrayList<String> attr, ArrayList<HashMap<String, ArrayList<Boolean>>> agents) throws Exception{
 		return ProcessCoobservability.constructUStruct(plants, specs, attr, agents).getCrushUStructures();
 	}
-	
-//---  Setter Methods   -----------------------------------------------------------------------
-	
-	public static void assignReferences(ReceiveMemoryMeasure rmm, String init, String mark, String priv, String obs, String cont, String bad, String good) {
-		ProcessAnalysis.assignAttributeReferences(priv, init);
-		ProcessOperation.assignAttributeReferences(init, obs);
-		ProcessClean.assignAttributeReferences(init, mark);
-		ProcessCoobservability.assignReferences(rmm, cont, obs, init, bad, good);
-	}
-	
+
 }

@@ -13,7 +13,9 @@ import model.process.memory.IncrementalMemoryMeasure;
 
 /**
  * 
- * TODO: Second-round selection for multiple contenders should be deterministic not random selection
+ * TODO: Second-round selection for multiple contenders should be deterministic not random selection - also ask Malik about how deep to go here
+ * 
+ * TODO: Heuristic for events shared between new component and existing construction - ask Malik about other heuristics/verify current selection
  * 
  * @author SirBo
  *

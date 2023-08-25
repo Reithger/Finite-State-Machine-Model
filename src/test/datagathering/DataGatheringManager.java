@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 public class DataGatheringManager implements TestReset{
 
-	private static long TIME_OUT_LONG = 240000L;
+	private static long TIME_OUT_LONG =  360000L;
 	private static long TIME_OUT_SHORT = 120000L;
 	
 	private Timer clockTimer;

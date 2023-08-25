@@ -89,6 +89,10 @@ public class DecideCoobs implements DecideCondition{
 		badTransRef = bad;
 		observableRef = obs;
 	}
+
+	public static void assignEndAtFirstCounterexample(boolean in) {
+		UStructure.setEndAtFirstCounterexample(in);
+	}
 	
 //---  Operations   ---------------------------------------------------------------------------
 	
@@ -111,7 +115,7 @@ public class DecideCoobs implements DecideCondition{
 		ustruct.assignTestResult(out);
 		ustruct.setStartingMemory(memory);
 		//if(!out)
-			//System.out.println("--- " + use.getId() + " - Counterexamples: " + getCounterExamples().iterator().next());
+			//System.out.println("--- " + use.getId() + " - Counterexamples: " + getCounterExamples().iterator().next() + ", Total Number CEs: " + getCounterExamples().size());
 		return out;
 	}
 	
@@ -202,6 +206,16 @@ public class DecideCoobs implements DecideCondition{
 		}
 
 		return sigmaStar;
+	}
+	
+//---  Setter Methods   -----------------------------------------------------------------------
+	
+	public void setEnableDisableModeEnable() {
+		enableDisableMode = DECISION_MODE_ENABLE;
+	}
+	
+	public void setEnableDisableModeDisable() {
+		enableDisableMode = DECISION_MODE_DISABLE;
 	}
 	
 //---  Support Methods   ----------------------------------------------------------------------
