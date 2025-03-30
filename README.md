@@ -8,3 +8,9 @@
  - That's about it, I'm planning on writing specific tutorials for each page but a lot of other development goals are gonna come first to make it something that people *want* to use before making it something that's *nice* to use; hopefully that interim period is very short.
 
 This program exists as a research tool, so what you can do with the UI will often be pretty far behind what is implemented for use with specific test environments I run from inside my IDE. For the most up-to-date examples of what the program can do, check the file src.test.datagathering.DataGathering.java which is the central hub of my test configurations, with many of the specified systems of automata that are tested on being defined in the src.test.help package. It's likely very dense for others to use as it's been shaped around my specific needs for it, but I've tried to make it (once you get the flow of it) easy to use; feel free to contact me with any questions you have.
+
+## The Messy, Messy UML Class Diagram
+
+![FSM Model - March 30](https://github.com/user-attachments/assets/3f3f5d9d-6a92-4938-8652-0c0280b5ffea)
+
+Oof, looking back on old work is always rough. Some parts are pretty clean but TransitionSystem is just so, so overloaded with dependencies.
